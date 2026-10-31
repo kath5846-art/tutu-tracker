@@ -57,14 +57,18 @@ npm run preview
 
 ### GitHub Pages
 
-1. 在 repo Settings → Pages 選擇 GitHub Actions 或手動部署 `dist`。
-2. 若 repo 名為 `tutu-tracker`，建置前設定：
+此 repo 含 [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)：合併到 `main` 後會自動建置並部署（`VITE_BASE_PATH=/tutu-tracker/`）。
+
+1. **合併部署 PR 後**，到 GitHub **Settings → Pages**，**Source** 選 **GitHub Actions**（不要用手動 `gh-pages` 分支）。
+2. 首次部署完成後，網站網址：**https://kath5846-art.github.io/tutu-tracker/**
+3. **不需**在 repo secrets 設定 Supabase 即可上線；未設定 `VITE_SUPABASE_*` 時為 **mock 模式**（本機 mock 帳號 + `localStorage`）。若要雲端同步，再在 Settings → Secrets and variables → Actions 加入 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`，並在 workflow 的 build 步驟傳入（或改用 repository variables）。
+
+本機模擬 Pages 路徑：
 
 ```bash
 VITE_BASE_PATH=/tutu-tracker/ npm run build
+npm run preview
 ```
-
-3. 將 `dist` 內容推送到 `gh-pages` 分支或使用 Actions workflow。
 
 ## 專案結構
 
