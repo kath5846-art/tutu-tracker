@@ -754,7 +754,7 @@
     color: white;
     border-color: var(--accent-deep);
   }
-  textarea, input[type="number"], input[type="text"] {
+  textarea, input[type="number"], input[type="text"], input[type="date"] {
     width: 100%;
     padding: 11px 13px;
     border: 1px solid var(--line);
@@ -762,7 +762,9 @@
     font-family: inherit;
     font-size: 0.9375rem;
     background: var(--surface);
+    color: var(--text);
   }
+  input[type="date"] { color-scheme: light; }
 
   .fill-cta-wrap {
     margin: 0 0 10px;
@@ -865,13 +867,40 @@
     gap: 5px;
     text-align: center;
   }
+  .cal-month-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .cal-month-bar #calMonthLabel {
+    flex: 1;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-soft);
+  }
   .cal-day {
-    padding: 9px 0;
+    padding: 6px 0;
+    min-height: 40px;
     font-size: 0.8125rem;
     border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
   }
   .cal-day.has-record { background: #E8F0E6; }
   .cal-day.today { background: var(--warm); font-weight: 500; }
+  .cal-day.birthday {
+    background: #F4DDE3;
+    color: #6A4550;
+    font-weight: 500;
+  }
+  .cal-day .cal-bday-icon {
+    font-size: 0.85rem;
+    line-height: 1;
+  }
 
 
   /* Font size (root) */
@@ -1798,17 +1827,14 @@
     <div id="screen-calendar" class="screen">
       <header style="margin-bottom:20px;">
         <h1 id="calTitle" style="font-family:'Noto Serif TC',serif;font-size:24px;font-weight:500;" data-i18n="navCal">日曆</h1>
-        <div style="font-size:14px;color:var(--text-soft);margin-top:4px;" id="calMonthLabel" data-i18n="calMonthSample">2026年10月</div>
+        <div class="cal-month-bar">
+          <button type="button" class="week-nav-btn" id="calPrev" aria-label="上一月">‹</button>
+          <div id="calMonthLabel">2026年11月</div>
+          <button type="button" class="week-nav-btn" id="calNext" aria-label="下一月">›</button>
+        </div>
       </header>
       <div class="calendar">
-        <div class="cal-grid">
-          <div class="cal-day" data-i18n="wdMon">一</div><div class="cal-day" data-i18n="wdTue">二</div><div class="cal-day" data-i18n="wdWed">三</div><div class="cal-day" data-i18n="wdThu">四</div><div class="cal-day" data-i18n="wdFri">五</div><div class="cal-day" data-i18n="wdSat">六</div><div class="cal-day" data-i18n="wdSun">日</div>
-          <div class="cal-day"></div><div class="cal-day"></div><div class="cal-day">1</div><div class="cal-day has-record">2</div><div class="cal-day has-record">3</div><div class="cal-day has-record">4</div><div class="cal-day">5</div>
-          <div class="cal-day has-record">6</div><div class="cal-day has-record">7</div><div class="cal-day">8</div><div class="cal-day has-record">9</div><div class="cal-day has-record">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
-          <div class="cal-day has-record">13</div><div class="cal-day">14</div><div class="cal-day has-record">15</div><div class="cal-day has-record">16</div><div class="cal-day">17</div><div class="cal-day has-record">18</div><div class="cal-day">19</div>
-          <div class="cal-day has-record">20</div><div class="cal-day has-record">21</div><div class="cal-day">22</div><div class="cal-day has-record">23</div><div class="cal-day has-record">24</div><div class="cal-day has-record">25</div><div class="cal-day has-record">26</div>
-          <div class="cal-day has-record">27</div><div class="cal-day has-record">28</div><div class="cal-day today">29</div><div class="cal-day">30</div><div class="cal-day">31</div>
-        </div>
+        <div class="cal-grid" id="calGrid"></div>
       </div>
       <div class="section-title" id="recentLogsTitle" data-i18n="recentLogs">最近記錄</div>
       <div class="week-list">
@@ -1922,6 +1948,14 @@
       <div class="form-row">
         <label for="editAge" data-i18n="ageLabel">年齡／階段</label>
         <input type="text" id="editAge" maxlength="24" placeholder="例如：高齡 · 約 8 歲" data-i18n-ph="agePh">
+      </div>
+      <div class="form-row">
+        <label for="editWelcome" data-i18n="welcomeDate">迎接日期</label>
+        <input type="date" id="editWelcome">
+      </div>
+      <div class="form-row">
+        <label for="editBirthday" data-i18n="birthday">生日</label>
+        <input type="date" id="editBirthday">
       </div>
       <div class="form-row">
         <label for="editBreed" data-i18n="breedLabel">品種</label>
@@ -2115,6 +2149,8 @@
       tapUpdate: '點擊可更新', tapFill: '點擊填寫', notRecorded: '未記錄', recorded: '已記',
       trendTitle: '體重趨勢（近 8 週）', trendNote: '整體穩定，輕微波動',
       weekObs: '本週觀察', recentLogs: '最近記錄', calMonthSample: '2026年10月',
+      welcomeDate: '迎接日期', birthday: '生日', birthdayOf: '「{name}」的生日',
+      calPrev: '上一月', calNext: '下一月',
       logTitle: '今日記錄', weightKg: '體重 (kg)', weightPh: '例如 2.4',
       teeth: '牙齒狀況', notes: '備註', notesPh: '今日觀察到的細節…',
       saveLog: '儲存今日記錄',
@@ -2222,6 +2258,8 @@
       tapUpdate: 'Tap to update', tapFill: 'Tap to fill', notRecorded: 'Not logged', recorded: 'Logged',
       trendTitle: 'Weight trend (8 weeks)', trendNote: 'Mostly stable, slight swings',
       weekObs: 'This week', recentLogs: 'Recent logs', calMonthSample: 'October 2026',
+      welcomeDate: 'Came home', birthday: 'Birthday', birthdayOf: '{name}’s birthday',
+      calPrev: 'Previous month', calNext: 'Next month',
       logTitle: 'Today’s log', weightKg: 'Weight (kg)', weightPh: 'e.g. 2.4',
       teeth: 'Teeth', notes: 'Notes', notesPh: 'Details you noticed today…',
       saveLog: 'Save today’s log',
@@ -2329,6 +2367,8 @@
       tapUpdate: 'タップして更新', tapFill: 'タップして記入', notRecorded: '未記録', recorded: '記録済',
       trendTitle: '体重トレンド（直近8週）', trendNote: '全体は安定、わずかな変動',
       weekObs: '今週の観察', recentLogs: '最近の記録', calMonthSample: '2026年10月',
+      welcomeDate: 'お迎え日', birthday: '誕生日', birthdayOf: '「{name}」の誕生日',
+      calPrev: '前の月', calNext: '次の月',
       logTitle: '今日の記録', weightKg: '体重 (kg)', weightPh: '例 2.4',
       teeth: '歯の状態', notes: 'メモ', notesPh: '今日気づいたこと…',
       saveLog: '今日の記録を保存',
@@ -2496,6 +2536,8 @@
       name: t('defaultRabbitName'),
       ageLabel: t('defaultAgeLabel'),
       breed: t('defaultBreed'),
+      welcomeDate: '',
+      birthday: '',
       weight: 2.4,
       avatar: avatar || null,
       avatarFrame: { scale: 1, panX: 0, panY: 0 },
@@ -2550,6 +2592,20 @@
         r.diaryTitle = r.diaryTitle.trim().slice(0, 24);
       }
       ensureAvatarFrame(r);
+      const welcome = normalizeDateInput(r.welcomeDate);
+      const birthday = normalizeDateInput(r.birthday);
+      if (welcome !== (r.welcomeDate || '')) {
+        r.welcomeDate = welcome;
+        topicsTouched = true;
+      } else {
+        r.welcomeDate = welcome;
+      }
+      if (birthday !== (r.birthday || '')) {
+        r.birthday = birthday;
+        topicsTouched = true;
+      } else {
+        r.birthday = birthday;
+      }
     });
     let pinKept = false;
     rabbits.forEach(r => {
@@ -2589,6 +2645,19 @@
 
   function toDateKey(d) {
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  function normalizeDateInput(raw) {
+    const s = String(raw || '').trim();
+    if (!s) return '';
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (!m) return '';
+    const y = Number(m[1]);
+    const mo = Number(m[2]);
+    const d = Number(m[3]);
+    const dt = new Date(y, mo - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return '';
+    return s;
   }
 
   function logKey(rabbitId, d) {
@@ -2753,6 +2822,8 @@
       name: trimmed.slice(0, 12),
       ageLabel: t('ageUnset'),
       breed: '',
+      welcomeDate: '',
+      birthday: '',
       weight: null,
       avatar: null,
       tags: [
@@ -3415,12 +3486,67 @@
     }
   }
 
+  let calCursor = new Date();
+  calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth(), 1);
+
+  function calendarMonthLabel(y, m) {
+    if (currentLang() === 'en') {
+      const names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      return names[m] + ' ' + y;
+    }
+    return y + '年' + (m + 1) + '月';
+  }
+
+  function renderCalendar() {
+    const grid = document.getElementById('calGrid');
+    const label = document.getElementById('calMonthLabel');
+    if (!grid) return;
+    const y = calCursor.getFullYear();
+    const m = calCursor.getMonth();
+    if (label) label.textContent = calendarMonthLabel(y, m);
+    const prev = document.getElementById('calPrev');
+    const next = document.getElementById('calNext');
+    if (prev) prev.setAttribute('aria-label', t('calPrev'));
+    if (next) next.setAttribute('aria-label', t('calNext'));
+
+    const r = getActive();
+    const bday = (r && r.birthday && r.birthday.length >= 10) ? r.birthday.slice(5) : '';
+    const headers = [t('wdMon'), t('wdTue'), t('wdWed'), t('wdThu'), t('wdFri'), t('wdSat'), t('wdSun')];
+    let html = headers.map(h => '<div class="cal-day">' + escapeHtml(h) + '</div>').join('');
+    const firstDow = new Date(y, m, 1).getDay();
+    const pad = firstDow === 0 ? 6 : firstDow - 1;
+    const days = new Date(y, m + 1, 0).getDate();
+    const today = new Date();
+    for (let i = 0; i < pad; i++) html += '<div class="cal-day"></div>';
+    for (let day = 1; day <= days; day++) {
+      const date = new Date(y, m, day);
+      const md = pad2(m + 1) + '-' + pad2(day);
+      const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === day;
+      const recorded = !!(r && getLog(r.id, date));
+      const isBday = !!(bday && md === bday);
+      let cls = 'cal-day';
+      if (recorded) cls += ' has-record';
+      if (isToday) cls += ' today';
+      if (isBday) cls += ' birthday';
+      const title = isBday ? ' title="' + escapeHtml(tf('birthdayOf', { name: r.name })) + '"' : '';
+      const icon = isBday ? '<span class="cal-bday-icon" aria-hidden="true">🐰</span>' : '';
+      html += '<div class="' + cls + '"' + title + '><span>' + day + '</span>' + icon + '</div>';
+    }
+    grid.innerHTML = html;
+  }
+
+  function changeCalMonth(delta) {
+    calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth() + delta, 1);
+    renderCalendar();
+  }
+
   function renderAll() {
     renderSwitcher(document.getElementById('todaySwitcher'), { showAdd: true });
     renderDiaryTitle();
     renderCustomTopics();
     renderMore();
     renderTodayContext();
+    renderCalendar();
     if (document.getElementById('screen-log').classList.contains('active')) {
       loadLogIntoForm();
     }
@@ -3559,6 +3685,8 @@
     resetRemoveConfirm();
     document.getElementById('editName').value = r.name || '';
     document.getElementById('editAge').value = r.ageLabel || '';
+    document.getElementById('editWelcome').value = r.welcomeDate || '';
+    document.getElementById('editBirthday').value = r.birthday || '';
     document.getElementById('editBreed').value = r.breed || '';
     document.getElementById('editWeight').value = r.weight != null ? r.weight : '';
     document.getElementById('editNotes').value = r.notes || '';
@@ -3580,9 +3708,16 @@
       showToast(t('needName'));
       return;
     }
+    const prevBirthday = r.birthday || '';
     r.name = name.slice(0, 12);
     r.ageLabel = document.getElementById('editAge').value.trim().slice(0, 24);
+    r.welcomeDate = normalizeDateInput(document.getElementById('editWelcome').value);
+    r.birthday = normalizeDateInput(document.getElementById('editBirthday').value);
     r.breed = document.getElementById('editBreed').value.trim().slice(0, 24);
+    if (r.birthday && r.birthday !== prevBirthday) {
+      const month = Number(r.birthday.slice(5, 7)) - 1;
+      if (!Number.isNaN(month)) calCursor = new Date(new Date().getFullYear(), month, 1);
+    }
     const wRaw = document.getElementById('editWeight').value;
     r.weight = wRaw === '' ? null : Number(wRaw);
     if (r.weight != null && Number.isNaN(r.weight)) r.weight = null;
@@ -3600,6 +3735,8 @@
   document.getElementById('editProfileRemove').addEventListener('click', openRemoveConfirm);
   document.getElementById('editProfileRemoveCancel').addEventListener('click', resetRemoveConfirm);
   document.getElementById('editProfileRemoveConfirmBtn').addEventListener('click', removeActiveRabbit);
+  document.getElementById('calPrev').addEventListener('click', () => changeCalMonth(-1));
+  document.getElementById('calNext').addEventListener('click', () => changeCalMonth(1));
   editProfileModal.addEventListener('click', (e) => {
     if (e.target === editProfileModal) closeEditProfile();
   });
