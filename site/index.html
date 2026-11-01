@@ -396,6 +396,14 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .rabbit-chip.pinned::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-deep);
+    flex-shrink: 0;
+  }
   .rabbit-add-btn {
     width: 34px;
     height: 34px;
@@ -481,6 +489,74 @@
     font-size: 0.75rem;
     color: var(--text-soft);
     margin-top: 8px;
+  }
+  .edit-remove-wrap {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .btn-pin-rabbit {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent-deep);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+  .btn-pin-rabbit:hover,
+  .btn-pin-rabbit:focus-visible {
+    background: rgba(143, 161, 138, 0.16);
+  }
+  .btn-pin-rabbit.is-pinned {
+    background: #E8F0E6;
+    border-color: var(--accent-deep);
+    font-weight: 500;
+  }
+  .btn-pin-rabbit:active { transform: scale(0.985); }
+  .btn-pin-rabbit[hidden] { display: none !important; }
+  .btn-remove-rabbit {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #C4A484;
+    background: rgba(196, 164, 132, 0.08);
+    color: #7A4E3A;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+  .btn-remove-rabbit:hover,
+  .btn-remove-rabbit:focus-visible {
+    background: rgba(196, 164, 132, 0.2);
+  }
+  .btn-remove-rabbit:active { transform: scale(0.985); }
+  .btn-remove-rabbit.confirm {
+    background: #F3E6D8;
+    border-color: #C4A484;
+    font-weight: 500;
+  }
+  .modal-actions .btn-remove-rabbit {
+    flex: 1;
+    width: auto;
+  }
+  .btn-remove-rabbit[hidden],
+  .remove-confirm[hidden] {
+    display: none !important;
+  }
+  .remove-confirm .modal-hint {
+    margin-top: 0;
+    margin-bottom: 2px;
+    font-size: 0.8125rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .today-hero.no-rabbit .today-hero-overlay { display: none; }
+  .rabbit-switcher.compact.on-hero .rabbit-add-btn {
+    background: rgba(255, 255, 255, 0.82);
   }
 
   .week-strip {
@@ -678,7 +754,7 @@
     color: white;
     border-color: var(--accent-deep);
   }
-  textarea, input[type="number"], input[type="text"] {
+  textarea, input[type="number"], input[type="text"], input[type="date"] {
     width: 100%;
     padding: 11px 13px;
     border: 1px solid var(--line);
@@ -686,7 +762,9 @@
     font-family: inherit;
     font-size: 0.9375rem;
     background: var(--surface);
+    color: var(--text);
   }
+  input[type="date"] { color-scheme: light; }
 
   .fill-cta-wrap {
     margin: 0 0 10px;
@@ -789,13 +867,40 @@
     gap: 5px;
     text-align: center;
   }
+  .cal-month-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .cal-month-bar #calMonthLabel {
+    flex: 1;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-soft);
+  }
   .cal-day {
-    padding: 9px 0;
+    padding: 6px 0;
+    min-height: 40px;
     font-size: 0.8125rem;
     border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
   }
   .cal-day.has-record { background: #E8F0E6; }
   .cal-day.today { background: var(--warm); font-weight: 500; }
+  .cal-day.birthday {
+    background: #F4DDE3;
+    color: #6A4550;
+    font-weight: 500;
+  }
+  .cal-day .cal-bday-icon {
+    font-size: 0.85rem;
+    line-height: 1;
+  }
 
 
   /* Font size (root) */
@@ -888,6 +993,10 @@
     background: var(--accent-deep);
     color: #fff;
     border-color: var(--accent-deep);
+  }
+  .more-rabbit-actions button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
   .about-line {
     text-align: center;
@@ -1718,17 +1827,14 @@
     <div id="screen-calendar" class="screen">
       <header style="margin-bottom:20px;">
         <h1 id="calTitle" style="font-family:'Noto Serif TC',serif;font-size:24px;font-weight:500;" data-i18n="navCal">日曆</h1>
-        <div style="font-size:14px;color:var(--text-soft);margin-top:4px;" id="calMonthLabel" data-i18n="calMonthSample">2026年10月</div>
+        <div class="cal-month-bar">
+          <button type="button" class="week-nav-btn" id="calPrev" aria-label="上一月">‹</button>
+          <div id="calMonthLabel">2026年11月</div>
+          <button type="button" class="week-nav-btn" id="calNext" aria-label="下一月">›</button>
+        </div>
       </header>
       <div class="calendar">
-        <div class="cal-grid">
-          <div class="cal-day" data-i18n="wdMon">一</div><div class="cal-day" data-i18n="wdTue">二</div><div class="cal-day" data-i18n="wdWed">三</div><div class="cal-day" data-i18n="wdThu">四</div><div class="cal-day" data-i18n="wdFri">五</div><div class="cal-day" data-i18n="wdSat">六</div><div class="cal-day" data-i18n="wdSun">日</div>
-          <div class="cal-day"></div><div class="cal-day"></div><div class="cal-day">1</div><div class="cal-day has-record">2</div><div class="cal-day has-record">3</div><div class="cal-day has-record">4</div><div class="cal-day">5</div>
-          <div class="cal-day has-record">6</div><div class="cal-day has-record">7</div><div class="cal-day">8</div><div class="cal-day has-record">9</div><div class="cal-day has-record">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
-          <div class="cal-day has-record">13</div><div class="cal-day">14</div><div class="cal-day has-record">15</div><div class="cal-day has-record">16</div><div class="cal-day">17</div><div class="cal-day has-record">18</div><div class="cal-day">19</div>
-          <div class="cal-day has-record">20</div><div class="cal-day has-record">21</div><div class="cal-day">22</div><div class="cal-day has-record">23</div><div class="cal-day has-record">24</div><div class="cal-day has-record">25</div><div class="cal-day has-record">26</div>
-          <div class="cal-day has-record">27</div><div class="cal-day has-record">28</div><div class="cal-day today">29</div><div class="cal-day">30</div><div class="cal-day">31</div>
-        </div>
+        <div class="cal-grid" id="calGrid"></div>
       </div>
       <div class="section-title" id="recentLogsTitle" data-i18n="recentLogs">最近記錄</div>
       <div class="week-list">
@@ -1844,6 +1950,14 @@
         <input type="text" id="editAge" maxlength="24" placeholder="例如：高齡 · 約 8 歲" data-i18n-ph="agePh">
       </div>
       <div class="form-row">
+        <label for="editWelcome" data-i18n="welcomeDate">迎接日期</label>
+        <input type="date" id="editWelcome">
+      </div>
+      <div class="form-row">
+        <label for="editBirthday" data-i18n="birthday">生日</label>
+        <input type="date" id="editBirthday">
+      </div>
+      <div class="form-row">
         <label for="editBreed" data-i18n="breedLabel">品種</label>
         <input type="text" id="editBreed" maxlength="24" placeholder="例如：垂耳兔" data-i18n-ph="breedPh">
       </div>
@@ -1859,6 +1973,17 @@
       <div class="modal-actions">
         <button type="button" class="btn-ghost" id="editProfileCancel" data-i18n="cancel">取消</button>
         <button type="button" class="btn-solid" id="editProfileSave" data-i18n="save">儲存</button>
+      </div>
+      <div class="edit-remove-wrap">
+        <button type="button" class="btn-pin-rabbit" id="editProfilePin" aria-pressed="false">置頂</button>
+        <button type="button" class="btn-remove-rabbit" id="editProfileRemove" data-i18n="removeRabbit">移除兔子項目</button>
+        <div class="remove-confirm" id="editProfileRemoveConfirm" hidden>
+          <p class="modal-hint" id="editProfileRemoveConfirmText"></p>
+          <div class="modal-actions">
+            <button type="button" class="btn-ghost" id="editProfileRemoveCancel" data-i18n="cancel">取消</button>
+            <button type="button" class="btn-remove-rabbit confirm" id="editProfileRemoveConfirmBtn" data-i18n="removeRabbitYes">移除</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2024,6 +2149,8 @@
       tapUpdate: '點擊可更新', tapFill: '點擊填寫', notRecorded: '未記錄', recorded: '已記',
       trendTitle: '體重趨勢（近 8 週）', trendNote: '整體穩定，輕微波動',
       weekObs: '本週觀察', recentLogs: '最近記錄', calMonthSample: '2026年10月',
+      welcomeDate: '迎接日期', birthday: '生日', birthdayOf: '「{name}」的生日',
+      calPrev: '上一月', calNext: '下一月',
       logTitle: '今日記錄', weightKg: '體重 (kg)', weightPh: '例如 2.4',
       teeth: '牙齒狀況', notes: '備註', notesPh: '今日觀察到的細節…',
       saveLog: '儲存今日記錄',
@@ -2056,6 +2183,19 @@
       topicDeleted: '已刪除題目',
       needName: '請填寫名字',
       rabbitUpdated: '已更新「{name}」資料',
+      removeRabbit: '移除兔子項目',
+      removeRabbitAsk: '確定移除「{name}」？這隻兔子的資料與每日記錄會一併刪除，且無法復原。',
+      removeRabbitYes: '移除',
+      rabbitRemoved: '已移除「{name}」',
+      pinRabbit: '置頂',
+      unpinRabbit: '取消置頂',
+      pinnedMark: '已置頂',
+      rabbitPinned: '已將「{name}」置頂',
+      rabbitUnpinned: '已取消「{name}」置頂',
+      noRabbitName: '尚未有兔子',
+      noRabbitHint: '點 ＋ 新增一隻兔子',
+      noRabbitSummary: '目前沒有兔子。點上方 ＋ 或下方按鈕新增。',
+      needRabbitFirst: '請先新增兔子',
       addRabbit: '新增兔子', addCountHint: '目前 {n}／{max} 隻 · 預設名「{name}」', renameRabbit: '重新命名', maxRabbits: '最多 5 隻',
       rabbitLimit: '已達上限 5 隻', addRabbitTitle: '新增兔子',
       nameLabel: '名字', namePh: '例如：小白', editNamePh: '例如：兔兔',
@@ -2118,6 +2258,8 @@
       tapUpdate: 'Tap to update', tapFill: 'Tap to fill', notRecorded: 'Not logged', recorded: 'Logged',
       trendTitle: 'Weight trend (8 weeks)', trendNote: 'Mostly stable, slight swings',
       weekObs: 'This week', recentLogs: 'Recent logs', calMonthSample: 'October 2026',
+      welcomeDate: 'Came home', birthday: 'Birthday', birthdayOf: '{name}’s birthday',
+      calPrev: 'Previous month', calNext: 'Next month',
       logTitle: 'Today’s log', weightKg: 'Weight (kg)', weightPh: 'e.g. 2.4',
       teeth: 'Teeth', notes: 'Notes', notesPh: 'Details you noticed today…',
       saveLog: 'Save today’s log',
@@ -2150,6 +2292,19 @@
       topicDeleted: 'Topic deleted',
       needName: 'Please enter a name',
       rabbitUpdated: 'Updated “{name}”',
+      removeRabbit: 'Remove rabbit',
+      removeRabbitAsk: 'Remove “{name}”? This rabbit’s profile and daily logs will be deleted and cannot be undone.',
+      removeRabbitYes: 'Remove',
+      rabbitRemoved: 'Removed “{name}”',
+      pinRabbit: 'Pin to front',
+      unpinRabbit: 'Unpin',
+      pinnedMark: 'Pinned',
+      rabbitPinned: 'Pinned “{name}” to the front',
+      rabbitUnpinned: 'Unpinned “{name}”',
+      noRabbitName: 'No rabbits yet',
+      noRabbitHint: 'Tap + to add a rabbit',
+      noRabbitSummary: 'No rabbits yet. Tap + above or the button below to add one.',
+      needRabbitFirst: 'Add a rabbit first',
       addRabbit: 'Add rabbit', addCountHint: 'Now {n}/{max} · default “{name}”', renameRabbit: 'Rename', maxRabbits: 'Up to 5 rabbits',
       rabbitLimit: 'Limit of 5 reached', addRabbitTitle: 'Add rabbit',
       nameLabel: 'Name', namePh: 'e.g. Snow', editNamePh: 'e.g. Bunny',
@@ -2212,6 +2367,8 @@
       tapUpdate: 'タップして更新', tapFill: 'タップして記入', notRecorded: '未記録', recorded: '記録済',
       trendTitle: '体重トレンド（直近8週）', trendNote: '全体は安定、わずかな変動',
       weekObs: '今週の観察', recentLogs: '最近の記録', calMonthSample: '2026年10月',
+      welcomeDate: 'お迎え日', birthday: '誕生日', birthdayOf: '「{name}」の誕生日',
+      calPrev: '前の月', calNext: '次の月',
       logTitle: '今日の記録', weightKg: '体重 (kg)', weightPh: '例 2.4',
       teeth: '歯の状態', notes: 'メモ', notesPh: '今日気づいたこと…',
       saveLog: '今日の記録を保存',
@@ -2244,6 +2401,19 @@
       topicDeleted: 'トピックを削除しました',
       needName: '名前を入力してください',
       rabbitUpdated: '「{name}」を更新しました',
+      removeRabbit: 'うさぎを削除',
+      removeRabbitAsk: '「{name}」を削除しますか？プロフィールと毎日の記録も消え、元に戻せません。',
+      removeRabbitYes: '削除',
+      rabbitRemoved: '「{name}」を削除しました',
+      pinRabbit: '先頭に固定',
+      unpinRabbit: '固定を解除',
+      pinnedMark: '固定中',
+      rabbitPinned: '「{name}」を先頭に固定しました',
+      rabbitUnpinned: '「{name}」の固定を解除しました',
+      noRabbitName: 'うさぎはまだいません',
+      noRabbitHint: '＋ をタップして追加',
+      noRabbitSummary: 'うさぎがいません。上の ＋ か下のボタンから追加できます。',
+      needRabbitFirst: '先にうさぎを追加してください',
       addRabbit: 'うさぎを追加', addCountHint: '現在 {n}／{max} · 初期名「{name}」', renameRabbit: '名前を変更', maxRabbits: '最大5羽',
       rabbitLimit: '上限5羽に達しました', addRabbitTitle: 'うさぎを追加',
       nameLabel: '名前', namePh: '例：スノー', editNamePh: '例：うさぎ',
@@ -2366,6 +2536,8 @@
       name: t('defaultRabbitName'),
       ageLabel: t('defaultAgeLabel'),
       breed: t('defaultBreed'),
+      welcomeDate: '',
+      birthday: '',
       weight: 2.4,
       avatar: avatar || null,
       avatarFrame: { scale: 1, panX: 0, panY: 0 },
@@ -2380,8 +2552,10 @@
     try {
       const raw = localStorage.getItem(KEY_RABBITS);
       if (raw) {
-        rabbits = JSON.parse(raw);
-        if (!Array.isArray(rabbits) || rabbits.length === 0) throw new Error('empty');
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error('bad');
+        // Empty array is a real "no rabbits" state after the last one is removed.
+        rabbits = parsed;
       } else {
         rabbits = [seedRabbit(null)];
         saveRabbits();
@@ -2395,10 +2569,6 @@
       activeId = localStorage.getItem(KEY_ACTIVE);
     } catch (e) {
       activeId = null;
-    }
-    if (!activeId || !rabbits.find(r => r.id === activeId)) {
-      activeId = rabbits[0].id;
-      saveActive();
     }
 
     // ensure customTopics + diaryTitle on each rabbit (migrate older saves)
@@ -2422,8 +2592,39 @@
         r.diaryTitle = r.diaryTitle.trim().slice(0, 24);
       }
       ensureAvatarFrame(r);
+      const welcome = normalizeDateInput(r.welcomeDate);
+      const birthday = normalizeDateInput(r.birthday);
+      if (welcome !== (r.welcomeDate || '')) {
+        r.welcomeDate = welcome;
+        topicsTouched = true;
+      } else {
+        r.welcomeDate = welcome;
+      }
+      if (birthday !== (r.birthday || '')) {
+        r.birthday = birthday;
+        topicsTouched = true;
+      } else {
+        r.birthday = birthday;
+      }
+    });
+    let pinKept = false;
+    rabbits.forEach(r => {
+      if (r.pinned && !pinKept) {
+        r.pinned = true;
+        pinKept = true;
+      } else if (r.pinned) {
+        r.pinned = false;
+        topicsTouched = true;
+      }
     });
     if (topicsTouched) saveRabbits();
+
+    if (!rabbits.length) {
+      activeId = null;
+    } else if (!activeId || !rabbits.find(r => r.id === activeId)) {
+      activeId = rabbits[0].id;
+      saveActive();
+    }
 
     try {
       const rawLogs = localStorage.getItem(KEY_LOGS);
@@ -2444,6 +2645,19 @@
 
   function toDateKey(d) {
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  function normalizeDateInput(raw) {
+    const s = String(raw || '').trim();
+    if (!s) return '';
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (!m) return '';
+    const y = Number(m[1]);
+    const mo = Number(m[2]);
+    const d = Number(m[3]);
+    const dt = new Date(y, mo - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return '';
+    return s;
   }
 
   function logKey(rabbitId, d) {
@@ -2572,11 +2786,13 @@
 
   function saveActive() {
     try {
-      localStorage.setItem(KEY_ACTIVE, activeId);
+      if (activeId) localStorage.setItem(KEY_ACTIVE, activeId);
+      else localStorage.removeItem(KEY_ACTIVE);
     } catch (e) {}
   }
 
   function getActive() {
+    if (!rabbits.length) return null;
     return rabbits.find(r => r.id === activeId) || rabbits[0];
   }
 
@@ -2606,6 +2822,8 @@
       name: trimmed.slice(0, 12),
       ageLabel: t('ageUnset'),
       breed: '',
+      welcomeDate: '',
+      birthday: '',
       weight: null,
       avatar: null,
       tags: [
@@ -2630,6 +2848,7 @@
     const trimmed = (name || '').trim();
     if (!trimmed) return;
     const r = getActive();
+    if (!r) return;
     r.name = trimmed.slice(0, 12);
     saveRabbits();
     renderAll();
@@ -2736,6 +2955,7 @@
 
   function updateActiveAvatar(dataUrl, openEditorAfter) {
     const r = getActive();
+    if (!r) return;
     r.avatar = dataUrl;
     r.avatarFrame = defaultAvatarFrame();
     saveRabbits();
@@ -2772,12 +2992,20 @@
       .replace(/"/g, '&quot;');
   }
 
+  function orderedRabbits() {
+    const list = rabbits.slice();
+    list.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+    return list;
+  }
+
   function renderSwitcher(container, { showAdd }) {
     if (!container) return;
     const full = rabbits.length >= MAX_RABBITS;
-    let html = rabbits.map(r => {
+    let html = orderedRabbits().map(r => {
       const active = r.id === activeId ? ' active' : '';
-      return '<button type="button" class="rabbit-chip' + active + '" data-id="' + r.id + '">' +
+      const pinned = r.pinned ? ' pinned' : '';
+      const pinTitle = r.pinned ? ' title="' + escapeHtml(t('pinnedMark')) + '"' : '';
+      return '<button type="button" class="rabbit-chip' + active + pinned + '" data-id="' + r.id + '"' + pinTitle + '>' +
         chipAvatarHtml(r) +
         '<span class="rabbit-chip-name">' + escapeHtml(r.name) + '</span>' +
         '</button>';
@@ -2849,6 +3077,12 @@
     document.querySelectorAll('#fontSegment button').forEach(b => {
       b.classList.toggle('selected', b.dataset.font === userSettings.fontSize);
     });
+
+    const hasRabbit = !!getActive();
+    const renameBtn = document.getElementById('btnRenameRabbit');
+    const editBtn = document.getElementById('btnEditProfile');
+    if (renameBtn) renameBtn.disabled = !hasRabbit;
+    if (editBtn) editBtn.disabled = !hasRabbit;
   }
 
   function startOfWeek(d) {
@@ -2868,7 +3102,7 @@
     for (let i = 0; i < 7; i++) {
       const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i);
       const active = isSameDay(d, viewDate);
-      const has = !!getLog(r.id, d);
+      const has = r ? !!getLog(r.id, d) : false;
       html += '<button type="button" class="week-day-btn' +
         (active ? ' active' : '') +
         (has ? ' has-log' : '') +
@@ -2904,8 +3138,36 @@
   function renderTodayContext() {
     const r = getActive();
     const hero = document.getElementById('todayHero');
+    const hint = document.getElementById('heroPhotoHint');
+    const phIcon = document.querySelector('#todayHero .ph-icon');
+    const fillBtn = document.getElementById('btnFillStatus');
     refreshAllAvatarViews();
-    if (hero && r) hero.classList.toggle('has-photo', !!r.avatar);
+    if (hero) {
+      hero.classList.toggle('no-rabbit', !r);
+      hero.title = r ? '點擊更換／加入照片' : t('noRabbitHint');
+    }
+    if (!r) {
+      if (hero) hero.classList.remove('has-photo');
+      document.getElementById('todayHeroName').textContent = t('noRabbitName');
+      document.getElementById('todayHeroAge').textContent = t('noRabbitHint');
+      document.getElementById('todayHeroTags').innerHTML = '';
+      if (hint) hint.textContent = t('noRabbitHint');
+      if (phIcon) phIcon.textContent = '🐰';
+      if (fillBtn) fillBtn.textContent = t('addRabbit');
+      renderWeekStrip();
+      renderMetricsFromLog(null, null);
+      const sumEl = document.getElementById('summaryLine');
+      if (sumEl) {
+        sumEl.textContent = t('noRabbitSummary');
+        sumEl.classList.remove('alert');
+      }
+      renderLogHeader();
+      return;
+    }
+    if (hint) hint.textContent = t('addPhoto');
+    if (phIcon) phIcon.textContent = '📷';
+    if (fillBtn) fillBtn.textContent = t('fillStatus');
+    if (hero) hero.classList.toggle('has-photo', !!r.avatar);
     document.getElementById('todayHeroName').textContent = r.name;
     const ageParts = [r.ageLabel, r.breed].filter(Boolean);
     const ageText = ageParts.join(' · ') || t('ageBreedUnset');
@@ -2950,7 +3212,7 @@
       hint.textContent = '';
     }
 
-    const w = (log && log.weight != null) ? log.weight : (r.weight != null ? r.weight : null);
+    const w = (log && log.weight != null) ? log.weight : (r && r.weight != null ? r.weight : null);
     document.getElementById('todayWeightValue').textContent = w != null ? (w + ' kg') : '—';
     const ws = document.getElementById('metricWeightStatus');
     if (log && log.weight != null) {
@@ -2965,8 +3227,11 @@
 
   function renderLogHeader() {
     const r = getActive();
-    document.getElementById('logHeaderSub').textContent =
-      formatDisplayDate(viewDate) + ' · ' + r.name;
+    const el = document.getElementById('logHeaderSub');
+    if (!el) return;
+    el.textContent = r
+      ? (formatDisplayDate(viewDate) + ' · ' + r.name)
+      : formatDisplayDate(viewDate);
   }
 
   function selectOption(field, value) {
@@ -3004,6 +3269,16 @@
 
   function loadLogIntoForm() {
     const r = getActive();
+    if (!r) {
+      selectOption('appetite', '');
+      selectOption('poop', '');
+      selectOption('activity', '');
+      selectOption('teeth', '');
+      document.getElementById('logWeightInput').value = '';
+      document.getElementById('logNotes').value = '';
+      renderLogHeader();
+      return;
+    }
     const log = getLog(r.id, viewDate) || emptyLog();
     selectOption('appetite', log.appetite || '');
     selectOption('poop', log.poop || '');
@@ -3018,6 +3293,10 @@
 
   function saveLogFromForm() {
     const r = getActive();
+    if (!r) {
+      showToast(t('needRabbitFirst'));
+      return;
+    }
     const weightRaw = document.getElementById('logWeightInput').value;
     const weight = weightRaw === '' ? null : Number(weightRaw);
     const entry = {
@@ -3055,6 +3334,7 @@
   }
 
   function ensureCustomTopics(r) {
+    if (!r) return [];
     if (!r.customTopics || !Array.isArray(r.customTopics)) r.customTopics = [];
     return r.customTopics;
   }
@@ -3063,6 +3343,12 @@
     const r = getActive();
     const el = document.getElementById('diaryTitle');
     if (!el) return;
+    if (!r) {
+      el.setAttribute('contenteditable', 'false');
+      el.textContent = t('defaultDiaryTitle');
+      return;
+    }
+    el.setAttribute('contenteditable', 'true');
     const title = (r.diaryTitle && String(r.diaryTitle).trim()) || t('defaultDiaryTitle');
     if (document.activeElement !== el) {
       el.textContent = title;
@@ -3072,6 +3358,7 @@
   function commitDiaryTitle() {
     const el = document.getElementById('diaryTitle');
     const r = getActive();
+    if (!r || !el) return;
     let title = (el.textContent || '').replace(/\u00a0/g, ' ').trim().slice(0, 24);
     if (!title) title = t('defaultDiaryTitle');
     r.diaryTitle = title;
@@ -3119,8 +3406,13 @@
 
   function renderCustomTopics() {
     const r = getActive();
-    const topics = ensureCustomTopics(r);
     const el = document.getElementById('customTopicsChips');
+    if (!el) return;
+    if (!r) {
+      el.innerHTML = '';
+      return;
+    }
+    const topics = ensureCustomTopics(r);
     let html = '';
     topics.forEach((label, idx) => {
       html += '<span class="topic-chip" contenteditable="true" spellcheck="false" data-idx="' + idx +
@@ -3194,12 +3486,67 @@
     }
   }
 
+  let calCursor = new Date();
+  calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth(), 1);
+
+  function calendarMonthLabel(y, m) {
+    if (currentLang() === 'en') {
+      const names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      return names[m] + ' ' + y;
+    }
+    return y + '年' + (m + 1) + '月';
+  }
+
+  function renderCalendar() {
+    const grid = document.getElementById('calGrid');
+    const label = document.getElementById('calMonthLabel');
+    if (!grid) return;
+    const y = calCursor.getFullYear();
+    const m = calCursor.getMonth();
+    if (label) label.textContent = calendarMonthLabel(y, m);
+    const prev = document.getElementById('calPrev');
+    const next = document.getElementById('calNext');
+    if (prev) prev.setAttribute('aria-label', t('calPrev'));
+    if (next) next.setAttribute('aria-label', t('calNext'));
+
+    const r = getActive();
+    const bday = (r && r.birthday && r.birthday.length >= 10) ? r.birthday.slice(5) : '';
+    const headers = [t('wdMon'), t('wdTue'), t('wdWed'), t('wdThu'), t('wdFri'), t('wdSat'), t('wdSun')];
+    let html = headers.map(h => '<div class="cal-day">' + escapeHtml(h) + '</div>').join('');
+    const firstDow = new Date(y, m, 1).getDay();
+    const pad = firstDow === 0 ? 6 : firstDow - 1;
+    const days = new Date(y, m + 1, 0).getDate();
+    const today = new Date();
+    for (let i = 0; i < pad; i++) html += '<div class="cal-day"></div>';
+    for (let day = 1; day <= days; day++) {
+      const date = new Date(y, m, day);
+      const md = pad2(m + 1) + '-' + pad2(day);
+      const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === day;
+      const recorded = !!(r && getLog(r.id, date));
+      const isBday = !!(bday && md === bday);
+      let cls = 'cal-day';
+      if (recorded) cls += ' has-record';
+      if (isToday) cls += ' today';
+      if (isBday) cls += ' birthday';
+      const title = isBday ? ' title="' + escapeHtml(tf('birthdayOf', { name: r.name })) + '"' : '';
+      const icon = isBday ? '<span class="cal-bday-icon" aria-hidden="true">🐰</span>' : '';
+      html += '<div class="' + cls + '"' + title + '><span>' + day + '</span>' + icon + '</div>';
+    }
+    grid.innerHTML = html;
+  }
+
+  function changeCalMonth(delta) {
+    calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth() + delta, 1);
+    renderCalendar();
+  }
+
   function renderAll() {
     renderSwitcher(document.getElementById('todaySwitcher'), { showAdd: true });
     renderDiaryTitle();
     renderCustomTopics();
     renderMore();
     renderTodayContext();
+    renderCalendar();
     if (document.getElementById('screen-log').classList.contains('active')) {
       loadLogIntoForm();
     }
@@ -3222,10 +3569,12 @@
   }
 
   function openRenameModal() {
+    const r = getActive();
+    if (!r) return;
     modalMode = 'rename';
     nameModalTitle.textContent = t('renameRabbit');
     nameModalHint.textContent = t('renameHint');
-    nameModalInput.value = getActive().name;
+    nameModalInput.value = r.name;
     nameModal.classList.add('open');
     setTimeout(() => { nameModalInput.focus(); nameModalInput.select(); }, 50);
   }
@@ -3253,10 +3602,91 @@
   // Edit profile sheet
   const editProfileModal = document.getElementById('editProfileModal');
 
+  function syncPinButton() {
+    const btn = document.getElementById('editProfilePin');
+    const r = getActive();
+    if (!btn) return;
+    const confirming = document.getElementById('editProfileRemoveConfirm');
+    if (!r || (confirming && !confirming.hidden)) {
+      btn.hidden = true;
+      return;
+    }
+    const pinned = !!r.pinned;
+    btn.hidden = false;
+    btn.textContent = pinned ? t('unpinRabbit') : t('pinRabbit');
+    btn.classList.toggle('is-pinned', pinned);
+    btn.setAttribute('aria-pressed', pinned ? 'true' : 'false');
+  }
+
+  function togglePinActive() {
+    const r = getActive();
+    if (!r) return;
+    const next = !r.pinned;
+    rabbits.forEach(x => { x.pinned = false; });
+    r.pinned = next;
+    saveRabbits();
+    renderAll();
+    syncPinButton();
+    showToast(tf(next ? 'rabbitPinned' : 'rabbitUnpinned', { name: r.name }));
+  }
+
+  function resetRemoveConfirm() {
+    const panel = document.getElementById('editProfileRemoveConfirm');
+    const btn = document.getElementById('editProfileRemove');
+    if (panel) panel.hidden = true;
+    if (btn) btn.hidden = false;
+    syncPinButton();
+  }
+
+  function openRemoveConfirm() {
+    const r = getActive();
+    if (!r) return;
+    const panel = document.getElementById('editProfileRemoveConfirm');
+    const btn = document.getElementById('editProfileRemove');
+    const pinBtn = document.getElementById('editProfilePin');
+    const text = document.getElementById('editProfileRemoveConfirmText');
+    if (text) text.textContent = tf('removeRabbitAsk', { name: r.name });
+    if (btn) btn.hidden = true;
+    if (pinBtn) pinBtn.hidden = true;
+    if (panel) {
+      panel.hidden = false;
+      panel.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function removeActiveRabbit() {
+    const r = getActive();
+    if (!r) return;
+    const removedName = r.name;
+    const removedId = r.id;
+    const idx = rabbits.findIndex(x => x.id === removedId);
+    if (idx < 0) return;
+    rabbits.splice(idx, 1);
+    const prefix = removedId + '|';
+    Object.keys(logs).forEach(k => {
+      if (k.indexOf(prefix) === 0) delete logs[k];
+    });
+    if (activeId === removedId) {
+      if (!rabbits.length) activeId = null;
+      else activeId = (rabbits[idx] || rabbits[idx - 1] || rabbits[0]).id;
+    }
+    saveRabbits();
+    saveLogs();
+    saveActive();
+    closePhotoEditor();
+    closeEditProfile();
+    renderAll();
+    showToast(tf('rabbitRemoved', { name: removedName }));
+  }
+
   function openEditProfile() {
     const r = getActive();
+    if (!r) return;
+    resetRemoveConfirm();
     document.getElementById('editName').value = r.name || '';
     document.getElementById('editAge').value = r.ageLabel || '';
+    document.getElementById('editWelcome').value = r.welcomeDate || '';
+    document.getElementById('editBirthday').value = r.birthday || '';
     document.getElementById('editBreed').value = r.breed || '';
     document.getElementById('editWeight').value = r.weight != null ? r.weight : '';
     document.getElementById('editNotes').value = r.notes || '';
@@ -3267,18 +3697,27 @@
 
   function closeEditProfile() {
     editProfileModal.classList.remove('open');
+    resetRemoveConfirm();
   }
 
   function saveEditProfile() {
     const r = getActive();
+    if (!r) return;
     const name = document.getElementById('editName').value.trim();
     if (!name) {
       showToast(t('needName'));
       return;
     }
+    const prevBirthday = r.birthday || '';
     r.name = name.slice(0, 12);
     r.ageLabel = document.getElementById('editAge').value.trim().slice(0, 24);
+    r.welcomeDate = normalizeDateInput(document.getElementById('editWelcome').value);
+    r.birthday = normalizeDateInput(document.getElementById('editBirthday').value);
     r.breed = document.getElementById('editBreed').value.trim().slice(0, 24);
+    if (r.birthday && r.birthday !== prevBirthday) {
+      const month = Number(r.birthday.slice(5, 7)) - 1;
+      if (!Number.isNaN(month)) calCursor = new Date(new Date().getFullYear(), month, 1);
+    }
     const wRaw = document.getElementById('editWeight').value;
     r.weight = wRaw === '' ? null : Number(wRaw);
     if (r.weight != null && Number.isNaN(r.weight)) r.weight = null;
@@ -3292,6 +3731,12 @@
 
   document.getElementById('editProfileCancel').addEventListener('click', closeEditProfile);
   document.getElementById('editProfileSave').addEventListener('click', saveEditProfile);
+  document.getElementById('editProfilePin').addEventListener('click', togglePinActive);
+  document.getElementById('editProfileRemove').addEventListener('click', openRemoveConfirm);
+  document.getElementById('editProfileRemoveCancel').addEventListener('click', resetRemoveConfirm);
+  document.getElementById('editProfileRemoveConfirmBtn').addEventListener('click', removeActiveRabbit);
+  document.getElementById('calPrev').addEventListener('click', () => changeCalMonth(-1));
+  document.getElementById('calNext').addEventListener('click', () => changeCalMonth(1));
   editProfileModal.addEventListener('click', (e) => {
     if (e.target === editProfileModal) closeEditProfile();
   });
@@ -3341,7 +3786,13 @@
 
   document.getElementById('weekPrev').addEventListener('click', () => changeWeek(-1));
   document.getElementById('weekNext').addEventListener('click', () => changeWeek(1));
-  document.getElementById('btnFillStatus').addEventListener('click', () => goToLogScreen());
+  document.getElementById('btnFillStatus').addEventListener('click', () => {
+    if (!getActive()) {
+      openAddModal();
+      return;
+    }
+    goToLogScreen();
+  });
 
   const diaryTitleEl = document.getElementById('diaryTitle');
   diaryTitleEl.addEventListener('keydown', (e) => {
@@ -3522,11 +3973,19 @@
   document.getElementById('btnHeroPhoto').addEventListener('click', (e) => {
     e.stopPropagation();
     const r = getActive();
+    if (!r) {
+      openAddModal();
+      return;
+    }
     if (!r.avatar) openAvatarPicker();
     else openPhotoEditor();
   });
   document.getElementById('btnHeroEditRabbit').addEventListener('click', (e) => {
     e.stopPropagation();
+    if (!getActive()) {
+      openAddModal();
+      return;
+    }
     openEditProfile();
   });
   document.getElementById('photoEditorReplace').addEventListener('click', () => {
@@ -3537,10 +3996,14 @@
   document.getElementById('btnProfilePickPhoto').addEventListener('click', () => openAvatarPicker());
 
   document.getElementById('todayHero').addEventListener('click', (e) => {
-    if (e.target.closest('#todaySwitcher') || e.target.closest('.rabbit-chip')) return;
+    if (e.target.closest('#todaySwitcher') || e.target.closest('.rabbit-chip') || e.target.closest('.rabbit-add-btn')) return;
     if (e.target.closest('.today-hero-card-actions')) return;
     if (e.target.closest('.today-hero-glass')) return;
     const r = getActive();
+    if (!r) {
+      openAddModal();
+      return;
+    }
     if (!r.avatar) openAvatarPicker();
   });
   document.getElementById('todaySwitcher').addEventListener('click', (e) => e.stopPropagation());
@@ -3737,6 +4200,7 @@
     if (langSeg) langSeg.setAttribute('aria-label', t('langTitle'));
     const fontSeg = document.getElementById('fontSegment');
     if (fontSeg) fontSeg.setAttribute('aria-label', t('fontTitle'));
+    if (typeof syncPinButton === 'function') syncPinButton();
   }
 
   function applyUserSettings() {
