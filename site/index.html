@@ -1,0 +1,3735 @@
+<!DOCTYPE html>
+<!--
+  兔兔 Tracker · 完整 HTML Demo（含登入）
+  ------------------------------------------------
+  Google 真實 OAuth（選用）：
+  1. 到 Google Cloud Console 建立 OAuth 2.0 Client ID（網頁應用程式）
+  2. 將授權的 JavaScript 來源設為你開啟此檔的 origin（例如 http://localhost 或 file 不適用 GIS，建議用本地伺服器）
+  3. 在頁面底部 JavaScript 區塊內把 const GOOGLE_CLIENT_ID = ''; 填入你的 Client ID
+  4. 重新開啟頁面後會載入 Google Identity Services，並顯示正式「使用 Google 帳戶登入」按鈕
+  未填 Client ID 時：使用示範用帳戶選擇器（離線可用），資料只存在本機 localStorage。
+-->
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>兔兔 Tracker · Demo（含登入）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F3EE;
+    --surface: #FFFFFF;
+    --text: #3D3832;
+    --text-soft: #7A736B;
+    --accent: #8FA18A;
+    --accent-deep: #6B7D66;
+    --warm: #C9B8A6;
+    --line: #E8E2D9;
+    --alert: #C4A484;
+    --shadow: 0 4px 20px rgba(61, 56, 50, 0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans TC', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    padding-bottom: 80px;
+  }
+
+  .screen { display: none; padding: 28px 20px 20px; }
+  .screen.active { display: block; }
+
+  .screen-header {
+    margin-bottom: 14px;
+  }
+  .screen-header h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+  .screen-header-sub {
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    margin-top: 2px;
+  }
+
+  /* Today hero photo */
+  #screen-today {
+    padding-top: 0;
+  }
+  .today-title-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px 4px 6px;
+    margin: 0;
+  }
+  .diary-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--text);
+    font-family: 'Noto Sans TC', inherit;
+    outline: none;
+    border-radius: 4px;
+    padding: 2px 4px;
+    min-width: 3em;
+    text-align: right;
+    cursor: text;
+    max-width: 70%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .diary-title:focus {
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 1px var(--line);
+    overflow: visible;
+    text-overflow: clip;
+  }
+  .diary-title:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-soft);
+  }
+  .today-hero {
+    position: relative;
+    height: min(58vw, 340px);
+    min-height: 280px;
+    max-height: 360px;
+    margin: 0 -20px 10px;
+    border-radius: 0 0 22px 22px;
+    overflow: hidden;
+    background: #E8D9C8;
+    cursor: pointer;
+  }
+  .today-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+  .today-hero.has-photo .today-hero-img { display: block; }
+  .today-hero-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-soft);
+    background: linear-gradient(160deg, #EDE3D6 0%, #E0D0BE 100%);
+  }
+  .today-hero.has-photo .today-hero-placeholder { display: none; }
+  .today-hero-placeholder .ph-icon {
+    font-size: 1.75rem;
+    opacity: 0.55;
+    line-height: 1;
+  }
+  .today-hero-placeholder .ph-text {
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+  }
+  .today-hero-overlay {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .today-hero-glass {
+    padding: 10px 14px 11px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 4px 18px rgba(61, 56, 50, 0.06);
+  }
+  .today-hero-name {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.3125rem;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .today-hero-age {
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    margin-top: 2px;
+  }
+  .today-hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+  .today-hero-tags .status-tag {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .today-hero-tags .status-tag.good {
+    background: rgba(232, 240, 230, 0.92);
+  }
+  .today-hero-tags .status-tag.watch {
+    background: rgba(245, 237, 228, 0.92);
+  }
+  .rabbit-switcher.compact.on-hero {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 3;
+    margin: 0;
+    padding: 0;
+    pointer-events: auto;
+    cursor: default;
+  }
+  .rabbit-switcher.compact.on-hero .rabbit-chip {
+    padding: 4px 10px 4px 4px;
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 10px rgba(61, 56, 50, 0.08);
+  }
+  .rabbit-switcher.compact.on-hero .rabbit-chip.active {
+    background: rgba(232, 240, 230, 0.92);
+  }
+  .rabbit-switcher.compact.on-hero .rabbit-chip-avatar {
+    width: 20px;
+    height: 20px;
+  }
+  .custom-topics {
+    margin: 0 0 8px;
+    padding: 0 2px;
+  }
+  .custom-topics-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    align-items: center;
+  }
+  .topic-chip {
+    display: inline-block;
+    max-width: 100%;
+    padding: 1px 2px;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 0.75rem;
+    font-family: inherit;
+    cursor: text;
+    line-height: 1.35;
+    outline: none;
+    min-width: 1.5em;
+  }
+  .topic-chip:focus {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .topic-chip.topic-slot {
+    color: var(--text-soft);
+    border-bottom: 1px dashed var(--line);
+    min-width: 3.5em;
+  }
+  .topic-chip.topic-slot:empty::before {
+    content: '題目';
+    color: var(--text-soft);
+    opacity: 0.55;
+  }
+  .topic-chip.topic-slot:focus {
+    color: var(--text);
+    border-bottom-color: transparent;
+  }
+  .topic-chip.topic-slot:focus:empty::before { content: none; }
+
+  /* Rabbit switcher */
+  .rabbit-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .rabbit-switcher.compact {
+    margin-bottom: 14px;
+  }
+  .rabbit-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    max-width: 140px;
+  }
+  .rabbit-chip:hover { border-color: var(--warm); }
+  .rabbit-chip.active {
+    background: #E8F0E6;
+    border-color: var(--accent);
+    color: var(--text);
+    font-weight: 500;
+  }
+  .rabbit-chip-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #E8D9C8;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    color: var(--text-soft);
+  }
+  .rabbit-chip-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .rabbit-chip-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rabbit-add-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px dashed var(--accent);
+    background: transparent;
+    color: var(--accent-deep);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    padding: 0;
+  }
+  .rabbit-add-btn:hover { background: #E8F0E6; }
+  .rabbit-add-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: var(--line);
+    color: var(--text-soft);
+  }
+  .rabbit-limit-note {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  /* Add / rename modal */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(61, 56, 50, 0.28);
+    z-index: 40;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal-sheet {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    padding: 22px 20px 28px;
+    box-shadow: 0 -8px 30px rgba(61, 56, 50, 0.08);
+  }
+  .modal-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.125rem;
+    margin-bottom: 14px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .btn-ghost {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    color: var(--text-soft);
+    cursor: pointer;
+  }
+  .btn-solid {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent-deep);
+    color: white;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+  .modal-hint {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin-top: 8px;
+  }
+
+  .week-strip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .week-nav-btn {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9375rem;
+    color: var(--text-soft);
+    font-family: inherit;
+    padding: 0;
+  }
+  .week-days {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    gap: 2px;
+  }
+  .week-day-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-soft);
+    font-size: 0.75rem;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+    padding: 0;
+  }
+  .week-day-btn .wd-num {
+    font-size: 0.625rem;
+    opacity: 0.75;
+  }
+  .week-day-btn.active {
+    background: var(--warm);
+    color: var(--text);
+    font-weight: 500;
+    border-color: rgba(201, 184, 166, 0.8);
+  }
+  .week-day-btn.has-log:not(.active) {
+    border-color: var(--accent);
+    color: var(--accent-deep);
+  }
+  .week-caption {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin: -6px 0 12px;
+  }
+
+  .summary-line {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    font-size: 0.8125rem;
+    box-shadow: var(--shadow);
+    border-left: 3px solid var(--accent);
+  }
+  .summary-line.alert { border-left-color: var(--alert); }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow);
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .metric-card:active { transform: scale(0.985); }
+  .metric-card.watch { border-left: 3px solid var(--alert); }
+
+  .metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+  }
+  .metric-title { font-size: 0.8125rem; font-weight: 500; }
+  .metric-status {
+    font-size: 0.625rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background: #F0EDE8;
+    color: var(--text-soft);
+    flex-shrink: 0;
+  }
+  .metric-status.good { background: #E8F0E6; color: var(--accent-deep); }
+  .metric-status.watch { background: #F5EDE4; color: #8B6F5A; }
+
+  .metric-value {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin: 2px 0 0;
+    line-height: 1.25;
+  }
+  .metric-note {
+    font-size: 0.6875rem;
+    color: var(--text-soft);
+    line-height: 1.35;
+    margin-top: 1px;
+  }
+  .metric-hint {
+    font-size: 0.625rem;
+    color: #8B6F5A;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--line);
+    line-height: 1.3;
+  }
+
+  .trend-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px 18px 14px;
+    margin-top: 16px;
+    box-shadow: var(--shadow);
+  }
+  .trend-title {
+    font-size: 0.875rem;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .trend-svg { width: 100%; height: 70px; }
+  .trend-note {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin-top: 6px;
+    text-align: right;
+  }
+
+  .section-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.0625rem;
+    margin: 32px 0 12px;
+  }
+
+  .week-list {
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .week-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .week-item:last-child { border-bottom: none; }
+  .week-day { font-size: 0.875rem; }
+  .week-summary { font-size: 0.8125rem; color: var(--text-soft); }
+
+  .form-group { margin-bottom: 18px; }
+  label { display: block; font-size: 0.875rem; margin-bottom: 7px; }
+  .options { display: flex; gap: 7px; flex-wrap: wrap; }
+  .option {
+    padding: 9px 14px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  .option.selected {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent-deep);
+  }
+  textarea, input[type="number"], input[type="text"] {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    background: var(--surface);
+  }
+
+  .fill-cta-wrap {
+    margin: 0 0 10px;
+  }
+  .btn-fill-status {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--accent-deep);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .btn-fill-status:active { transform: scale(0.985); }
+
+  .btn-edit-profile {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--accent-deep);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+  .btn-edit-profile:active { transform: scale(0.98); }
+  .modal-sheet .form-row {
+    margin-bottom: 12px;
+  }
+  .modal-sheet .form-row label {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    margin-bottom: 5px;
+  }
+  .modal-sheet textarea {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    background: var(--bg);
+    resize: vertical;
+  }
+  .modal-sheet.tall {
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 88px;
+    transform: translateX(-50%) translateY(12px);
+    max-width: calc(100% - 40px);
+    width: max-content;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(61, 56, 50, 0.88);
+    color: #fff;
+    font-size: 0.875rem;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent-deep);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    margin-top: 6px;
+    cursor: pointer;
+  }
+
+  .calendar {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    text-align: center;
+  }
+  .cal-day {
+    padding: 9px 0;
+    font-size: 0.8125rem;
+    border-radius: 10px;
+  }
+  .cal-day.has-record { background: #E8F0E6; }
+  .cal-day.today { background: var(--warm); font-weight: 500; }
+
+
+  /* Font size (root) */
+  html.font-sm { font-size: 15px; } /* 小：略緊湊 */
+  html.font-md { font-size: 17px; } /* 標準 */
+  html.font-lg { font-size: 22px; } /* 大：方便老花／高齡閱讀 */
+
+  .settings-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px 16px 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+  }
+  .settings-card-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .settings-account-email {
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    margin-bottom: 12px;
+    word-break: break-all;
+  }
+  .settings-card label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin: 8px 0 4px;
+  }
+  .settings-card textarea {
+    min-height: 64px;
+    resize: vertical;
+  }
+  .btn-save-settings {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 9px 18px;
+    border-radius: 20px;
+    border: none;
+    background: var(--accent-deep);
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-save-settings:active { transform: scale(0.98); }
+  .segmented {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .segmented button {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 8px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+  .segmented button.selected {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent-deep);
+  }
+  .more-rabbit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .more-rabbit-actions button {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--accent-deep);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+  .more-rabbit-actions button.primary {
+    background: var(--accent-deep);
+    color: #fff;
+    border-color: var(--accent-deep);
+  }
+  .about-line {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin: 8px 0 20px;
+  }
+  .nav-label { display: inline; }
+
+  .profile-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 22px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .avatar-wrap {
+    position: relative;
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 10px;
+    cursor: pointer;
+  }
+  .avatar-circle {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: #E8D9C8;
+    border: 2px solid var(--line);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+  .avatar-circle.has-photo img { display: block; }
+  .avatar-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text-soft);
+    font-size: 0.6875rem;
+    pointer-events: none;
+  }
+  .avatar-circle.has-photo .avatar-placeholder { display: none; }
+  .avatar-placeholder .cam-icon {
+    font-size: 1.375rem;
+    opacity: 0.7;
+    line-height: 1;
+  }
+  .avatar-change {
+    display: inline-block;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    font-size: 0.75rem;
+    color: var(--accent-deep);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .profile-name {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.5rem;
+    margin: 8px 0 4px;
+  }
+  .profile-name-edit {
+    font-size: 0.75rem;
+    color: var(--accent-deep);
+    border: none;
+    background: none;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .profile-meta { color: var(--text-soft); font-size: 0.875rem; }
+
+  .status-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .status-tag {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: #F0EDE8;
+    color: var(--text-soft);
+    border: 1px solid var(--line);
+  }
+  .status-tag.good {
+    background: #E8F0E6;
+    color: var(--accent-deep);
+    border-color: rgba(143, 161, 138, 0.35);
+  }
+  .status-tag.watch {
+    background: #F5EDE4;
+    color: #8B6F5A;
+    border-color: rgba(196, 164, 132, 0.4);
+  }
+
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0 18px;
+    z-index: 20;
+  }
+  .nav-item {
+    text-align: center;
+    font-size: 0.6875rem;
+    color: var(--text-soft);
+    cursor: pointer;
+    padding: 4px 12px;
+  }
+  .nav-item.active { color: var(--text); }
+  .nav-icon { font-size: 1.25rem; margin-bottom: 2px; }
+
+  @media (min-width: 520px) {
+    body { background: #EFEAE3; }
+    .app { box-shadow: 0 0 40px rgba(0,0,0,0.06); }
+  }
+
+  /* —— Auth screen —— */
+  .auth-screen {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 48px 24px 32px;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+  .auth-screen.visible { display: flex; }
+  .auth-home-link {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 0.8125rem;
+    color: var(--accent-deep);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .auth-home-link:hover {
+    color: var(--text);
+    border-color: var(--warm);
+  }
+  .auth-brand { text-align: center; margin-bottom: 32px; }
+  .auth-brand h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.75rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .auth-brand p { font-size: 0.875rem; color: var(--text-soft); }
+  .auth-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 24px 20px;
+    box-shadow: var(--shadow);
+  }
+  .auth-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .auth-tab {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+    color: var(--text-soft);
+  }
+  .auth-tab.active {
+    background: #E8F0E6;
+    border-color: var(--accent);
+    color: var(--text);
+    font-weight: 500;
+  }
+  .auth-error {
+    font-size: 0.8125rem;
+    color: #8B6F5A;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: #F5EDE4;
+    border-radius: 8px;
+  }
+  .auth-hint {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin-top: 16px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .auth-forgot-link {
+    display: block;
+    text-align: right;
+    margin: -6px 0 14px;
+    font-size: 0.8125rem;
+    color: var(--accent-deep);
+    text-decoration: none;
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0;
+  }
+  .auth-forgot-link:hover { color: var(--text); text-decoration: underline; }
+  .auth-only-signup { display: none; }
+  .auth-card.mode-signup .auth-only-signup { display: block; }
+  .auth-card.mode-signup .auth-only-login { display: none; }
+  .auth-card.mode-login .auth-only-login { display: block; }
+  .auth-card.mode-login .auth-only-signup { display: none; }
+  .settings-readonly {
+    font-size: 0.875rem;
+    color: var(--text);
+    padding: 8px 12px;
+    background: var(--bg);
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+  .settings-meta-row { margin-bottom: 8px; }
+  .demo-mail-box {
+    margin: 12px 0 4px;
+    padding: 14px 14px 12px;
+    border-radius: 12px;
+    background: #F7F4EF;
+    border: 1px dashed var(--warm);
+  }
+  .demo-mail-box .mail-to {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    margin-bottom: 8px;
+  }
+  .demo-mail-box .mail-temp {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.25rem;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    font-weight: 500;
+    margin: 6px 0 10px;
+    word-break: break-all;
+  }
+  .demo-mail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .forgot-step { display: none; }
+  .forgot-step.active { display: block; }
+  .forgot-sub {
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .auth-dev-banner {
+    margin-top: 20px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #E8F0E6;
+    font-size: 0.75rem;
+    color: var(--accent-deep);
+    text-align: center;
+  }
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0;
+    color: var(--text-soft);
+    font-size: 0.75rem;
+  }
+  .auth-divider::before,
+  .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .btn-google {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .btn-google:hover { background: var(--bg); }
+  .btn-google:disabled { opacity: 0.55; cursor: not-allowed; }
+  .google-g {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  #gisButtonHost {
+    display: none;
+    margin-bottom: 12px;
+    min-height: 44px;
+  }
+  #gisButtonHost.visible { display: flex; justify-content: center; }
+  input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    background: var(--surface);
+  }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* App shell when logged out */
+  .app { display: none; }
+  .app.visible { display: block; }
+  .bottom-nav { display: none; }
+  .bottom-nav.visible { display: flex; }
+
+  .auth-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 4px 0;
+    margin-bottom: 2px;
+    gap: 8px;
+  }
+  .auth-header-email {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .btn-sign-out {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-family: inherit;
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .btn-sign-out:hover { color: var(--text); border-color: var(--warm); }
+
+  /* Google demo picker modal */
+  .google-picker-sheet {
+    width: 100%;
+    max-width: 420px;
+    margin: auto 16px;
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 22px 20px 24px;
+    box-shadow: 0 12px 40px rgba(61, 56, 50, 0.18);
+    align-self: center;
+  }
+  .modal-backdrop.center {
+    align-items: center;
+    justify-content: center;
+  }
+  .google-picker-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .google-picker-brand span {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #3c4043;
+    font-family: 'Noto Sans TC', Arial, sans-serif;
+  }
+  .google-picker-sub {
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    margin-bottom: 16px;
+  }
+  .google-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .google-chip {
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .google-chip:hover, .google-chip.active {
+    border-color: #4285F4;
+    background: #E8F0FE;
+    color: #1967D2;
+  }
+  .google-picker-note {
+    font-size: 0.6875rem;
+    color: var(--text-soft);
+    margin-top: 12px;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  @media (min-width: 520px) {
+    .auth-screen.visible { box-shadow: none; }
+  }
+
+</style>
+</head>
+<body>
+
+  <!-- Auth -->
+  <div class="auth-screen" id="authScreen" aria-label="登入">
+    <a href="#preview" class="auth-home-link" id="linkHomePreview" data-i18n="home">首頁</a>
+    <div class="auth-brand">
+      <h1 data-i18n="brandTitle">兔兔 Tracker</h1>
+      <p id="authBrandSub" data-i18n="brandSub">高齡小動物每日觀察 · 侘寂記錄</p>
+    </div>
+    <div class="auth-card mode-login" id="authCard">
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" id="tabLogin" data-tab="login" data-i18n="tabLogin">登入</button>
+        <button type="button" class="auth-tab" id="tabSignup" data-tab="signup" data-i18n="tabSignup">註冊</button>
+      </div>
+      <div class="auth-error" id="authError" style="display:none;"></div>
+
+      <div id="gisButtonHost" aria-label="Google 正式登入"></div>
+      <button type="button" class="btn-google" id="btnGoogleDemo">
+        <svg class="google-g" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          <path fill="none" d="M0 0h48v48H0z"/>
+        </svg>
+        <span id="btnGoogleDemoLabel" data-i18n="googleBtn">使用 Google 帳戶登入</span>
+      </button>
+
+      <div class="auth-divider" id="authDivider" data-i18n="orDivider">或</div>
+
+      <form id="authForm" novalidate>
+        <div class="form-group auth-only-signup">
+          <label for="authOwnerName" id="labelAuthOwnerName" data-i18n="ownerName">主人姓名</label>
+          <input id="authOwnerName" type="text" autocomplete="name" placeholder="兔子主人姓名" maxlength="40" data-i18n-ph="displayNamePh">
+        </div>
+        <div class="form-group auth-only-signup">
+          <label for="authAccount" id="labelAuthAccount" data-i18n="accountLabel">登入帳號</label>
+          <input id="authAccount" type="text" autocomplete="username" placeholder="英數或底線，例如 bunny_owner" maxlength="32" pattern="[A-Za-z0-9_]+" data-i18n-ph="accountPh">
+        </div>
+        <div class="form-group auth-only-login">
+          <label for="authLoginId" id="labelAuthLoginId" data-i18n="loginId">帳號或電郵</label>
+          <input id="authLoginId" type="text" autocomplete="username" placeholder="帳號或電郵" data-i18n-ph="loginIdPh">
+        </div>
+        <div class="form-group auth-only-signup">
+          <label for="authEmail" id="labelAuthEmail" data-i18n="emailLabel">電郵</label>
+          <input id="authEmail" type="email" autocomplete="email" placeholder="you@example.com" data-i18n-ph="emailPh">
+        </div>
+        <div class="form-group">
+          <label for="authPassword" id="labelAuthPassword" data-i18n="password">密碼</label>
+          <input id="authPassword" type="password" autocomplete="current-password" placeholder="至少 6 字" minlength="6" data-i18n-ph="passwordPh">
+        </div>
+        <div class="form-group auth-only-signup">
+          <label for="authPasswordConfirm" id="labelAuthPasswordConfirm" data-i18n="passwordConfirm">確認密碼</label>
+          <input id="authPasswordConfirm" type="password" autocomplete="new-password" placeholder="再輸入一次" minlength="6" data-i18n-ph="passwordConfirmPh">
+        </div>
+        <button type="button" class="auth-forgot-link auth-only-login" id="linkForgotPassword" data-i18n="forgotLink">忘記密碼？</button>
+        <button type="submit" class="btn-primary" id="authSubmit" data-i18n="tabLogin">登入</button>
+      </form>
+      <p class="auth-hint" id="authHint" data-i18n="authHint">每位使用者擁有獨立的兔子檔案與每日記錄。</p>
+    </div>
+    <div class="auth-dev-banner" id="authDevBanner" data-i18n="demoBanner">示範模式：資料只存在本機瀏覽器</div>
+  </div>
+
+  <div class="app" id="appRoot">
+    <div class="auth-header-bar" id="appHeaderBar">
+      <span class="auth-header-email" id="sessionEmail"></span>
+      <button type="button" class="btn-sign-out" id="btnSignOut">登出</button>
+    </div>
+    <!-- 今日 -->
+    <div id="screen-today" class="screen active">
+      <div class="today-title-bar">
+        <span class="diary-title" id="diaryTitle" contenteditable="true" spellcheck="false" data-placeholder="兔子日記" data-i18n-placeholder="defaultDiaryTitle" data-i18n-title="diaryTitleHint" title="點一下即可修改題目">兔子日記</span>
+      </div>
+      <div class="today-hero" id="todayHero" title="點擊更換／加入照片">
+        <img class="today-hero-img" id="todayHeroImg" alt="兔子照片">
+        <div class="today-hero-placeholder">
+          <span class="ph-icon">📷</span>
+          <span class="ph-text" id="heroPhotoHint" data-i18n="addPhoto">點擊加入兔兔照片</span>
+        </div>
+        <div class="rabbit-switcher compact on-hero" id="todaySwitcher" aria-label="切換兔子"></div>
+        <div class="today-hero-overlay">
+          <div class="today-hero-glass">
+            <div class="today-hero-name" id="todayHeroName">兔兔</div>
+            <div class="today-hero-age" id="todayHeroAge">高齡 · 約 8 歲 · 垂耳兔</div>
+          </div>
+          <div class="today-hero-tags" id="todayHeroTags"></div>
+        </div>
+      </div>
+
+      <div class="custom-topics" id="customTopicsRow" aria-label="自訂題目">
+        <div class="custom-topics-chips" id="customTopicsChips"></div>
+      </div>
+
+      <div class="week-strip" aria-label="選擇日期">
+        <button type="button" class="week-nav-btn" id="weekPrev" aria-label="上一週">‹</button>
+        <div class="week-days" id="weekDays"></div>
+        <button type="button" class="week-nav-btn" id="weekNext" aria-label="下一週">›</button>
+      </div>
+      <div class="week-caption" id="weekCaption">今日</div>
+
+      <div class="summary-line" id="summaryLine">
+        尚未填寫今日狀態，點下方按鈕開始記錄。
+      </div>
+
+      <div class="fill-cta-wrap">
+        <button type="button" class="btn-fill-status" id="btnFillStatus" data-i18n="fillStatus">填寫今日狀態</button>
+      </div>
+
+      <div class="metrics">
+        <div class="metric-card" id="metricAppetite" onclick="quickEdit('appetite')">
+          <div class="metric-header">
+            <div class="metric-title" data-i18n="metricAppetite">食慾</div>
+            <div class="metric-status" id="metricAppetiteStatus">—</div>
+          </div>
+          <div class="metric-value" id="metricAppetiteValue">未記錄</div>
+          <div class="metric-note" id="metricAppetiteNote">點擊填寫</div>
+        </div>
+
+        <div class="metric-card" id="metricPoop" onclick="quickEdit('poop')">
+          <div class="metric-header">
+            <div class="metric-title" data-i18n="metricPoop">便便</div>
+            <div class="metric-status" id="metricPoopStatus">—</div>
+          </div>
+          <div class="metric-value" id="metricPoopValue">未記錄</div>
+          <div class="metric-note" id="metricPoopNote">點擊填寫</div>
+        </div>
+
+        <div class="metric-card" id="metricActivity" onclick="quickEdit('activity')">
+          <div class="metric-header">
+            <div class="metric-title" data-i18n="metricActivity">活動</div>
+            <div class="metric-status" id="metricActivityStatus">—</div>
+          </div>
+          <div class="metric-value" id="metricActivityValue">未記錄</div>
+          <div class="metric-note" id="metricActivityNote">點擊填寫</div>
+          <div class="metric-hint" id="metricActivityHint" style="display:none;"></div>
+        </div>
+
+        <div class="metric-card" id="metricWeight" onclick="quickEdit('weight')">
+          <div class="metric-header">
+            <div class="metric-title" data-i18n="metricWeight">體重</div>
+            <div class="metric-status" id="metricWeightStatus">—</div>
+          </div>
+          <div class="metric-value" id="todayWeightValue">—</div>
+          <div class="metric-note" id="metricWeightNote" data-i18n="tapUpdate">點擊可更新</div>
+        </div>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-title">
+          <span id="trendTitle" data-i18n="trendTitle">體重趨勢（近 8 週）</span>
+          <span style="color:var(--text-soft);font-size:13px;">2.35 – 2.48</span>
+        </div>
+        <svg class="trend-svg" viewBox="0 0 320 70" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#8FA18A" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#8FA18A" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M0,48 L40,45 L80,42 L120,44 L160,38 L200,40 L240,36 L280,34 L320,32" fill="none" stroke="#6B7D66" stroke-width="2" stroke-linecap="round"/>
+          <path d="M0,48 L40,45 L80,42 L120,44 L160,38 L200,40 L240,36 L280,34 L320,32 L320,70 L0,70 Z" fill="url(#g)"/>
+        </svg>
+        <div class="trend-note" id="trendNote" data-i18n="trendNote">整體穩定，輕微波動</div>
+      </div>
+
+      <div class="section-title" id="weekObsTitle" data-i18n="weekObs">本週觀察</div>
+      <div class="week-list" id="weekObsList">
+        <div class="week-item"><div class="week-day">10/29 <span data-i18n="wdThu">四</span></div><div class="week-summary" data-i18n="sampleActDown">活動稍減</div></div>
+        <div class="week-item"><div class="week-day">10/28 <span data-i18n="wdWed">三</span></div><div class="week-summary" data-i18n="sampleAllOk">一切正常</div></div>
+        <div class="week-item"><div class="week-day">10/27 <span data-i18n="wdTue">二</span></div><div class="week-summary" data-i18n="sampleAppetiteAct">食慾好 · 活動稍減</div></div>
+        <div class="week-item"><div class="week-day">10/26 <span data-i18n="wdMon">一</span></div><div class="week-summary" data-i18n="sampleAllOk">一切正常</div></div>
+      </div>
+    </div>
+
+    <!-- 記錄 -->
+    <div id="screen-log" class="screen">
+      <header style="margin-bottom:24px;">
+        <h1 id="logTitle" style="font-family:'Noto Serif TC',serif;font-size:24px;font-weight:500;" data-i18n="logTitle">今日記錄</h1>
+        <div style="font-size:14px;color:var(--text-soft);margin-top:4px;" id="logHeaderSub">—</div>
+      </header>
+
+      <div class="form-group" id="field-appetite">
+        <label data-i18n="metricAppetite">食慾</label>
+        <div class="options" data-field="appetite">
+          <div class="option" data-value="良好" data-i18n="valGood">良好</div>
+          <div class="option" data-value="普通" data-i18n="valFair">普通</div>
+          <div class="option" data-value="較少" data-i18n="valLess">較少</div>
+          <div class="option" data-value="拒絕" data-i18n="valRefuse">拒絕</div>
+        </div>
+      </div>
+      <div class="form-group" id="field-poop">
+        <label data-i18n="metricPoop">便便</label>
+        <div class="options" data-field="poop">
+          <div class="option" data-value="正常" data-i18n="valNormal">正常</div>
+          <div class="option" data-value="較少" data-i18n="valLess">較少</div>
+          <div class="option" data-value="偏軟" data-i18n="valSoft">偏軟</div>
+          <div class="option" data-value="異常" data-i18n="valAbnormal">異常</div>
+        </div>
+      </div>
+      <div class="form-group" id="field-activity">
+        <label data-i18n="metricActivity">活動</label>
+        <div class="options" data-field="activity">
+          <div class="option" data-value="活躍" data-i18n="valActive">活躍</div>
+          <div class="option" data-value="普通" data-i18n="valFair">普通</div>
+          <div class="option" data-value="稍減" data-i18n="valReduced">稍減</div>
+          <div class="option" data-value="明顯減少" data-i18n="valMuchLess">明顯減少</div>
+        </div>
+      </div>
+      <div class="form-group" id="field-weight">
+        <label data-i18n="weightKg">體重 (kg)</label>
+        <input type="number" step="0.1" id="logWeightInput" placeholder="例如 2.4" data-i18n-ph="weightPh">
+      </div>
+      <div class="form-group" id="field-teeth">
+        <label data-i18n="teeth">牙齒狀況</label>
+        <div class="options" data-field="teeth">
+          <div class="option" data-value="正常" data-i18n="valNormal">正常</div>
+          <div class="option" data-value="需留意" data-i18n="valNeedWatch">需留意</div>
+          <div class="option" data-value="已檢查" data-i18n="valChecked">已檢查</div>
+        </div>
+      </div>
+      <div class="form-group" id="field-pain">
+        <label data-i18n="pain">痛楚 / 不適</label>
+        <div class="options" data-field="pain">
+          <div class="option" data-value="無" data-i18n="valNone">無</div>
+          <div class="option" data-value="輕微" data-i18n="valMild">輕微</div>
+          <div class="option" data-value="明顯" data-i18n="valObvious">明顯</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label data-i18n="notes">備註</label>
+        <textarea id="logNotes" rows="3" placeholder="今日觀察到的細節…" data-i18n-ph="notesPh"></textarea>
+      </div>
+      <button type="button" class="btn-primary" id="btnSaveLog" data-i18n="saveLog">儲存今日記錄</button>
+    </div>
+
+    <!-- 日曆 -->
+    <div id="screen-calendar" class="screen">
+      <header style="margin-bottom:20px;">
+        <h1 id="calTitle" style="font-family:'Noto Serif TC',serif;font-size:24px;font-weight:500;" data-i18n="navCal">日曆</h1>
+        <div style="font-size:14px;color:var(--text-soft);margin-top:4px;" id="calMonthLabel" data-i18n="calMonthSample">2026年10月</div>
+      </header>
+      <div class="calendar">
+        <div class="cal-grid">
+          <div class="cal-day" data-i18n="wdMon">一</div><div class="cal-day" data-i18n="wdTue">二</div><div class="cal-day" data-i18n="wdWed">三</div><div class="cal-day" data-i18n="wdThu">四</div><div class="cal-day" data-i18n="wdFri">五</div><div class="cal-day" data-i18n="wdSat">六</div><div class="cal-day" data-i18n="wdSun">日</div>
+          <div class="cal-day"></div><div class="cal-day"></div><div class="cal-day">1</div><div class="cal-day has-record">2</div><div class="cal-day has-record">3</div><div class="cal-day has-record">4</div><div class="cal-day">5</div>
+          <div class="cal-day has-record">6</div><div class="cal-day has-record">7</div><div class="cal-day">8</div><div class="cal-day has-record">9</div><div class="cal-day has-record">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+          <div class="cal-day has-record">13</div><div class="cal-day">14</div><div class="cal-day has-record">15</div><div class="cal-day has-record">16</div><div class="cal-day">17</div><div class="cal-day has-record">18</div><div class="cal-day">19</div>
+          <div class="cal-day has-record">20</div><div class="cal-day has-record">21</div><div class="cal-day">22</div><div class="cal-day has-record">23</div><div class="cal-day has-record">24</div><div class="cal-day has-record">25</div><div class="cal-day has-record">26</div>
+          <div class="cal-day has-record">27</div><div class="cal-day has-record">28</div><div class="cal-day today">29</div><div class="cal-day">30</div><div class="cal-day">31</div>
+        </div>
+      </div>
+      <div class="section-title" id="recentLogsTitle" data-i18n="recentLogs">最近記錄</div>
+      <div class="week-list">
+        <div class="week-item"><div class="week-day">10/29</div><div class="week-summary" data-i18n="sampleActDown">活動稍減</div></div>
+        <div class="week-item"><div class="week-day">10/28</div><div class="week-summary" data-i18n="sampleAllOk">一切正常</div></div>
+        <div class="week-item"><div class="week-day">10/27</div><div class="week-summary" data-i18n="sampleAppetiteAct">食慾好 · 活動稍減</div></div>
+      </div>
+    </div>
+
+    <!-- 更多 -->
+    <div id="screen-more" class="screen">
+      <header class="screen-header">
+        <h1 id="moreTitle">更多</h1>
+      </header>
+
+      <div class="settings-card" id="cardAccount">
+        <div class="settings-card-title" id="labelAccountTitle">帳戶／基本資料</div>
+        <div class="settings-meta-row">
+          <label id="labelOwnerName">主人姓名</label>
+          <input type="text" id="settingsDisplayName" maxlength="40" placeholder="兔子主人姓名">
+        </div>
+        <div class="settings-meta-row">
+          <label id="labelAccount">登入帳號</label>
+          <div class="settings-readonly" id="settingsAccount">—</div>
+        </div>
+        <div class="settings-meta-row">
+          <label id="labelEmail">電郵</label>
+          <div class="settings-readonly" id="settingsAccountEmail">—</div>
+        </div>
+        <label for="settingsBio" id="labelBio">簡短介紹</label>
+        <textarea id="settingsBio" maxlength="120" placeholder="一句話介紹自己（選填）"></textarea>
+        <button type="button" class="btn-save-settings" id="btnSaveAccount">儲存</button>
+      </div>
+
+      <div class="settings-card" id="cardLanguage">
+        <div class="settings-card-title" id="labelLangTitle">語言</div>
+        <div class="segmented" id="langSegment" role="group" aria-label="語言">
+          <button type="button" data-lang="zh-Hant">繁體中文</button>
+          <button type="button" data-lang="en">English</button>
+          <button type="button" data-lang="ja">日本語</button>
+        </div>
+      </div>
+
+      <div class="settings-card" id="cardFont">
+        <div class="settings-card-title" id="labelFontTitle">字型大小</div>
+        <div class="segmented" id="fontSegment" role="group" aria-label="字型大小">
+          <button type="button" data-font="sm" id="fontOptSm">小</button>
+          <button type="button" data-font="md" id="fontOptMd">標準</button>
+          <button type="button" data-font="lg" id="fontOptLg">大</button>
+        </div>
+        <p class="settings-hint" id="fontSizeHint" style="margin-top:10px;font-size:0.8125rem;color:var(--text-soft);line-height:1.45;">小 15px · 標準 17px · 大 22px（適合老花閱讀）</p>
+      </div>
+
+      <div class="settings-card" id="cardRabbits">
+        <div class="settings-card-title" id="labelMyRabbits">我的兔兔</div>
+        <div class="rabbit-switcher" id="moreSwitcher" aria-label="兔子列表"></div>
+        <div class="more-rabbit-actions">
+          <button type="button" id="btnRenameRabbit">改名</button>
+          <button type="button" class="primary" id="btnEditProfile">編輯兔兔資料</button>
+        </div>
+      </div>
+
+      <p class="about-line" id="aboutLine">兔兔 Tracker · Demo</p>
+    </div>
+    <!-- hidden avatar picker shared with 今日封面 -->
+    <input type="file" id="avatarInput" accept="image/*" hidden>
+  </div>
+
+  <div class="bottom-nav" id="bottomNav">
+    <div class="nav-item active" data-screen="today">
+      <div class="nav-icon">⌂</div><span class="nav-label" data-nav="today">今日</span>
+    </div>
+    <div class="nav-item" data-screen="log">
+      <div class="nav-icon">✎</div><span class="nav-label" data-nav="log">記錄</span>
+    </div>
+    <div class="nav-item" data-screen="calendar">
+      <div class="nav-icon">📅</div><span class="nav-label" data-nav="calendar">日曆</span>
+    </div>
+    <div class="nav-item" data-screen="more">
+      <div class="nav-icon">⚙️</div><span class="nav-label" data-nav="more">更多</span>
+    </div>
+  </div>
+
+  <!-- Add / rename modal -->
+  <div class="modal-backdrop" id="nameModal" role="dialog" aria-modal="true">
+    <div class="modal-sheet">
+      <div class="modal-title" id="nameModalTitle">新增兔子</div>
+      <label for="nameModalInput" id="nameModalLabel" data-i18n="nameLabel">名字</label>
+      <input type="text" id="nameModalInput" maxlength="12" placeholder="例如：小白" data-i18n-ph="namePh">
+      <div class="modal-hint" id="nameModalHint">最多 5 隻</div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="nameModalCancel" data-i18n="cancel">取消</button>
+        <button type="button" class="btn-solid" id="nameModalConfirm" data-i18n="confirm">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit profile modal -->
+  <div class="modal-backdrop" id="editProfileModal" role="dialog" aria-modal="true">
+    <div class="modal-sheet tall">
+      <div class="modal-title" id="editProfileTitle" data-i18n="editProfileTitle">編輯資料</div>
+      <div class="form-row">
+        <label for="editName" data-i18n="nameLabel">名字</label>
+        <input type="text" id="editName" maxlength="12" placeholder="例如：兔兔" data-i18n-ph="editNamePh">
+      </div>
+      <div class="form-row">
+        <label for="editAge" data-i18n="ageLabel">年齡／階段</label>
+        <input type="text" id="editAge" maxlength="24" placeholder="例如：高齡 · 約 8 歲" data-i18n-ph="agePh">
+      </div>
+      <div class="form-row">
+        <label for="editBreed" data-i18n="breedLabel">品種</label>
+        <input type="text" id="editBreed" maxlength="24" placeholder="例如：垂耳兔" data-i18n-ph="breedPh">
+      </div>
+      <div class="form-row">
+        <label for="editWeight" data-i18n="weightKg">體重 (kg)</label>
+        <input type="number" id="editWeight" step="0.1" min="0" placeholder="例如 2.4" data-i18n-ph="weightPh">
+      </div>
+      <div class="form-row">
+        <label for="editNotes" data-i18n="obsNotes">觀察重點／備註</label>
+        <textarea id="editNotes" rows="3" placeholder="例如：食慾 · 便便 · 活動量…" data-i18n-ph="obsNotesPh"></textarea>
+      </div>
+      <div class="modal-hint" id="editProfileHint" data-i18n="editProfileHint">儲存後會更新今日封面與切換晶片</div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="editProfileCancel" data-i18n="cancel">取消</button>
+        <button type="button" class="btn-solid" id="editProfileSave" data-i18n="save">儲存</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Google demo account picker -->
+  <div class="modal-backdrop center" id="googlePickerModal" role="dialog" aria-modal="true" aria-labelledby="googlePickerTitle">
+    <div class="google-picker-sheet">
+      <div class="google-picker-brand">
+        <svg class="google-g" viewBox="0 0 48 48" width="22" height="22" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        <span id="googlePickerTitle" data-i18n="googlePickTitle">選擇帳戶</span>
+      </div>
+      <p class="google-picker-sub" id="googlePickerSub" data-i18n="googlePickSub">繼續使用「兔兔 Tracker」（示範）</p>
+      <div class="google-chip-row" id="googleChipRow">
+        <button type="button" class="google-chip" data-email="demo@gmail.com">demo@gmail.com</button>
+        <button type="button" class="google-chip" data-email="tutu@gmail.com">tutu@gmail.com</button>
+        <button type="button" class="google-chip" data-email="caregiver@gmail.com">caregiver@gmail.com</button>
+      </div>
+      <div class="form-row" style="margin-bottom:12px;">
+        <label for="googleEmailInput" id="googleEmailLabel" data-i18n="googleEmailLabel">或輸入 Gmail</label>
+        <input type="email" id="googleEmailInput" placeholder="you@gmail.com" autocomplete="username" data-i18n-ph="gmailPh">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="googlePickerCancel" data-i18n="cancel">取消</button>
+        <button type="button" class="btn-solid" id="googlePickerConfirm" data-i18n="continue">繼續</button>
+      </div>
+      <p class="google-picker-note" id="googlePickerNote" data-i18n="googlePickNote">此為離線示範選擇器，不會連到 Google。填入 GOOGLE_CLIENT_ID 後可改用正式登入。</p>
+    </div>
+  </div>
+
+
+  <!-- Forgot password -->
+  <div class="modal-backdrop center" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div class="google-picker-sheet" style="max-width:440px;">
+      <div class="modal-title" id="forgotTitle" data-i18n="forgotTitle">忘記密碼</div>
+      <div class="forgot-step active" id="forgotStepA">
+        <p class="forgot-sub" id="forgotSubA" data-i18n="forgotSubA">輸入註冊時的帳號或電郵，我們會把暫時密碼寄到你的電郵（示範模式會在畫面上顯示）。</p>
+        <div class="form-group">
+          <label for="forgotLoginId" data-i18n="loginId">帳號或電郵</label>
+          <input id="forgotLoginId" type="text" autocomplete="username" placeholder="帳號或電郵" data-i18n-ph="loginIdPh">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="forgotCancelA" data-i18n="cancel">取消</button>
+          <button type="button" class="btn-solid" id="forgotSendTemp" data-i18n="sendTemp">傳送暫時密碼</button>
+        </div>
+      </div>
+      <div class="forgot-step" id="forgotStepMail">
+        <p class="forgot-sub" id="forgotMailHint" data-i18n="forgotMailHint">已將暫時密碼寄出（示範模式顯示內容）</p>
+        <div class="demo-mail-box">
+          <div class="mail-to" id="forgotMailTo">寄至 —</div>
+          <div id="forgotTempLabel" data-i18n="tempPassword">暫時密碼</div>
+          <div class="mail-temp" id="forgotTempDisplay">········</div>
+          <div class="demo-mail-actions">
+            <button type="button" class="btn-ghost" id="forgotCopyTemp" data-i18n="copyTemp">複製暫時密碼</button>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top:14px;">
+          <button type="button" class="btn-ghost" id="forgotBackToA" data-i18n="back">返回</button>
+          <button type="button" class="btn-solid" id="forgotGoReset" data-i18n="useTempReset">使用暫時密碼重設</button>
+        </div>
+      </div>
+      <div class="forgot-step" id="forgotStepB">
+        <p class="forgot-sub" id="forgotSubB" data-i18n="forgotSubB">使用暫時密碼登入並設定新密碼。暫時密碼約 30 分鐘內有效，重設成功後即失效。</p>
+        <div class="form-group">
+          <label for="resetLoginId" data-i18n="loginId">帳號或電郵</label>
+          <input id="resetLoginId" type="text" autocomplete="username" placeholder="帳號或電郵" data-i18n-ph="loginIdPh">
+        </div>
+        <div class="form-group">
+          <label for="resetTempPassword" data-i18n="tempPassword">暫時密碼</label>
+          <input id="resetTempPassword" type="text" autocomplete="one-time-code" placeholder="郵件中的暫時密碼" data-i18n-ph="tempPasswordPh">
+        </div>
+        <div class="form-group">
+          <label for="resetNewPassword" data-i18n="newPassword">新密碼</label>
+          <input id="resetNewPassword" type="password" autocomplete="new-password" placeholder="至少 6 字" minlength="6" data-i18n-ph="passwordPh">
+        </div>
+        <div class="form-group">
+          <label for="resetNewPasswordConfirm" data-i18n="confirmNewPassword">確認新密碼</label>
+          <input id="resetNewPasswordConfirm" type="password" autocomplete="new-password" placeholder="再輸入一次" minlength="6" data-i18n-ph="passwordConfirmPh">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="forgotCancelB" data-i18n="cancel">取消</button>
+          <button type="button" class="btn-solid" id="forgotResetSubmit" data-i18n="resetAndLogin">重設密碼並登入</button>
+        </div>
+      </div>
+      <p class="google-picker-note" id="forgotDemoNote" data-i18n="forgotDemoNote">示範模式不會真正寄信；暫時密碼僅存於本機瀏覽器。</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  /* —— Demo auth config ——
+   * 若要啟用真實 Google Identity Services：填入 OAuth Client ID
+   * 例如：const GOOGLE_CLIENT_ID = '123456789-xxxx.apps.googleusercontent.com';
+   * 留空則只用離線示範帳戶選擇器。
+   */
+  const GOOGLE_CLIENT_ID = '';
+
+  const USERS_KEY = 'tutu-demo-users';
+  const SESSION_KEY = 'tutu-demo-session';
+
+  const MAX_RABBITS = 5;
+  const MAX_CUSTOM_TOPICS = 8;
+  // Per-user keys (resolved after login)
+  let KEY_RABBITS = null;
+  let KEY_ACTIVE = null;
+  let KEY_LOGS = null;
+  let KEY_SETTINGS = null;
+  const KEY_LEGACY_AVATAR = 'tutu-avatar'; // unused in scoped demo
+
+  let currentSession = null; // { id, email, provider? }
+  let userSettings = { displayName: '', bio: '', language: 'zh-Hant', fontSize: 'md' };
+  let isPreviewMode = false;
+
+  const UI_LANG_KEY = 'tutu-demo-ui-lang';
+  const SUPPORTED_LANGS = ['zh-Hant', 'en', 'ja'];
+
+  const I18N = {
+    'zh-Hant': {
+      home: '首頁', brandTitle: '兔兔 Tracker', brandSub: '高齡小動物每日觀察 · 侘寂記錄',
+      tabLogin: '登入', tabSignup: '註冊', createAccount: '建立帳號',
+      googleBtn: '使用 Google 帳戶登入', orDivider: '或',
+      ownerName: '主人姓名', accountLabel: '登入帳號', loginId: '帳號或電郵', emailLabel: '電郵',
+      password: '密碼', passwordConfirm: '確認密碼',
+      displayNamePh: '兔子主人姓名', accountPh: '英數或底線，例如 bunny_owner', loginIdPh: '帳號或電郵',
+      emailPh: 'you@example.com', passwordPh: '至少 6 字', passwordConfirmPh: '再輸入一次',
+      forgotLink: '忘記密碼？', authHint: '每位使用者擁有獨立的兔子檔案與每日記錄。',
+      demoBanner: '示範模式：資料只存在本機瀏覽器',
+      navToday: '今日', navLog: '記錄', navCal: '日曆', navMore: '更多',
+      moreTitle: '更多', accountTitle: '帳戶／基本資料', displayName: '主人姓名',
+      bio: '簡短介紹', bioPh: '一句話介紹自己（選填）', save: '儲存',
+      langTitle: '語言', fontTitle: '字型大小', fontSm: '小', fontMd: '標準', fontLg: '大',
+      myRabbits: '我的兔兔', rename: '改名', renameHint: '長按晶片也可改名', editRabbit: '編輯兔兔資料',
+      about: '兔兔 Tracker · Demo', previewMode: '預覽模式', signOut: '登出', backLogin: '返回登入',
+      saved: '已儲存設定', edit: '編輯', tempSent: '已傳送暫時密碼（示範）',
+      addPhoto: '點擊加入兔兔照片', fillStatus: '填寫今日狀態',
+      metricAppetite: '食慾', metricPoop: '便便', metricActivity: '活動', metricWeight: '體重',
+      tapUpdate: '點擊可更新', tapFill: '點擊填寫', notRecorded: '未記錄', recorded: '已記',
+      trendTitle: '體重趨勢（近 8 週）', trendNote: '整體穩定，輕微波動',
+      weekObs: '本週觀察', recentLogs: '最近記錄', calMonthSample: '2026年10月',
+      logTitle: '今日記錄', weightKg: '體重 (kg)', weightPh: '例如 2.4',
+      teeth: '牙齒狀況', pain: '痛楚 / 不適', notes: '備註', notesPh: '今日觀察到的細節…',
+      saveLog: '儲存今日記錄',
+      valGood: '良好', valFair: '普通', valLess: '較少', valRefuse: '拒絕',
+      valNormal: '正常', valSoft: '偏軟', valAbnormal: '異常',
+      valActive: '活躍', valReduced: '稍減', valMuchLess: '明顯減少',
+      valNeedWatch: '需留意', valChecked: '已檢查', valNone: '無', valMild: '輕微', valObvious: '明顯',
+      wdMon: '一', wdTue: '二', wdWed: '三', wdThu: '四', wdFri: '五', wdSat: '六', wdSun: '日',
+      weekdayPrefix: '星期',
+      sampleActDown: '活動稍減', sampleAllOk: '一切正常', sampleAppetiteAct: '食慾好 · 活動稍減',
+      defaultDiaryTitle: '兔子日記', diaryTitleHint: '點一下即可修改題目',
+      defaultRabbitName: '兔兔', defaultAgeLabel: '高齡 · 約 8 歲', defaultBreed: '垂耳兔',
+      ageUnset: '年齡未填', ageBreedUnset: '尚未填寫年齡／品種',
+      today: '今日', yesterday: '昨日', tomorrow: '明日',
+      statusOk: '正常', statusWatch: '留意',
+      tagAppetitePending: '食慾待記', tagAppetiteOk: '食慾正常', tagAppetiteWatch: '食慾留意',
+      tagPoopPending: '便便待記', tagPoopOk: '便便正常', tagPoopWatch: '便便留意',
+      tagActivityPending: '活動待記', tagActivityOk: '活動正常', tagActivityWatch: '活動留意',
+      tagWeightPending: '體重待記', tagWeightOk: '體重穩定', tagWeightRecorded: '體重已記',
+      summaryEmpty: '尚未填寫今日狀態，點下方按鈕開始記錄。',
+      summaryOk: '今日狀態大致正常，已儲存記錄。',
+      summaryWatchSuffix: '。其餘見下方指標。建議持續觀察。',
+      activityHint: '活動偏少，可加備註觀察細節',
+      monthFmt: '{m}月{d}日',
+      savedStatus: '已儲存「{name}」{date}狀態',
+      topicDeleted: '已刪除題目',
+      needName: '請填寫名字',
+      rabbitUpdated: '已更新「{name}」資料',
+      addRabbit: '新增兔子', addCountHint: '目前 {n}／{max} 隻 · 預設名「{name}」', renameRabbit: '重新命名', maxRabbits: '最多 5 隻',
+      rabbitLimit: '已達上限 5 隻', addRabbitTitle: '新增兔子',
+      nameLabel: '名字', namePh: '例如：小白', editNamePh: '例如：兔兔',
+      cancel: '取消', confirm: '確定', continue: '繼續', back: '返回',
+      editProfileTitle: '編輯資料', ageLabel: '年齡／階段', agePh: '例如：高齡 · 約 8 歲',
+      breedLabel: '品種', breedPh: '例如：垂耳兔', obsNotes: '觀察重點／備註',
+      obsNotesPh: '例如：食慾 · 便便 · 活動量…', editProfileHint: '儲存後會更新今日封面與切換晶片',
+      googlePickTitle: '選擇帳戶', googlePickSub: '繼續使用「兔兔 Tracker」（示範）',
+      googleEmailLabel: '或輸入 Gmail', gmailPh: 'you@gmail.com',
+      googlePickNote: '此為離線示範選擇器，不會連到 Google。填入 GOOGLE_CLIENT_ID 後可改用正式登入。',
+      forgotTitle: '忘記密碼',
+      forgotSubA: '輸入註冊時的帳號或電郵，我們會把暫時密碼寄到你的電郵（示範模式會在畫面上顯示）。',
+      sendTemp: '傳送暫時密碼', forgotMailHint: '已將暫時密碼寄出（示範模式顯示內容）',
+      tempPassword: '暫時密碼', copyTemp: '複製暫時密碼', useTempReset: '使用暫時密碼重設',
+      forgotSubB: '使用暫時密碼登入並設定新密碼。暫時密碼約 30 分鐘內有效，重設成功後即失效。',
+      tempPasswordPh: '郵件中的暫時密碼', newPassword: '新密碼', confirmNewPassword: '確認新密碼',
+      resetAndLogin: '重設密碼並登入',
+      forgotDemoNote: '示範模式不會真正寄信；暫時密碼僅存於本機瀏覽器。',
+      mailedTo: '寄至 {email}（示範模式顯示內容）',
+      mailedHint: '已將暫時密碼寄至 {email}（示範模式顯示內容）',
+      copiedTemp: '已複製暫時密碼', passwordReset: '密碼已重設',
+      errGeneric: '發生錯誤', errOwnerName: '請填寫主人姓名',
+      errAccountFormat: '帳號須為 3–32 位英數或底線', errEmail: '請使用有效電郵',
+      errPasswordLen: '密碼至少 6 字', errPasswordMismatch: '兩次密碼不一致',
+      errAccountTaken: '此帳號已被使用', errEmailTaken: '此電郵已註冊',
+      errBadCreds: '帳號／電郵或密碼不正確',
+      errUseGoogle: '此帳號以 Google 登入，請使用 Google 按鈕',
+      errGoogleEmail: '請輸入有效的 Google 電郵',
+      errNotFound: '找不到此帳號或電郵', errUseGoogleLogin: '請使用 Google 帳戶登入',
+      errNeedTemp: '請先申請暫時密碼', errTempExpired: '暫時密碼已過期，請重新申請',
+      errTempWrong: '暫時密碼不正確', errNewPasswordLen: '新密碼至少 6 字',
+      errNewPasswordMismatch: '兩次新密碼不一致',
+      errSendTemp: '無法傳送暫時密碼', errResetFail: '重設失敗',
+      errGoogleFail: 'Google 登入失敗', errGooglePayload: '無法讀取 Google 帳戶資料',
+      labelAppetite: '食慾', labelPoop: '便便', labelActivity: '活動', labelPain: '痛楚'
+    },
+    en: {
+      home: 'Home', brandTitle: 'Tutu Tracker', brandSub: 'Daily senior pet notes · quiet care',
+      tabLogin: 'Log in', tabSignup: 'Sign up', createAccount: 'Create account',
+      googleBtn: 'Continue with Google', orDivider: 'or',
+      ownerName: 'Owner name', accountLabel: 'Account', loginId: 'Account or email', emailLabel: 'Email',
+      password: 'Password', passwordConfirm: 'Confirm password',
+      displayNamePh: 'Rabbit owner name', accountPh: 'Letters, numbers, _ e.g. bunny_owner', loginIdPh: 'Account or email',
+      emailPh: 'you@example.com', passwordPh: 'At least 6 characters', passwordConfirmPh: 'Enter again',
+      forgotLink: 'Forgot password?', authHint: 'Each user has separate rabbits and daily logs.',
+      demoBanner: 'Demo mode: data stays in this browser only',
+      navToday: 'Today', navLog: 'Log', navCal: 'Calendar', navMore: 'More',
+      moreTitle: 'More', accountTitle: 'Account / Profile', displayName: 'Owner name',
+      bio: 'Short bio', bioPh: 'A short intro (optional)', save: 'Save',
+      langTitle: 'Language', fontTitle: 'Font size', fontSm: 'S', fontMd: 'M', fontLg: 'L',
+      myRabbits: 'My rabbits', rename: 'Rename', renameHint: 'Long-press a chip to rename', editRabbit: 'Edit rabbit',
+      about: 'Tutu Tracker · Demo', previewMode: 'Preview mode', signOut: 'Sign out', backLogin: 'Back to login',
+      saved: 'Settings saved', edit: 'Edit', tempSent: 'Temp password sent (demo)',
+      addPhoto: 'Tap to add a photo', fillStatus: 'Log today’s status',
+      metricAppetite: 'Appetite', metricPoop: 'Poop', metricActivity: 'Activity', metricWeight: 'Weight',
+      tapUpdate: 'Tap to update', tapFill: 'Tap to fill', notRecorded: 'Not logged', recorded: 'Logged',
+      trendTitle: 'Weight trend (8 weeks)', trendNote: 'Mostly stable, slight swings',
+      weekObs: 'This week', recentLogs: 'Recent logs', calMonthSample: 'October 2026',
+      logTitle: 'Today’s log', weightKg: 'Weight (kg)', weightPh: 'e.g. 2.4',
+      teeth: 'Teeth', pain: 'Pain / discomfort', notes: 'Notes', notesPh: 'Details you noticed today…',
+      saveLog: 'Save today’s log',
+      valGood: 'Good', valFair: 'Fair', valLess: 'Less', valRefuse: 'Refused',
+      valNormal: 'Normal', valSoft: 'Soft', valAbnormal: 'Abnormal',
+      valActive: 'Active', valReduced: 'Lower', valMuchLess: 'Much lower',
+      valNeedWatch: 'Watch', valChecked: 'Checked', valNone: 'None', valMild: 'Mild', valObvious: 'Clear',
+      wdMon: 'Mon', wdTue: 'Tue', wdWed: 'Wed', wdThu: 'Thu', wdFri: 'Fri', wdSat: 'Sat', wdSun: 'Sun',
+      weekdayPrefix: '',
+      sampleActDown: 'Less active', sampleAllOk: 'All normal', sampleAppetiteAct: 'Good appetite · less active',
+      defaultDiaryTitle: 'Bunny diary', diaryTitleHint: 'Tap to edit title',
+      defaultRabbitName: 'Bunny', defaultAgeLabel: 'Senior · ~8 yrs', defaultBreed: 'Lop',
+      ageUnset: 'Age not set', ageBreedUnset: 'Age / breed not set',
+      today: 'Today', yesterday: 'Yesterday', tomorrow: 'Tomorrow',
+      statusOk: 'OK', statusWatch: 'Watch',
+      tagAppetitePending: 'Appetite pending', tagAppetiteOk: 'Appetite OK', tagAppetiteWatch: 'Appetite watch',
+      tagPoopPending: 'Poop pending', tagPoopOk: 'Poop OK', tagPoopWatch: 'Poop watch',
+      tagActivityPending: 'Activity pending', tagActivityOk: 'Activity OK', tagActivityWatch: 'Activity watch',
+      tagWeightPending: 'Weight pending', tagWeightOk: 'Weight stable', tagWeightRecorded: 'Weight logged',
+      summaryEmpty: 'No status yet — tap below to start logging.',
+      summaryOk: 'Looks mostly normal today. Log saved.',
+      summaryWatchSuffix: '. See metrics below. Keep watching.',
+      activityHint: 'Activity is low — add a note if useful',
+      monthFmt: '{m}/{d}',
+      savedStatus: 'Saved status for “{name}” · {date}',
+      topicDeleted: 'Topic deleted',
+      needName: 'Please enter a name',
+      rabbitUpdated: 'Updated “{name}”',
+      addRabbit: 'Add rabbit', addCountHint: 'Now {n}/{max} · default “{name}”', renameRabbit: 'Rename', maxRabbits: 'Up to 5 rabbits',
+      rabbitLimit: 'Limit of 5 reached', addRabbitTitle: 'Add rabbit',
+      nameLabel: 'Name', namePh: 'e.g. Snow', editNamePh: 'e.g. Bunny',
+      cancel: 'Cancel', confirm: 'OK', continue: 'Continue', back: 'Back',
+      editProfileTitle: 'Edit profile', ageLabel: 'Age / stage', agePh: 'e.g. Senior · ~8 yrs',
+      breedLabel: 'Breed', breedPh: 'e.g. Lop', obsNotes: 'Focus / notes',
+      obsNotesPh: 'e.g. appetite · poop · activity…', editProfileHint: 'Saves to Today cover and switcher chips',
+      googlePickTitle: 'Choose an account', googlePickSub: 'Continue to Tutu Tracker (demo)',
+      googleEmailLabel: 'Or enter Gmail', gmailPh: 'you@gmail.com',
+      googlePickNote: 'Offline demo picker — does not contact Google. Set GOOGLE_CLIENT_ID for real sign-in.',
+      forgotTitle: 'Forgot password',
+      forgotSubA: 'Enter your account or email. We’ll send a temporary password (shown on screen in demo mode).',
+      sendTemp: 'Send temp password', forgotMailHint: 'Temp password sent (demo content shown)',
+      tempPassword: 'Temp password', copyTemp: 'Copy temp password', useTempReset: 'Reset with temp password',
+      forgotSubB: 'Use the temp password and set a new one. Temp passwords expire in about 30 minutes.',
+      tempPasswordPh: 'From the email', newPassword: 'New password', confirmNewPassword: 'Confirm new password',
+      resetAndLogin: 'Reset & log in',
+      forgotDemoNote: 'Demo mode does not send real email; temp password stays in this browser.',
+      mailedTo: 'To {email} (demo content shown)',
+      mailedHint: 'Temp password sent to {email} (demo content shown)',
+      copiedTemp: 'Temp password copied', passwordReset: 'Password reset',
+      errGeneric: 'Something went wrong', errOwnerName: 'Please enter owner name',
+      errAccountFormat: 'Account must be 3–32 letters, numbers, or _', errEmail: 'Enter a valid email',
+      errPasswordLen: 'Password must be at least 6 characters', errPasswordMismatch: 'Passwords do not match',
+      errAccountTaken: 'Account already taken', errEmailTaken: 'Email already registered',
+      errBadCreds: 'Account/email or password is incorrect',
+      errUseGoogle: 'This account uses Google — tap the Google button',
+      errGoogleEmail: 'Enter a valid Google email',
+      errNotFound: 'Account or email not found', errUseGoogleLogin: 'Please sign in with Google',
+      errNeedTemp: 'Request a temp password first', errTempExpired: 'Temp password expired — request again',
+      errTempWrong: 'Temp password incorrect', errNewPasswordLen: 'New password must be at least 6 characters',
+      errNewPasswordMismatch: 'New passwords do not match',
+      errSendTemp: 'Could not send temp password', errResetFail: 'Reset failed',
+      errGoogleFail: 'Google sign-in failed', errGooglePayload: 'Could not read Google account',
+      labelAppetite: 'Appetite', labelPoop: 'Poop', labelActivity: 'Activity', labelPain: 'Pain'
+    },
+    ja: {
+      home: 'ホーム', brandTitle: '兔兔 Tracker', brandSub: '高齢ペットの毎日の観察 · 静かな記録',
+      tabLogin: 'ログイン', tabSignup: '登録', createAccount: 'アカウント作成',
+      googleBtn: 'Google アカウントでログイン', orDivider: 'または',
+      ownerName: '飼い主名', accountLabel: 'ログインID', loginId: 'IDまたはメール', emailLabel: 'メール',
+      password: 'パスワード', passwordConfirm: 'パスワード確認',
+      displayNamePh: '飼い主の名前', accountPh: '英数字または _ 例 bunny_owner', loginIdPh: 'IDまたはメール',
+      emailPh: 'you@example.com', passwordPh: '6文字以上', passwordConfirmPh: 'もう一度入力',
+      forgotLink: 'パスワードを忘れた', authHint: 'ユーザーごとにうさぎと日誌が分かれます。',
+      demoBanner: 'デモ：データはこのブラウザのみに保存',
+      navToday: '今日', navLog: '記録', navCal: 'カレンダー', navMore: 'その他',
+      moreTitle: 'その他', accountTitle: 'アカウント／基本情報', displayName: '飼い主名',
+      bio: '短い紹介', bioPh: 'ひとこと紹介（任意）', save: '保存',
+      langTitle: '言語', fontTitle: '文字サイズ', fontSm: '小', fontMd: '標準', fontLg: '大',
+      myRabbits: 'マイうさぎ', rename: '名前変更', renameHint: 'チップを長押しでも変更できます', editRabbit: 'うさぎ情報を編集',
+      about: '兔兔 Tracker · Demo', previewMode: 'プレビュー', signOut: 'ログアウト', backLogin: 'ログインに戻る',
+      saved: '設定を保存しました', edit: '編集', tempSent: '一時パスワードを送信（デモ）',
+      addPhoto: 'タップして写真を追加', fillStatus: '今日の状態を記入',
+      metricAppetite: '食欲', metricPoop: 'うんち', metricActivity: '活動', metricWeight: '体重',
+      tapUpdate: 'タップして更新', tapFill: 'タップして記入', notRecorded: '未記録', recorded: '記録済',
+      trendTitle: '体重トレンド（直近8週）', trendNote: '全体は安定、わずかな変動',
+      weekObs: '今週の観察', recentLogs: '最近の記録', calMonthSample: '2026年10月',
+      logTitle: '今日の記録', weightKg: '体重 (kg)', weightPh: '例 2.4',
+      teeth: '歯の状態', pain: '痛み／不快', notes: 'メモ', notesPh: '今日気づいたこと…',
+      saveLog: '今日の記録を保存',
+      valGood: '良好', valFair: '普通', valLess: '少なめ', valRefuse: '拒否',
+      valNormal: '正常', valSoft: '柔らかめ', valAbnormal: '異常',
+      valActive: '活発', valReduced: 'やや減', valMuchLess: '明らかに減',
+      valNeedWatch: '要注意', valChecked: '確認済', valNone: 'なし', valMild: '軽い', valObvious: '明らか',
+      wdMon: '月', wdTue: '火', wdWed: '水', wdThu: '木', wdFri: '金', wdSat: '土', wdSun: '日',
+      weekdayPrefix: '',
+      sampleActDown: '活動やや減', sampleAllOk: '問題なし', sampleAppetiteAct: '食欲良好 · 活動やや減',
+      defaultDiaryTitle: 'うさぎ日記', diaryTitleHint: 'タップしてタイトル編集',
+      defaultRabbitName: 'うさぎ', defaultAgeLabel: '高齢 · 約8歳', defaultBreed: 'ロップイヤー',
+      ageUnset: '年齢未設定', ageBreedUnset: '年齢／品種未設定',
+      today: '今日', yesterday: '昨日', tomorrow: '明日',
+      statusOk: '正常', statusWatch: '注意',
+      tagAppetitePending: '食欲未記', tagAppetiteOk: '食欲正常', tagAppetiteWatch: '食欲注意',
+      tagPoopPending: 'うんち未記', tagPoopOk: 'うんち正常', tagPoopWatch: 'うんち注意',
+      tagActivityPending: '活動未記', tagActivityOk: '活動正常', tagActivityWatch: '活動注意',
+      tagWeightPending: '体重未記', tagWeightOk: '体重安定', tagWeightRecorded: '体重記録済',
+      summaryEmpty: '今日の状態は未記入です。下のボタンから記録を始めましょう。',
+      summaryOk: '今日の状態はおおむね正常です。記録を保存しました。',
+      summaryWatchSuffix: '。下の指標も確認し、様子を見ましょう。',
+      activityHint: '活動が少なめです。メモを追加できます',
+      monthFmt: '{m}月{d}日',
+      savedStatus: '「{name}」の{date}の状態を保存しました',
+      topicDeleted: 'トピックを削除しました',
+      needName: '名前を入力してください',
+      rabbitUpdated: '「{name}」を更新しました',
+      addRabbit: 'うさぎを追加', addCountHint: '現在 {n}／{max} · 初期名「{name}」', renameRabbit: '名前を変更', maxRabbits: '最大5羽',
+      rabbitLimit: '上限5羽に達しました', addRabbitTitle: 'うさぎを追加',
+      nameLabel: '名前', namePh: '例：スノー', editNamePh: '例：うさぎ',
+      cancel: 'キャンセル', confirm: '確定', continue: '続行', back: '戻る',
+      editProfileTitle: 'プロフィール編集', ageLabel: '年齢／段階', agePh: '例：高齢 · 約8歳',
+      breedLabel: '品種', breedPh: '例：ロップイヤー', obsNotes: '観察ポイント／メモ',
+      obsNotesPh: '例：食欲 · うんち · 活動量…', editProfileHint: '保存後、今日の表紙と切替チップに反映',
+      googlePickTitle: 'アカウントを選択', googlePickSub: '「兔兔 Tracker」を続行（デモ）',
+      googleEmailLabel: 'または Gmail を入力', gmailPh: 'you@gmail.com',
+      googlePickNote: 'オフラインのデモ選択です。Google には接続しません。GOOGLE_CLIENT_ID を入れると正式ログインできます。',
+      forgotTitle: 'パスワードを忘れた',
+      forgotSubA: '登録時のIDまたはメールを入力すると、一時パスワードをメールに送ります（デモでは画面に表示）。',
+      sendTemp: '一時パスワードを送信', forgotMailHint: '一時パスワードを送信しました（デモ表示）',
+      tempPassword: '一時パスワード', copyTemp: '一時パスワードをコピー', useTempReset: '一時パスワードで再設定',
+      forgotSubB: '一時パスワードで新しいパスワードを設定します。約30分で失効し、再設定後は無効になります。',
+      tempPasswordPh: 'メール内の一時パスワード', newPassword: '新しいパスワード', confirmNewPassword: '新しいパスワード確認',
+      resetAndLogin: '再設定してログイン',
+      forgotDemoNote: 'デモでは実際のメールは送りません。一時パスワードはこのブラウザのみに保存されます。',
+      mailedTo: '{email} 宛（デモ表示）',
+      mailedHint: '{email} に一時パスワードを送信（デモ表示）',
+      copiedTemp: '一時パスワードをコピーしました', passwordReset: 'パスワードを再設定しました',
+      errGeneric: 'エラーが発生しました', errOwnerName: '飼い主名を入力してください',
+      errAccountFormat: 'IDは英数字または _ の3〜32文字', errEmail: '有効なメールを入力してください',
+      errPasswordLen: 'パスワードは6文字以上', errPasswordMismatch: 'パスワードが一致しません',
+      errAccountTaken: 'このIDは既に使われています', errEmailTaken: 'このメールは登録済みです',
+      errBadCreds: 'ID／メールまたはパスワードが正しくありません',
+      errUseGoogle: 'このアカウントは Google ログインです。Google ボタンを使ってください',
+      errGoogleEmail: '有効な Google メールを入力してください',
+      errNotFound: 'このIDまたはメールは見つかりません', errUseGoogleLogin: 'Google アカウントでログインしてください',
+      errNeedTemp: '先に一時パスワードを申請してください', errTempExpired: '一時パスワードの期限切れです。再申請してください',
+      errTempWrong: '一時パスワードが正しくありません', errNewPasswordLen: '新しいパスワードは6文字以上',
+      errNewPasswordMismatch: '新しいパスワードが一致しません',
+      errSendTemp: '一時パスワードを送信できません', errResetFail: '再設定に失敗しました',
+      errGoogleFail: 'Google ログインに失敗しました', errGooglePayload: 'Google アカウント情報を読めません',
+      labelAppetite: '食欲', labelPoop: 'うんち', labelActivity: '活動', labelPain: '痛み'
+    }
+  };
+
+  const VALUE_I18N = {
+    '良好': 'valGood', '普通': 'valFair', '較少': 'valLess', '拒絕': 'valRefuse',
+    '正常': 'valNormal', '偏軟': 'valSoft', '異常': 'valAbnormal',
+    '活躍': 'valActive', '稍減': 'valReduced', '明顯減少': 'valMuchLess',
+    '需留意': 'valNeedWatch', '已檢查': 'valChecked',
+    '無': 'valNone', '輕微': 'valMild', '明顯': 'valObvious'
+  };
+
+  function normalizeLang(lang) {
+    if (lang === 'zh-Hans') return 'zh-Hant'; // migrate away from simplified
+    return SUPPORTED_LANGS.includes(lang) ? lang : 'zh-Hant';
+  }
+
+  function readUiLang() {
+    try {
+      const raw = localStorage.getItem(UI_LANG_KEY);
+      return normalizeLang(raw || 'zh-Hant');
+    } catch (e) {
+      return 'zh-Hant';
+    }
+  }
+
+  function writeUiLang(lang) {
+    try {
+      localStorage.setItem(UI_LANG_KEY, normalizeLang(lang));
+    } catch (e) {}
+  }
+
+  function currentLang() {
+    if (userSettings && userSettings.language) return normalizeLang(userSettings.language);
+    return readUiLang();
+  }
+
+  function t(key) {
+    const lang = currentLang();
+    const dict = I18N[lang] || I18N['zh-Hant'];
+    return dict[key] != null ? dict[key] : (I18N['zh-Hant'][key] || key);
+  }
+
+  function tf(key, vars) {
+    let s = t(key);
+    if (vars) {
+      Object.keys(vars).forEach(k => {
+        s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), String(vars[k]));
+      });
+    }
+    return s;
+  }
+
+  function localizeValue(v) {
+    if (v == null || v === '') return v;
+    const k = VALUE_I18N[v];
+    return k ? t(k) : v;
+  }
+
+  const DEFAULT_TAGS = [
+    { label: '食慾正常', style: 'good' },
+    { label: '便便正常', style: 'good' },
+    { label: '活動留意', style: 'watch' },
+    { label: '體重穩定', style: 'good' }
+  ];
+
+  const DEFAULT_NOTES = '食慾 · 便便形狀與數量 · 活動量 · 牙齒磨損 · 體重變化 · 痛楚跡象';
+
+  let rabbits = [];
+  let activeId = null;
+  let modalMode = 'add'; // 'add' | 'rename'
+  let logs = {}; // { "rabbitId|YYYY-MM-DD": { appetite, poop, activity, weight, teeth, pain, notes } }
+  let viewDate = new Date(); // selected day on 今日 / 記錄
+
+  function uid() {
+    return 'r_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function seedRabbit(avatar) {
+    return {
+      id: uid(),
+      name: t('defaultRabbitName'),
+      ageLabel: t('defaultAgeLabel'),
+      breed: t('defaultBreed'),
+      weight: 2.4,
+      avatar: avatar || null,
+      tags: DEFAULT_TAGS.map(tag => ({ ...tag })),
+      notes: DEFAULT_NOTES,
+      customTopics: [],
+      diaryTitle: t('defaultDiaryTitle')
+    };
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(KEY_RABBITS);
+      if (raw) {
+        rabbits = JSON.parse(raw);
+        if (!Array.isArray(rabbits) || rabbits.length === 0) throw new Error('empty');
+      } else {
+        rabbits = [seedRabbit(null)];
+        saveRabbits();
+      }
+    } catch (e) {
+      rabbits = [seedRabbit(null)];
+      saveRabbits();
+    }
+
+    try {
+      activeId = localStorage.getItem(KEY_ACTIVE);
+    } catch (e) {
+      activeId = null;
+    }
+    if (!activeId || !rabbits.find(r => r.id === activeId)) {
+      activeId = rabbits[0].id;
+      saveActive();
+    }
+
+    // ensure customTopics + diaryTitle on each rabbit (migrate older saves)
+    let topicsTouched = false;
+    rabbits.forEach(r => {
+      if (!Array.isArray(r.customTopics)) {
+        r.customTopics = [];
+        topicsTouched = true;
+      } else {
+        const cleaned = r.customTopics
+          .map(t => String(t || '').trim().slice(0, 10))
+          .filter(Boolean)
+          .slice(0, MAX_CUSTOM_TOPICS);
+        if (cleaned.length !== r.customTopics.length) topicsTouched = true;
+        r.customTopics = cleaned;
+      }
+      if (typeof r.diaryTitle !== 'string' || !r.diaryTitle.trim()) {
+        r.diaryTitle = t('defaultDiaryTitle');
+        topicsTouched = true;
+      } else {
+        r.diaryTitle = r.diaryTitle.trim().slice(0, 24);
+      }
+    });
+    if (topicsTouched) saveRabbits();
+
+    try {
+      const rawLogs = localStorage.getItem(KEY_LOGS);
+      logs = rawLogs ? JSON.parse(rawLogs) : {};
+      if (!logs || typeof logs !== 'object') logs = {};
+    } catch (e) {
+      logs = {};
+    }
+  }
+
+  function saveLogs() {
+    try {
+      localStorage.setItem(KEY_LOGS, JSON.stringify(logs));
+    } catch (e) { /* quota */ }
+  }
+
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+  function toDateKey(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  function logKey(rabbitId, d) {
+    return rabbitId + '|' + toDateKey(d || viewDate);
+  }
+
+  function getLog(rabbitId, d) {
+    return logs[logKey(rabbitId, d)] || null;
+  }
+
+  function isSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+
+  function weekdayShort(dayIndex) {
+    return [t('wdSun'), t('wdMon'), t('wdTue'), t('wdWed'), t('wdThu'), t('wdFri'), t('wdSat')][dayIndex];
+  }
+
+  function formatDisplayDate(d) {
+    const prefix = t('weekdayPrefix');
+    const wd = weekdayShort(d.getDay());
+    const base = tf('monthFmt', { m: d.getMonth() + 1, d: d.getDate() });
+    return base + ' · ' + (prefix ? prefix + wd : wd);
+  }
+
+  function dateLabelFor(d) {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const cmp = new Date(d);
+    cmp.setHours(0,0,0,0);
+    const diff = Math.round((cmp - today) / 86400000);
+    if (diff === 0) return t('today');
+    if (diff === -1) return t('yesterday');
+    if (diff === 1) return t('tomorrow');
+    return (d.getMonth() + 1) + '/' + d.getDate();
+  }
+
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  function emptyLog() {
+    return { appetite: '', poop: '', activity: '', weight: null, teeth: '', pain: '', notes: '' };
+  }
+
+  function deriveTagsFromLog(log) {
+    if (!log) return [
+      { label: t('tagAppetitePending'), style: '' },
+      { label: t('tagPoopPending'), style: '' },
+      { label: t('tagActivityPending'), style: '' },
+      { label: t('tagWeightPending'), style: '' }
+    ];
+    function appetiteTag(v) {
+      if (!v) return { label: t('tagAppetitePending'), style: '' };
+      if (v === '良好' || v === '普通') return { label: t('tagAppetiteOk'), style: 'good' };
+      return { label: t('tagAppetiteWatch'), style: 'watch' };
+    }
+    function poopTag(v) {
+      if (!v) return { label: t('tagPoopPending'), style: '' };
+      if (v === '正常') return { label: t('tagPoopOk'), style: 'good' };
+      return { label: t('tagPoopWatch'), style: 'watch' };
+    }
+    function activityTag(v) {
+      if (!v) return { label: t('tagActivityPending'), style: '' };
+      if (v === '活躍' || v === '普通') return { label: t('tagActivityOk'), style: 'good' };
+      return { label: t('tagActivityWatch'), style: 'watch' };
+    }
+    function weightTag(v) {
+      if (v == null || v === '') return { label: t('tagWeightPending'), style: '' };
+      return { label: t('tagWeightRecorded'), style: 'good' };
+    }
+    return [appetiteTag(log.appetite), poopTag(log.poop), activityTag(log.activity), weightTag(log.weight)];
+  }
+
+  function statusClassFor(field, value) {
+    if (!value) return '';
+    if (field === 'appetite') return (value === '良好' || value === '普通') ? 'good' : 'watch';
+    if (field === 'poop') return value === '正常' ? 'good' : 'watch';
+    if (field === 'activity') return (value === '活躍' || value === '普通') ? 'good' : 'watch';
+    if (field === 'weight') return 'good';
+    return '';
+  }
+
+  function statusLabelFor(field, value) {
+    if (!value) return '—';
+    if (field === 'appetite') return (value === '良好' || value === '普通') ? t('statusOk') : t('statusWatch');
+    if (field === 'poop') return value === '正常' ? t('statusOk') : t('statusWatch');
+    if (field === 'activity') return (value === '活躍' || value === '普通') ? t('statusOk') : t('statusWatch');
+    if (field === 'weight') return t('recorded');
+    return localizeValue(value);
+  }
+
+  function buildSummary(log) {
+    if (!log || (!log.appetite && !log.poop && !log.activity && log.weight == null)) {
+      return { text: t('summaryEmpty'), alert: false };
+    }
+    const watches = [];
+    if (log.appetite && !(log.appetite === '良好' || log.appetite === '普通')) watches.push(t('labelAppetite') + localizeValue(log.appetite));
+    if (log.poop && log.poop !== '正常') watches.push(t('labelPoop') + localizeValue(log.poop));
+    if (log.activity && !(log.activity === '活躍' || log.activity === '普通')) watches.push(t('labelActivity') + localizeValue(log.activity));
+    if (log.pain && log.pain !== '無') watches.push(t('labelPain') + localizeValue(log.pain));
+    if (watches.length) {
+      const sep = currentLang() === 'en' ? ', ' : '、';
+      return { text: watches.join(sep) + t('summaryWatchSuffix'), alert: true };
+    }
+    return { text: t('summaryOk'), alert: false };
+  }
+
+  function saveRabbits() {
+    try {
+      localStorage.setItem(KEY_RABBITS, JSON.stringify(rabbits));
+    } catch (e) { /* quota */ }
+  }
+
+  function saveActive() {
+    try {
+      localStorage.setItem(KEY_ACTIVE, activeId);
+    } catch (e) {}
+  }
+
+  function getActive() {
+    return rabbits.find(r => r.id === activeId) || rabbits[0];
+  }
+
+  function nextDefaultName() {
+    const base = t('defaultRabbitName');
+    const used = new Set(rabbits.map(r => r.name));
+    if (!used.has(base)) return base;
+    for (let i = 2; i <= MAX_RABBITS + 2; i++) {
+      const n = base + i;
+      if (!used.has(n)) return n;
+    }
+    return base + (rabbits.length + 1);
+  }
+
+  function setActive(id) {
+    if (!rabbits.find(r => r.id === id)) return;
+    activeId = id;
+    saveActive();
+    renderAll();
+  }
+
+  function addRabbit(name) {
+    if (rabbits.length >= MAX_RABBITS) return false;
+    const trimmed = (name || '').trim() || nextDefaultName();
+    const r = {
+      id: uid(),
+      name: trimmed.slice(0, 12),
+      ageLabel: t('ageUnset'),
+      breed: '',
+      weight: null,
+      avatar: null,
+      tags: [
+        { label: t('tagAppetitePending'), style: '' },
+        { label: t('tagPoopPending'), style: '' },
+        { label: t('tagActivityPending'), style: '' },
+        { label: t('tagWeightPending'), style: '' }
+      ],
+      notes: DEFAULT_NOTES,
+      customTopics: [],
+      diaryTitle: t('defaultDiaryTitle')
+    };
+    rabbits.push(r);
+    activeId = r.id;
+    saveRabbits();
+    saveActive();
+    renderAll();
+    return true;
+  }
+
+  function renameActive(name) {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return;
+    const r = getActive();
+    r.name = trimmed.slice(0, 12);
+    saveRabbits();
+    renderAll();
+  }
+
+  function updateActiveAvatar(dataUrl) {
+    const r = getActive();
+    r.avatar = dataUrl;
+    saveRabbits();
+    renderAll();
+  }
+
+  function chipAvatarHtml(r) {
+    if (r.avatar) {
+      return '<span class="rabbit-chip-avatar"><img src="' + r.avatar + '" alt=""></span>';
+    }
+    return '<span class="rabbit-chip-avatar">🐰</span>';
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderSwitcher(container, { showAdd }) {
+    if (!container) return;
+    const full = rabbits.length >= MAX_RABBITS;
+    let html = rabbits.map(r => {
+      const active = r.id === activeId ? ' active' : '';
+      return '<button type="button" class="rabbit-chip' + active + '" data-id="' + r.id + '">' +
+        chipAvatarHtml(r) +
+        '<span class="rabbit-chip-name">' + escapeHtml(r.name) + '</span>' +
+        '</button>';
+    }).join('');
+
+    if (showAdd) {
+      html += '<button type="button" class="rabbit-add-btn" id="' + container.id + 'Add"' +
+        (full ? ' disabled title="' + escapeHtml(t('rabbitLimit')) + '"' : ' title="' + escapeHtml(t('addRabbitTitle')) + '"') + '>＋</button>';
+      if (full) {
+        html += '<div class="rabbit-limit-note">' + escapeHtml(t('rabbitLimit')) + '</div>';
+      }
+    }
+    container.innerHTML = html;
+
+    container.querySelectorAll('.rabbit-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActive(chip.dataset.id);
+      });
+
+      let pressTimer = null;
+      chip.addEventListener('touchstart', () => {
+        pressTimer = setTimeout(() => {
+          setActive(chip.dataset.id);
+          openRenameModal();
+        }, 550);
+      }, { passive: true });
+      chip.addEventListener('touchend', () => clearTimeout(pressTimer));
+      chip.addEventListener('touchmove', () => clearTimeout(pressTimer));
+      chip.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        setActive(chip.dataset.id);
+        openRenameModal();
+      });
+    });
+
+    if (showAdd) {
+      const addBtn = document.getElementById(container.id + 'Add');
+      if (addBtn && !full) {
+        addBtn.addEventListener('click', openAddModal);
+      }
+    }
+  }
+
+  function renderMore() {
+    const emailEl = document.getElementById('settingsAccountEmail');
+    const accountEl = document.getElementById('settingsAccount');
+    if (isPreviewMode) {
+      if (emailEl) emailEl.textContent = t('previewMode');
+      if (accountEl) accountEl.textContent = '—';
+    } else {
+      if (emailEl) emailEl.textContent = (currentSession && currentSession.email) ? currentSession.email : '—';
+      if (accountEl) accountEl.textContent = (currentSession && currentSession.account) ? currentSession.account : '—';
+    }
+    const dn = document.getElementById('settingsDisplayName');
+    const bio = document.getElementById('settingsBio');
+    const owner = (currentSession && currentSession.ownerName) || userSettings.displayName || '';
+    if (dn) dn.value = owner;
+    if (bio) bio.value = userSettings.bio || '';
+
+    document.querySelectorAll('#langSegment button').forEach(b => {
+      b.classList.toggle('selected', b.dataset.lang === userSettings.language);
+    });
+    document.querySelectorAll('#fontSegment button').forEach(b => {
+      b.classList.toggle('selected', b.dataset.font === userSettings.fontSize);
+    });
+  }
+
+  function startOfWeek(d) {
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const day = x.getDay(); // 0=Sun
+    const diff = day === 0 ? -6 : 1 - day; // Monday start
+    x.setDate(x.getDate() + diff);
+    return x;
+  }
+
+  function renderWeekStrip() {
+    const labels = [t('wdMon'), t('wdTue'), t('wdWed'), t('wdThu'), t('wdFri'), t('wdSat'), t('wdSun')];
+    const mon = startOfWeek(viewDate);
+    const r = getActive();
+    const container = document.getElementById('weekDays');
+    let html = '';
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i);
+      const active = isSameDay(d, viewDate);
+      const has = !!getLog(r.id, d);
+      html += '<button type="button" class="week-day-btn' +
+        (active ? ' active' : '') +
+        (has ? ' has-log' : '') +
+        '" data-offset="' + i + '" aria-label="' + labels[i] + '">' +
+        '<span>' + labels[i] + '</span>' +
+        '<span class="wd-num">' + d.getDate() + '</span>' +
+        '</button>';
+    }
+    container.innerHTML = html;
+    container.querySelectorAll('.week-day-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mon2 = startOfWeek(viewDate);
+        const off = Number(btn.dataset.offset);
+        viewDate = new Date(mon2.getFullYear(), mon2.getMonth(), mon2.getDate() + off);
+        renderTodayContext();
+        if (document.getElementById('screen-log').classList.contains('active')) {
+          loadLogIntoForm();
+        }
+      });
+    });
+    document.getElementById('weekCaption').textContent =
+      dateLabelFor(viewDate) + ' · ' + formatDisplayDate(viewDate);
+  }
+
+  function renderHeroTags(log) {
+    const tags = deriveTagsFromLog(log);
+    const el = document.getElementById('todayHeroTags');
+    el.innerHTML = tags.map(t =>
+      '<span class="status-tag' + (t.style ? ' ' + t.style : '') + '">' + escapeHtml(t.label) + '</span>'
+    ).join('');
+  }
+
+  function renderTodayContext() {
+    const r = getActive();
+    const hero = document.getElementById('todayHero');
+    const heroImg = document.getElementById('todayHeroImg');
+    if (r.avatar) {
+      heroImg.src = r.avatar;
+      hero.classList.add('has-photo');
+    } else {
+      heroImg.removeAttribute('src');
+      hero.classList.remove('has-photo');
+    }
+    document.getElementById('todayHeroName').textContent = r.name;
+    const ageParts = [r.ageLabel, r.breed].filter(Boolean);
+    document.getElementById('todayHeroAge').textContent = ageParts.join(' · ') || t('ageBreedUnset');
+
+    const log = getLog(r.id, viewDate);
+    renderHeroTags(log);
+    renderWeekStrip();
+    renderMetricsFromLog(log, r);
+    renderLogHeader();
+  }
+
+  function renderMetricsFromLog(log, r) {
+    const summary = buildSummary(log);
+    const sumEl = document.getElementById('summaryLine');
+    sumEl.textContent = summary.text;
+    sumEl.classList.toggle('alert', summary.alert);
+
+    function setMetric(prefix, field, value, noteEmpty) {
+      const statusEl = document.getElementById('metric' + prefix + 'Status');
+      const valueEl = document.getElementById('metric' + prefix + 'Value');
+      const noteEl = document.getElementById('metric' + prefix + 'Note');
+      const card = document.getElementById('metric' + prefix);
+      const sc = statusClassFor(field, value);
+      statusEl.textContent = statusLabelFor(field, value);
+      statusEl.className = 'metric-status' + (sc ? ' ' + sc : '');
+      valueEl.textContent = value ? localizeValue(value) : t('notRecorded');
+      if (noteEl) noteEl.textContent = value ? '' : (noteEmpty || t('tapFill'));
+      if (card) {
+        card.classList.toggle('watch', sc === 'watch');
+      }
+    }
+
+    setMetric('Appetite', 'appetite', log && log.appetite);
+    setMetric('Poop', 'poop', log && log.poop);
+    setMetric('Activity', 'activity', log && log.activity);
+
+    const hint = document.getElementById('metricActivityHint');
+    if (log && log.activity && statusClassFor('activity', log.activity) === 'watch') {
+      hint.style.display = 'block';
+      hint.textContent = log.notes ? log.notes : t('activityHint');
+    } else {
+      hint.style.display = 'none';
+      hint.textContent = '';
+    }
+
+    const w = (log && log.weight != null) ? log.weight : (r.weight != null ? r.weight : null);
+    document.getElementById('todayWeightValue').textContent = w != null ? (w + ' kg') : '—';
+    const ws = document.getElementById('metricWeightStatus');
+    if (log && log.weight != null) {
+      ws.textContent = t('recorded');
+      ws.className = 'metric-status good';
+    } else {
+      ws.textContent = '—';
+      ws.className = 'metric-status';
+    }
+    document.getElementById('metricWeight').classList.remove('watch');
+  }
+
+  function renderLogHeader() {
+    const r = getActive();
+    document.getElementById('logHeaderSub').textContent =
+      formatDisplayDate(viewDate) + ' · ' + r.name;
+  }
+
+  function selectOption(field, value) {
+    const group = document.querySelector('.options[data-field="' + field + '"]');
+    if (!group) return;
+    group.querySelectorAll('.option').forEach(o => {
+      o.classList.toggle('selected', o.dataset.value === value);
+    });
+  }
+
+  function getSelectedOption(field) {
+    const sel = document.querySelector('.options[data-field="' + field + '"] .option.selected');
+    return sel ? sel.dataset.value : '';
+  }
+
+  function loadLogIntoForm() {
+    const r = getActive();
+    const log = getLog(r.id, viewDate) || emptyLog();
+    selectOption('appetite', log.appetite || '');
+    selectOption('poop', log.poop || '');
+    selectOption('activity', log.activity || '');
+    selectOption('teeth', log.teeth || '');
+    selectOption('pain', log.pain || '');
+    document.getElementById('logWeightInput').value =
+      log.weight != null ? log.weight : (r.weight != null ? r.weight : '');
+    document.getElementById('logNotes').value = log.notes || '';
+    renderLogHeader();
+  }
+
+  function saveLogFromForm() {
+    const r = getActive();
+    const weightRaw = document.getElementById('logWeightInput').value;
+    const weight = weightRaw === '' ? null : Number(weightRaw);
+    const entry = {
+      appetite: getSelectedOption('appetite'),
+      poop: getSelectedOption('poop'),
+      activity: getSelectedOption('activity'),
+      weight: (weight != null && !Number.isNaN(weight)) ? weight : null,
+      teeth: getSelectedOption('teeth'),
+      pain: getSelectedOption('pain'),
+      notes: document.getElementById('logNotes').value.trim()
+    };
+    logs[logKey(r.id, viewDate)] = entry;
+    saveLogs();
+    if (entry.weight != null) {
+      r.weight = entry.weight;
+      saveRabbits();
+    }
+    r.tags = deriveTagsFromLog(entry);
+    saveRabbits();
+    renderAll();
+    showToast(tf('savedStatus', { name: r.name, date: dateLabelFor(viewDate) }));
+  }
+
+  function goToLogScreen(focusField) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelector('[data-screen="log"]').classList.add('active');
+    document.getElementById('screen-log').classList.add('active');
+    loadLogIntoForm();
+    const target = focusField ? document.getElementById('field-' + focusField) : null;
+    setTimeout(() => {
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
+  }
+
+  function ensureCustomTopics(r) {
+    if (!r.customTopics || !Array.isArray(r.customTopics)) r.customTopics = [];
+    return r.customTopics;
+  }
+
+  function renderDiaryTitle() {
+    const r = getActive();
+    const el = document.getElementById('diaryTitle');
+    if (!el) return;
+    const title = (r.diaryTitle && String(r.diaryTitle).trim()) || t('defaultDiaryTitle');
+    if (document.activeElement !== el) {
+      el.textContent = title;
+    }
+  }
+
+  function commitDiaryTitle() {
+    const el = document.getElementById('diaryTitle');
+    const r = getActive();
+    let title = (el.textContent || '').replace(/\u00a0/g, ' ').trim().slice(0, 24);
+    if (!title) title = t('defaultDiaryTitle');
+    r.diaryTitle = title;
+    el.textContent = title;
+    saveRabbits();
+  }
+
+  function bindInlineEditable(el, { onCommit, onDelete, maxLen }) {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        el.blur();
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        el.dataset.cancelled = '1';
+        el.blur();
+      }
+    });
+    el.addEventListener('blur', () => {
+      if (el.dataset.cancelled === '1') {
+        delete el.dataset.cancelled;
+        if (onCommit) onCommit(null); // signal cancel → re-render
+        return;
+      }
+      let t = (el.textContent || '').replace(/\u00a0/g, ' ').trim();
+      if (maxLen) t = t.slice(0, maxLen);
+      if (onCommit) onCommit(t);
+    });
+    // long-press to delete (existing topics only)
+    if (onDelete) {
+      let pressTimer = null;
+      const clear = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
+      el.addEventListener('pointerdown', () => {
+        pressTimer = setTimeout(() => {
+          pressTimer = null;
+          onDelete();
+        }, 650);
+      });
+      el.addEventListener('pointerup', clear);
+      el.addEventListener('pointerleave', clear);
+      el.addEventListener('pointercancel', clear);
+    }
+  }
+
+  function renderCustomTopics() {
+    const r = getActive();
+    const topics = ensureCustomTopics(r);
+    const el = document.getElementById('customTopicsChips');
+    let html = '';
+    topics.forEach((label, idx) => {
+      html += '<span class="topic-chip" contenteditable="true" spellcheck="false" data-idx="' + idx +
+        '" title="點一下修改 · 長按刪除">' + escapeHtml(label) + '</span>';
+    });
+    if (topics.length < MAX_CUSTOM_TOPICS) {
+      html += '<span class="topic-chip topic-slot" contenteditable="true" spellcheck="false" data-slot="1"' +
+        ' data-placeholder="新題目" title="輸入新題目"></span>';
+    }
+    el.innerHTML = html;
+
+    el.querySelectorAll('.topic-chip[data-idx]').forEach(chip => {
+      const idx = Number(chip.dataset.idx);
+      const original = topics[idx];
+      bindInlineEditable(chip, {
+        maxLen: 10,
+        onCommit: (t) => {
+          const list = ensureCustomTopics(getActive());
+          if (t === null) {
+            renderCustomTopics();
+            return;
+          }
+          if (!t) {
+            // empty → delete
+            if (idx >= 0 && idx < list.length) {
+              list.splice(idx, 1);
+              saveRabbits();
+            }
+            renderCustomTopics();
+            return;
+          }
+          if (idx >= 0 && idx < list.length) {
+            list[idx] = t;
+            saveRabbits();
+          }
+          renderCustomTopics();
+        },
+        onDelete: () => {
+          const list = ensureCustomTopics(getActive());
+          if (idx >= 0 && idx < list.length) {
+            list.splice(idx, 1);
+            saveRabbits();
+            renderCustomTopics();
+            showToast(t('topicDeleted'));
+          }
+        }
+      });
+    });
+
+    const slot = el.querySelector('.topic-slot');
+    if (slot) {
+      slot.addEventListener('focus', () => {
+        if (!slot.textContent.trim()) slot.textContent = '';
+        slot.classList.remove('topic-slot');
+      });
+      bindInlineEditable(slot, {
+        maxLen: 10,
+        onCommit: (t) => {
+          if (t === null) {
+            renderCustomTopics();
+            return;
+          }
+          const list = ensureCustomTopics(getActive());
+          if (t && list.length < MAX_CUSTOM_TOPICS) {
+            list.push(t);
+            saveRabbits();
+          }
+          renderCustomTopics();
+        }
+      });
+    }
+  }
+
+  function renderAll() {
+    renderSwitcher(document.getElementById('todaySwitcher'), { showAdd: false });
+    renderSwitcher(document.getElementById('moreSwitcher'), { showAdd: true });
+    renderDiaryTitle();
+    renderCustomTopics();
+    renderMore();
+    renderTodayContext();
+    if (document.getElementById('screen-log').classList.contains('active')) {
+      loadLogIntoForm();
+    }
+  }
+
+  // Modal
+  const nameModal = document.getElementById('nameModal');
+  const nameModalTitle = document.getElementById('nameModalTitle');
+  const nameModalInput = document.getElementById('nameModalInput');
+  const nameModalHint = document.getElementById('nameModalHint');
+
+  function openAddModal() {
+    if (rabbits.length >= MAX_RABBITS) return;
+    modalMode = 'add';
+    nameModalTitle.textContent = t('addRabbit');
+    nameModalHint.textContent = tf('addCountHint', { n: rabbits.length, max: MAX_RABBITS, name: nextDefaultName() });
+    nameModalInput.value = nextDefaultName();
+    nameModal.classList.add('open');
+    setTimeout(() => { nameModalInput.focus(); nameModalInput.select(); }, 50);
+  }
+
+  function openRenameModal() {
+    modalMode = 'rename';
+    nameModalTitle.textContent = t('renameRabbit');
+    nameModalHint.textContent = t('renameHint');
+    nameModalInput.value = getActive().name;
+    nameModal.classList.add('open');
+    setTimeout(() => { nameModalInput.focus(); nameModalInput.select(); }, 50);
+  }
+
+  function closeModal() {
+    nameModal.classList.remove('open');
+  }
+
+  document.getElementById('nameModalCancel').addEventListener('click', closeModal);
+  document.getElementById('nameModalConfirm').addEventListener('click', () => {
+    if (modalMode === 'add') {
+      addRabbit(nameModalInput.value);
+    } else {
+      renameActive(nameModalInput.value);
+    }
+    closeModal();
+  });
+  nameModalInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('nameModalConfirm').click();
+    if (e.key === 'Escape') closeModal();
+  });
+  nameModal.addEventListener('click', (e) => {
+    if (e.target === nameModal) closeModal();
+  });
+  // Edit profile sheet
+  const editProfileModal = document.getElementById('editProfileModal');
+
+  function openEditProfile() {
+    const r = getActive();
+    document.getElementById('editName').value = r.name || '';
+    document.getElementById('editAge').value = r.ageLabel || '';
+    document.getElementById('editBreed').value = r.breed || '';
+    document.getElementById('editWeight').value = r.weight != null ? r.weight : '';
+    document.getElementById('editNotes').value = r.notes || '';
+    editProfileModal.classList.add('open');
+    setTimeout(() => document.getElementById('editName').focus(), 50);
+  }
+
+  function closeEditProfile() {
+    editProfileModal.classList.remove('open');
+  }
+
+  function saveEditProfile() {
+    const r = getActive();
+    const name = document.getElementById('editName').value.trim();
+    if (!name) {
+      showToast(t('needName'));
+      return;
+    }
+    r.name = name.slice(0, 12);
+    r.ageLabel = document.getElementById('editAge').value.trim().slice(0, 24);
+    r.breed = document.getElementById('editBreed').value.trim().slice(0, 24);
+    const wRaw = document.getElementById('editWeight').value;
+    r.weight = wRaw === '' ? null : Number(wRaw);
+    if (r.weight != null && Number.isNaN(r.weight)) r.weight = null;
+    const notes = document.getElementById('editNotes').value.trim();
+    r.notes = notes || DEFAULT_NOTES;
+    saveRabbits();
+    closeEditProfile();
+    renderAll();
+    showToast(tf('rabbitUpdated', { name: r.name }));
+  }
+
+  document.getElementById('btnEditProfile').addEventListener('click', openEditProfile);
+  document.getElementById('editProfileCancel').addEventListener('click', closeEditProfile);
+  document.getElementById('editProfileSave').addEventListener('click', saveEditProfile);
+  editProfileModal.addEventListener('click', (e) => {
+    if (e.target === editProfileModal) closeEditProfile();
+  });
+
+  // Nav
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('screen-' + item.dataset.screen).classList.add('active');
+      if (item.dataset.screen === 'log') loadLogIntoForm();
+    });
+  });
+
+  document.querySelectorAll('.option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const parent = opt.parentElement;
+      parent.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+
+  function quickEdit(type) {
+    goToLogScreen(type);
+  }
+
+  function changeWeek(deltaWeeks) {
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() + (deltaWeeks * 7));
+    renderTodayContext();
+    if (document.getElementById('screen-log').classList.contains('active')) {
+      loadLogIntoForm();
+    }
+  }
+
+  // keep changeDate for compatibility (shift by day)
+  function changeDate(delta) {
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate() + delta);
+    renderTodayContext();
+    if (document.getElementById('screen-log').classList.contains('active')) {
+      loadLogIntoForm();
+    }
+  }
+
+  document.getElementById('weekPrev').addEventListener('click', () => changeWeek(-1));
+  document.getElementById('weekNext').addEventListener('click', () => changeWeek(1));
+  document.getElementById('btnFillStatus').addEventListener('click', () => goToLogScreen());
+
+  const diaryTitleEl = document.getElementById('diaryTitle');
+  diaryTitleEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); diaryTitleEl.blur(); }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      diaryTitleEl.dataset.cancelled = '1';
+      diaryTitleEl.blur();
+    }
+  });
+  diaryTitleEl.addEventListener('blur', () => {
+    if (diaryTitleEl.dataset.cancelled === '1') {
+      delete diaryTitleEl.dataset.cancelled;
+      renderDiaryTitle();
+      return;
+    }
+    commitDiaryTitle();
+  });
+  document.getElementById('btnSaveLog').addEventListener('click', saveLogFromForm);
+
+  // Avatar per active rabbit (picker shared; change from 今日封面)
+  const avatarInput = document.getElementById('avatarInput');
+
+  function openAvatarPicker() { avatarInput.click(); }
+  document.getElementById('todayHero').addEventListener('click', (e) => {
+    if (e.target.closest('#todaySwitcher') || e.target.closest('.rabbit-chip')) return;
+    openAvatarPicker();
+  });
+  document.getElementById('todaySwitcher').addEventListener('click', (e) => e.stopPropagation());
+
+  avatarInput.addEventListener('change', () => {
+    const file = avatarInput.files && avatarInput.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateActiveAvatar(reader.result);
+      avatarInput.value = '';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // 更多 · settings handlers
+  document.getElementById('btnSaveAccount').addEventListener('click', () => {
+    const ownerName = (document.getElementById('settingsDisplayName').value || '').trim().slice(0, 40);
+    userSettings.displayName = ownerName;
+    userSettings.bio = (document.getElementById('settingsBio').value || '').trim().slice(0, 120);
+    saveSettings();
+    if (currentSession && !isPreviewMode) {
+      const users = loadUsers();
+      const idx = users.findIndex(u => u.id === currentSession.id);
+      if (idx >= 0) {
+        users[idx].ownerName = ownerName;
+        saveUsers(users);
+        currentSession.ownerName = ownerName;
+        setSession(sessionFromUser(users[idx]));
+      }
+    }
+    showToast(t('saved'));
+    renderMore();
+  });
+
+  document.getElementById('langSegment').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-lang]');
+    if (!btn) return;
+    applyLanguage(btn.dataset.lang);
+    saveSettings();
+    renderAll();
+  });
+
+  document.getElementById('fontSegment').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-font]');
+    if (!btn) return;
+    applyFontSize(btn.dataset.font);
+    saveSettings();
+    document.querySelectorAll('#fontSegment button').forEach(b => {
+      b.classList.toggle('selected', b.dataset.font === userSettings.fontSize);
+    });
+    renderAll();
+  });
+
+  document.getElementById('btnRenameRabbit').addEventListener('click', openRenameModal);
+
+
+  /* ========== Auth (mock + Google demo / GIS) ========== */
+  function setScopedKeys(userId) {
+    KEY_RABBITS = 'tutu-demo:' + userId + ':rabbits';
+    KEY_ACTIVE = 'tutu-demo:' + userId + ':active';
+    KEY_LOGS = 'tutu-demo:' + userId + ':logs';
+    KEY_SETTINGS = 'tutu-demo:' + userId + ':settings';
+  }
+
+  function defaultSettings() {
+    return { displayName: '', bio: '', language: readUiLang(), fontSize: 'md' };
+  }
+
+  function loadSettings() {
+    const base = defaultSettings();
+    try {
+      const raw = localStorage.getItem(KEY_SETTINGS);
+      if (!raw) {
+        userSettings = base;
+        writeUiLang(userSettings.language);
+        return userSettings;
+      }
+      const parsed = JSON.parse(raw);
+      userSettings = {
+        displayName: (parsed.displayName || '').slice(0, 40),
+        bio: (parsed.bio || '').slice(0, 120),
+        language: normalizeLang(parsed.language),
+        fontSize: (parsed.fontSize === 'sm' || parsed.fontSize === 'lg') ? parsed.fontSize : 'md'
+      };
+      writeUiLang(userSettings.language);
+    } catch (e) {
+      userSettings = base;
+    }
+    return userSettings;
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem(KEY_SETTINGS, JSON.stringify(userSettings));
+      writeUiLang(userSettings.language);
+    } catch (e) {}
+  }
+
+  function applyFontSize(size) {
+    const s = (size === 'sm' || size === 'lg') ? size : 'md';
+    userSettings.fontSize = s;
+    const root = document.documentElement;
+    root.classList.remove('font-sm', 'font-md', 'font-lg');
+    root.classList.add('font-' + s);
+    // 小 15px · 標準 17px · 大 22px（老花友善）
+    const px = s === 'sm' ? '15px' : (s === 'lg' ? '22px' : '17px');
+    root.style.fontSize = px;
+    document.body.style.fontSize = '1rem';
+  }
+
+  function applyLanguage(lang) {
+    const l = normalizeLang(lang);
+    userSettings.language = l;
+    writeUiLang(l);
+    document.documentElement.lang = l === 'en' ? 'en' : (l === 'ja' ? 'ja' : 'zh-Hant');
+
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const k = el.getAttribute('data-i18n');
+      if (k) el.textContent = t(k);
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+      const k = el.getAttribute('data-i18n-ph');
+      if (k) el.setAttribute('placeholder', t(k));
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const k = el.getAttribute('data-i18n-placeholder');
+      if (k) el.setAttribute('data-placeholder', t(k));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      const k = el.getAttribute('data-i18n-title');
+      if (k) el.setAttribute('title', t(k));
+    });
+
+    const navMap = { today: 'navToday', log: 'navLog', calendar: 'navCal', more: 'navMore' };
+    document.querySelectorAll('.nav-label[data-nav]').forEach(el => {
+      const k = navMap[el.getAttribute('data-nav')];
+      if (k) el.textContent = t(k);
+    });
+
+    const setTxt = (id, key) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = t(key);
+    };
+    setTxt('moreTitle', 'moreTitle');
+    setTxt('labelAccountTitle', 'accountTitle');
+    setTxt('labelOwnerName', 'ownerName');
+    setTxt('labelDisplayName', 'displayName');
+    setTxt('labelAccount', 'accountLabel');
+    setTxt('labelEmail', 'emailLabel');
+    setTxt('labelBio', 'bio');
+    setTxt('btnSaveAccount', 'save');
+    setTxt('labelLangTitle', 'langTitle');
+    setTxt('labelFontTitle', 'fontTitle');
+    setTxt('fontOptSm', 'fontSm');
+    setTxt('fontOptMd', 'fontMd');
+    setTxt('fontOptLg', 'fontLg');
+    setTxt('labelMyRabbits', 'myRabbits');
+    setTxt('btnRenameRabbit', 'rename');
+    setTxt('btnEditProfile', 'editRabbit');
+    setTxt('aboutLine', 'about');
+    setTxt('linkForgotPassword', 'forgotLink');
+    setTxt('linkHomePreview', 'home');
+    setTxt('authBrandSub', 'brandSub');
+    setTxt('tabLogin', 'tabLogin');
+    setTxt('tabSignup', 'tabSignup');
+    setTxt('btnGoogleDemoLabel', 'googleBtn');
+    setTxt('authDivider', 'orDivider');
+    setTxt('authHint', 'authHint');
+    setTxt('authDevBanner', 'demoBanner');
+    const dn = document.getElementById('settingsDisplayName');
+    if (dn) dn.placeholder = t('displayNamePh');
+    const bio = document.getElementById('settingsBio');
+    if (bio) bio.placeholder = t('bioPh');
+
+    const preview = (typeof isPreviewMode !== 'undefined') && isPreviewMode;
+    const btn = document.getElementById('btnSignOut');
+    if (btn) btn.textContent = preview ? t('backLogin') : t('signOut');
+
+    const sess = document.getElementById('sessionEmail');
+    if (sess && currentSession) {
+      sess.textContent = preview
+        ? t('previewMode')
+        : ((currentSession.account ? currentSession.account + ' · ' : '') + (currentSession.email || ''));
+    }
+
+    // Auth submit label depends on tab
+    const authSubmit = document.getElementById('authSubmit');
+    if (authSubmit) authSubmit.textContent = (typeof authTab !== 'undefined' && authTab === 'signup') ? t('createAccount') : t('tabLogin');
+
+    // Name modal dynamic titles refreshed when opened; keep hint default
+    const nameHint = document.getElementById('nameModalHint');
+    if (nameHint && (typeof modalMode === 'undefined' || modalMode !== 'rename')) nameHint.textContent = t('maxRabbits');
+
+    document.querySelectorAll('#langSegment button').forEach(b => {
+      b.classList.toggle('selected', b.dataset.lang === l);
+    });
+
+    const langSeg = document.getElementById('langSegment');
+    if (langSeg) langSeg.setAttribute('aria-label', t('langTitle'));
+    const fontSeg = document.getElementById('fontSegment');
+    if (fontSeg) fontSeg.setAttribute('aria-label', t('fontTitle'));
+  }
+
+  function applyUserSettings() {
+    applyFontSize(userSettings.fontSize);
+    applyLanguage(userSettings.language);
+  }
+
+  function loadUsers() {
+    try {
+      const raw = localStorage.getItem(USERS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+  function saveUsers(users) {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  }
+  function getSession() {
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  function setSession(session) {
+    if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    else localStorage.removeItem(SESSION_KEY);
+  }
+
+  function showAuthError(msg) {
+    const el = document.getElementById('authError');
+    if (!msg) { el.style.display = 'none'; el.textContent = ''; return; }
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+
+  function enterApp(session, opts) {
+    opts = opts || {};
+    isPreviewMode = !!opts.preview;
+    currentSession = session;
+    if (!isPreviewMode) setSession(session);
+    setScopedKeys(session.id);
+    document.getElementById('authScreen').classList.remove('visible');
+    document.getElementById('appRoot').classList.add('visible');
+    document.getElementById('bottomNav').classList.add('visible');
+    // reset in-memory tracker state for this user
+    rabbits = [];
+    activeId = null;
+    logs = {};
+    viewDate = new Date();
+    loadState();
+    loadSettings();
+    // Map ownerName <-> displayName on first load
+    if (!isPreviewMode && session && session.id) {
+      const users = loadUsersMigrated();
+      const u = users.find(x => x.id === session.id);
+      if (u) {
+        if (!u.ownerName && userSettings.displayName) {
+          u.ownerName = userSettings.displayName;
+          saveUsers(users);
+        }
+        if (u.ownerName && !userSettings.displayName) {
+          userSettings.displayName = u.ownerName;
+          saveSettings();
+        }
+        session.ownerName = u.ownerName || session.ownerName || '';
+        session.account = u.account || session.account || '';
+        currentSession = session;
+        if (!opts.preview) setSession(session);
+      }
+    }
+    applyUserSettings();
+    document.getElementById('sessionEmail').textContent = isPreviewMode
+      ? t('previewMode')
+      : ((session.account ? session.account + ' · ' : '') + (session.email || ''));
+    const btn = document.getElementById('btnSignOut');
+    if (btn) btn.textContent = isPreviewMode ? t('backLogin') : t('signOut');
+    renderAll();
+    // reset nav to today
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const todayNav = document.querySelector('.nav-item[data-screen="today"]');
+    if (todayNav) todayNav.classList.add('active');
+    document.getElementById('screen-today').classList.add('active');
+  }
+
+  function enterPreview() {
+    enterApp({ id: 'preview_guest', email: 'preview@local', account: 'preview', ownerName: '', provider: 'preview' }, { preview: true });
+  }
+
+  function showAuthScreen() {
+    currentSession = null;
+    isPreviewMode = false;
+    document.getElementById('appRoot').classList.remove('visible');
+    document.getElementById('bottomNav').classList.remove('visible');
+    document.getElementById('authScreen').classList.add('visible');
+    userSettings.language = readUiLang();
+    applyLanguage(userSettings.language);
+    const btn = document.getElementById('btnSignOut');
+    if (btn) btn.textContent = t('signOut');
+    showAuthError(null);
+    closeGooglePicker();
+    const fm = document.getElementById('forgotModal');
+    if (fm) fm.classList.remove('open');
+    setAuthTab('login');
+  }
+
+  function signOut() {
+    if (!isPreviewMode) setSession(null);
+    currentSession = null;
+    isPreviewMode = false;
+    rabbits = [];
+    activeId = null;
+    logs = {};
+    showAuthScreen();
+  }
+
+  function normalizeAccount(raw) {
+    return String(raw || '').trim().toLowerCase();
+  }
+  function normalizeEmail(raw) {
+    return String(raw || '').trim().toLowerCase();
+  }
+  function isValidAccount(account) {
+    return /^[a-z0-9_]{3,32}$/i.test(account || '');
+  }
+  function emailLocalPart(email) {
+    const e = normalizeEmail(email);
+    const i = e.indexOf('@');
+    return i > 0 ? e.slice(0, i).replace(/[^a-z0-9_]/gi, '_').slice(0, 24) || 'user' : 'user';
+  }
+  function ensureUniqueAccount(base, users, exceptId) {
+    let candidate = (base || 'user').toLowerCase().replace(/[^a-z0-9_]/g, '_').slice(0, 28) || 'user';
+    if (!/^[a-z0-9_]/.test(candidate)) candidate = 'u_' + candidate;
+    let out = candidate;
+    let n = 1;
+    while (users.some(u => normalizeAccount(u.account) === out && u.id !== exceptId)) {
+      out = candidate.slice(0, 24) + '_' + n;
+      n += 1;
+    }
+    return out;
+  }
+  function migrateUserRecord(u, allUsers) {
+    if (!u || typeof u !== 'object') return u;
+    const email = normalizeEmail(u.email || '');
+    const pool = allUsers || [u];
+    if (!u.account) u.account = ensureUniqueAccount(emailLocalPart(email), pool, u.id);
+    if (u.ownerName == null) u.ownerName = '';
+    if (!u.provider) u.provider = u.password ? 'email' : 'google';
+    return u;
+  }
+  function loadUsersMigrated() {
+    const users = loadUsers();
+    users.forEach(u => migrateUserRecord(u, users));
+    saveUsers(users);
+    return users;
+  }
+  function sessionFromUser(user) {
+    return {
+      id: user.id,
+      email: user.email,
+      account: user.account || '',
+      ownerName: user.ownerName || '',
+      provider: user.provider || 'email'
+    };
+  }
+  function findUserByLoginId(loginId, users) {
+    const raw = String(loginId || '').trim();
+    if (!raw) return null;
+    const lower = raw.toLowerCase();
+    return users.find(u => {
+      migrateUserRecord(u);
+      return normalizeEmail(u.email) === lower || normalizeAccount(u.account) === lower;
+    }) || null;
+  }
+  function generateTempPassword() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+    let out = '';
+    for (let i = 0; i < 8; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    return out;
+  }
+
+  function demoSignUp(ownerName, account, email, password, passwordConfirm) {
+    const name = String(ownerName || '').trim();
+    const acc = normalizeAccount(account);
+    const normalized = normalizeEmail(email);
+    if (!name) throw new Error(t('errOwnerName'));
+    if (!isValidAccount(acc)) throw new Error(t('errAccountFormat'));
+    if (!normalized || !normalized.includes('@')) throw new Error(t('errEmail'));
+    if ((password || '').length < 6) throw new Error(t('errPasswordLen'));
+    if (passwordConfirm != null && passwordConfirm !== '' && password !== passwordConfirm) {
+      throw new Error(t('errPasswordMismatch'));
+    }
+    const users = loadUsersMigrated();
+    if (users.some(u => normalizeAccount(u.account) === acc)) throw new Error(t('errAccountTaken'));
+    if (users.some(u => normalizeEmail(u.email) === normalized)) throw new Error(t('errEmailTaken'));
+    const user = {
+      id: 'demo_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      ownerName: name.slice(0, 40),
+      account: acc,
+      email: normalized,
+      password: password,
+      provider: 'email',
+      tempPassword: null,
+      tempPasswordExpires: null
+    };
+    users.push(user);
+    saveUsers(users);
+    return sessionFromUser(user);
+  }
+
+  function demoSignIn(loginId, password) {
+    const users = loadUsersMigrated();
+    const target = findUserByLoginId(loginId, users);
+    if (!target) throw new Error(t('errBadCreds'));
+    if (target.provider === 'google' && !target.password) {
+      throw new Error(t('errUseGoogle'));
+    }
+    if (target.password !== password) throw new Error(t('errBadCreds'));
+    return sessionFromUser(target);
+  }
+
+  function signInWithGoogleEmail(email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized || !normalized.includes('@')) throw new Error(t('errGoogleEmail'));
+    const users = loadUsersMigrated();
+    let user = users.find(u => normalizeEmail(u.email) === normalized);
+    if (!user) {
+      const base = emailLocalPart(normalized);
+      user = {
+        id: 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        ownerName: base,
+        account: ensureUniqueAccount(base, users),
+        email: normalized,
+        password: null,
+        provider: 'google',
+        tempPassword: null,
+        tempPasswordExpires: null
+      };
+      users.push(user);
+      saveUsers(users);
+    } else {
+      migrateUserRecord(user);
+      if (!user.ownerName) user.ownerName = emailLocalPart(normalized);
+      if (!user.account) user.account = ensureUniqueAccount(emailLocalPart(normalized), users, user.id);
+      if (!user.provider) user.provider = 'google';
+      saveUsers(users);
+    }
+    // 既有 email 帳號用同一電郵經 Google 示範登入時，沿用同一 id，資料不中斷
+    const provider = user.provider === 'email' ? 'email' : 'google';
+    return sessionFromUser(Object.assign({}, user, { provider: provider }));
+  }
+
+  function requestTempPassword(loginId) {
+    const users = loadUsersMigrated();
+    const user = findUserByLoginId(loginId, users);
+    if (!user) throw new Error(t('errNotFound'));
+    if (user.provider === 'google' && !user.password) {
+      throw new Error(t('errUseGoogleLogin'));
+    }
+    const temp = generateTempPassword();
+    user.tempPassword = temp;
+    user.tempPasswordExpires = Date.now() + 30 * 60 * 1000;
+    saveUsers(users);
+    return { email: user.email, tempPassword: temp, loginHint: user.account || user.email };
+  }
+
+  function resetPasswordWithTemp(loginId, tempPassword, newPassword, confirmPassword) {
+    const users = loadUsersMigrated();
+    const user = findUserByLoginId(loginId, users);
+    if (!user) throw new Error(t('errNotFound'));
+    if (user.provider === 'google' && !user.password) {
+      throw new Error(t('errUseGoogleLogin'));
+    }
+    if (!user.tempPassword || !user.tempPasswordExpires) throw new Error(t('errNeedTemp'));
+    if (Date.now() > Number(user.tempPasswordExpires)) {
+      user.tempPassword = null;
+      user.tempPasswordExpires = null;
+      saveUsers(users);
+      throw new Error(t('errTempExpired'));
+    }
+    if (String(tempPassword || '') !== String(user.tempPassword)) throw new Error(t('errTempWrong'));
+    if ((newPassword || '').length < 6) throw new Error(t('errNewPasswordLen'));
+    if (newPassword !== confirmPassword) throw new Error(t('errNewPasswordMismatch'));
+    user.password = newPassword;
+    user.provider = 'email';
+    user.tempPassword = null;
+    user.tempPasswordExpires = null;
+    saveUsers(users);
+    return sessionFromUser(user);
+  }
+
+  // Auth UI tabs
+  let authTab = 'login';
+  function setAuthTab(tab) {
+    authTab = tab;
+    document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+    document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+    const card = document.getElementById('authCard');
+    if (card) {
+      card.classList.toggle('mode-login', tab === 'login');
+      card.classList.toggle('mode-signup', tab === 'signup');
+    }
+    document.getElementById('authSubmit').textContent = tab === 'login' ? t('tabLogin') : t('createAccount');
+    document.getElementById('authPassword').autocomplete = tab === 'signup' ? 'new-password' : 'current-password';
+    showAuthError(null);
+  }
+  document.getElementById('tabLogin').addEventListener('click', () => setAuthTab('login'));
+  document.getElementById('tabSignup').addEventListener('click', () => setAuthTab('signup'));
+
+  document.getElementById('authForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    showAuthError(null);
+    const password = document.getElementById('authPassword').value;
+    const btn = document.getElementById('authSubmit');
+    btn.disabled = true;
+    try {
+      let session;
+      if (authTab === 'signup') {
+        session = demoSignUp(
+          document.getElementById('authOwnerName').value,
+          document.getElementById('authAccount').value,
+          document.getElementById('authEmail').value,
+          password,
+          document.getElementById('authPasswordConfirm').value
+        );
+      } else {
+        session = demoSignIn(document.getElementById('authLoginId').value, password);
+      }
+      enterApp(session);
+      document.getElementById('authPassword').value = '';
+      const conf = document.getElementById('authPasswordConfirm');
+      if (conf) conf.value = '';
+    } catch (err) {
+      showAuthError(err.message || t('errGeneric'));
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  /* —— Forgot password UI —— */
+  const forgotModal = document.getElementById('forgotModal');
+  function showForgotStep(stepId) {
+    ['forgotStepA', 'forgotStepMail', 'forgotStepB'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('active', id === stepId);
+    });
+  }
+  function openForgotModal() {
+    showAuthError(null);
+    document.getElementById('forgotLoginId').value = document.getElementById('authLoginId').value || '';
+    document.getElementById('resetLoginId').value = '';
+    document.getElementById('resetTempPassword').value = '';
+    document.getElementById('resetNewPassword').value = '';
+    document.getElementById('resetNewPasswordConfirm').value = '';
+    showForgotStep('forgotStepA');
+    forgotModal.classList.add('open');
+  }
+  function closeForgotModal() {
+    forgotModal.classList.remove('open');
+  }
+  document.getElementById('linkForgotPassword').addEventListener('click', openForgotModal);
+  document.getElementById('forgotCancelA').addEventListener('click', closeForgotModal);
+  document.getElementById('forgotCancelB').addEventListener('click', closeForgotModal);
+  forgotModal.addEventListener('click', (e) => {
+    if (e.target === forgotModal) closeForgotModal();
+  });
+  document.getElementById('forgotSendTemp').addEventListener('click', () => {
+    try {
+      const loginId = document.getElementById('forgotLoginId').value;
+      const result = requestTempPassword(loginId);
+      document.getElementById('forgotMailTo').textContent = tf('mailedTo', { email: result.email });
+      document.getElementById('forgotMailHint').textContent = tf('mailedHint', { email: result.email });
+      document.getElementById('forgotTempDisplay').textContent = result.tempPassword;
+      document.getElementById('resetLoginId').value = loginId.trim() || result.loginHint;
+      document.getElementById('resetTempPassword').value = result.tempPassword;
+      showForgotStep('forgotStepMail');
+      showToast(t('tempSent'));
+    } catch (err) {
+      showAuthError(err.message || t('errSendTemp'));
+      closeForgotModal();
+    }
+  });
+  document.getElementById('forgotBackToA').addEventListener('click', () => showForgotStep('forgotStepA'));
+  document.getElementById('forgotGoReset').addEventListener('click', () => showForgotStep('forgotStepB'));
+  document.getElementById('forgotCopyTemp').addEventListener('click', async () => {
+    const val = document.getElementById('forgotTempDisplay').textContent || '';
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(val);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = val;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+      showToast(t('copiedTemp'));
+    } catch (e) {
+      showToast(val);
+    }
+  });
+  document.getElementById('forgotResetSubmit').addEventListener('click', () => {
+    try {
+      const session = resetPasswordWithTemp(
+        document.getElementById('resetLoginId').value,
+        document.getElementById('resetTempPassword').value,
+        document.getElementById('resetNewPassword').value,
+        document.getElementById('resetNewPasswordConfirm').value
+      );
+      closeForgotModal();
+      enterApp(session);
+      showToast(t('passwordReset'));
+    } catch (err) {
+      showAuthError(err.message || t('errResetFail'));
+      // keep modal open so user can fix
+    }
+  });
+
+  document.getElementById('btnSignOut').addEventListener('click', signOut);
+
+  // Google demo picker
+  const googlePickerModal = document.getElementById('googlePickerModal');
+  const googleEmailInput = document.getElementById('googleEmailInput');
+
+  function openGooglePicker() {
+    googleEmailInput.value = '';
+    document.querySelectorAll('.google-chip').forEach(c => c.classList.remove('active'));
+    googlePickerModal.classList.add('open');
+    setTimeout(() => googleEmailInput.focus(), 50);
+  }
+  function closeGooglePicker() {
+    googlePickerModal.classList.remove('open');
+  }
+
+  document.getElementById('btnGoogleDemo').addEventListener('click', () => {
+    if (GOOGLE_CLIENT_ID) {
+      // GIS button is preferred; still allow fallback picker
+      openGooglePicker();
+      return;
+    }
+    openGooglePicker();
+  });
+  document.getElementById('googlePickerCancel').addEventListener('click', closeGooglePicker);
+  googlePickerModal.addEventListener('click', (e) => {
+    if (e.target === googlePickerModal) closeGooglePicker();
+  });
+  document.querySelectorAll('.google-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.google-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      googleEmailInput.value = chip.dataset.email || '';
+    });
+  });
+  document.getElementById('googlePickerConfirm').addEventListener('click', () => {
+    try {
+      const session = signInWithGoogleEmail(googleEmailInput.value);
+      closeGooglePicker();
+      enterApp(session);
+    } catch (err) {
+      showAuthError(err.message || t('errGoogleFail'));
+      closeGooglePicker();
+    }
+  });
+
+  function decodeJwtPayload(token) {
+    try {
+      const part = token.split('.')[1];
+      const json = atob(part.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decodeURIComponent(Array.from(json).map(c =>
+        '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      ).join('')));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function handleGoogleCredential(response) {
+    const payload = decodeJwtPayload(response.credential || '');
+    if (!payload || !payload.email) {
+      showAuthError(t('errGooglePayload'));
+      return;
+    }
+    try {
+      // Prefer stable sub-based id if new user
+      const email = String(payload.email).toLowerCase();
+      const users = loadUsers();
+      let user = users.find(u => u.email === email);
+      if (!user) {
+        const base = emailLocalPart(email);
+        user = {
+          id: 'g_' + (payload.sub || Date.now().toString(36)),
+          ownerName: (payload.name || base || '').toString().slice(0, 40),
+          account: ensureUniqueAccount(base, users),
+          email: email,
+          password: null,
+          provider: 'google',
+          tempPassword: null,
+          tempPasswordExpires: null
+        };
+        users.push(user);
+        saveUsers(users);
+      } else {
+        migrateUserRecord(user);
+        if (!user.ownerName) user.ownerName = (payload.name || emailLocalPart(email) || '').toString().slice(0, 40);
+        if (!user.account) user.account = ensureUniqueAccount(emailLocalPart(email), users, user.id);
+        saveUsers(users);
+      }
+      enterApp(sessionFromUser(user));
+    } catch (err) {
+      showAuthError(err.message || t('errGoogleFail'));
+    }
+  }
+
+  function initGoogleIdentity() {
+    if (!GOOGLE_CLIENT_ID) return;
+    const host = document.getElementById('gisButtonHost');
+    const demoBtn = document.getElementById('btnGoogleDemo');
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    s.onload = () => {
+      try {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredential,
+          auto_select: false,
+          ux_mode: 'popup'
+        });
+        host.classList.add('visible');
+        google.accounts.id.renderButton(host, {
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'rectangular',
+          width: 320,
+          locale: (currentLang() === 'ja' ? 'ja' : (currentLang() === 'en' ? 'en' : 'zh-HK'))
+        });
+        // Prefer real GIS button when Client ID is configured
+        demoBtn.style.display = 'none';
+      } catch (e) {
+        console.warn('GIS init failed', e);
+      }
+    };
+    s.onerror = () => console.warn('無法載入 Google Identity Services');
+    document.head.appendChild(s);
+  }
+
+  document.getElementById('linkHomePreview').addEventListener('click', function (e) {
+    e.preventDefault();
+    enterPreview();
+  });
+
+  // Boot: session → app, else auth
+  (function boot() {
+    // Auth screen language from last choice (before login)
+    userSettings.language = readUiLang();
+    applyLanguage(userSettings.language);
+    setAuthTab('login');
+    const session = getSession();
+    if (session && session.id && session.email) {
+      enterApp(session);
+    } else {
+      showAuthScreen();
+    }
+    initGoogleIdentity();
+  })();
+</script>
+</body>
+</html>
