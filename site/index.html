@@ -482,6 +482,51 @@
     color: var(--text-soft);
     margin-top: 8px;
   }
+  .edit-remove-wrap {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .btn-remove-rabbit {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #C4A484;
+    background: rgba(196, 164, 132, 0.08);
+    color: #7A4E3A;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+  .btn-remove-rabbit:hover,
+  .btn-remove-rabbit:focus-visible {
+    background: rgba(196, 164, 132, 0.2);
+  }
+  .btn-remove-rabbit:active { transform: scale(0.985); }
+  .btn-remove-rabbit.confirm {
+    background: #F3E6D8;
+    border-color: #C4A484;
+    font-weight: 500;
+  }
+  .modal-actions .btn-remove-rabbit {
+    flex: 1;
+    width: auto;
+  }
+  .btn-remove-rabbit[hidden],
+  .remove-confirm[hidden] {
+    display: none !important;
+  }
+  .remove-confirm .modal-hint {
+    margin-top: 0;
+    margin-bottom: 2px;
+    font-size: 0.8125rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .today-hero.no-rabbit .today-hero-overlay { display: none; }
+  .rabbit-switcher.compact.on-hero .rabbit-add-btn {
+    background: rgba(255, 255, 255, 0.82);
+  }
 
   .week-strip {
     display: flex;
@@ -888,6 +933,10 @@
     background: var(--accent-deep);
     color: #fff;
     border-color: var(--accent-deep);
+  }
+  .more-rabbit-actions button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
   .about-line {
     text-align: center;
@@ -1860,6 +1909,16 @@
         <button type="button" class="btn-ghost" id="editProfileCancel" data-i18n="cancel">取消</button>
         <button type="button" class="btn-solid" id="editProfileSave" data-i18n="save">儲存</button>
       </div>
+      <div class="edit-remove-wrap">
+        <button type="button" class="btn-remove-rabbit" id="editProfileRemove" data-i18n="removeRabbit">移除兔子項目</button>
+        <div class="remove-confirm" id="editProfileRemoveConfirm" hidden>
+          <p class="modal-hint" id="editProfileRemoveConfirmText"></p>
+          <div class="modal-actions">
+            <button type="button" class="btn-ghost" id="editProfileRemoveCancel" data-i18n="cancel">取消</button>
+            <button type="button" class="btn-remove-rabbit confirm" id="editProfileRemoveConfirmBtn" data-i18n="removeRabbitYes">移除</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2056,6 +2115,14 @@
       topicDeleted: '已刪除題目',
       needName: '請填寫名字',
       rabbitUpdated: '已更新「{name}」資料',
+      removeRabbit: '移除兔子項目',
+      removeRabbitAsk: '確定移除「{name}」？這隻兔子的資料與每日記錄會一併刪除，且無法復原。',
+      removeRabbitYes: '移除',
+      rabbitRemoved: '已移除「{name}」',
+      noRabbitName: '尚未有兔子',
+      noRabbitHint: '點 ＋ 新增一隻兔子',
+      noRabbitSummary: '目前沒有兔子。點上方 ＋ 或下方按鈕新增。',
+      needRabbitFirst: '請先新增兔子',
       addRabbit: '新增兔子', addCountHint: '目前 {n}／{max} 隻 · 預設名「{name}」', renameRabbit: '重新命名', maxRabbits: '最多 5 隻',
       rabbitLimit: '已達上限 5 隻', addRabbitTitle: '新增兔子',
       nameLabel: '名字', namePh: '例如：小白', editNamePh: '例如：兔兔',
@@ -2150,6 +2217,14 @@
       topicDeleted: 'Topic deleted',
       needName: 'Please enter a name',
       rabbitUpdated: 'Updated “{name}”',
+      removeRabbit: 'Remove rabbit',
+      removeRabbitAsk: 'Remove “{name}”? This rabbit’s profile and daily logs will be deleted and cannot be undone.',
+      removeRabbitYes: 'Remove',
+      rabbitRemoved: 'Removed “{name}”',
+      noRabbitName: 'No rabbits yet',
+      noRabbitHint: 'Tap + to add a rabbit',
+      noRabbitSummary: 'No rabbits yet. Tap + above or the button below to add one.',
+      needRabbitFirst: 'Add a rabbit first',
       addRabbit: 'Add rabbit', addCountHint: 'Now {n}/{max} · default “{name}”', renameRabbit: 'Rename', maxRabbits: 'Up to 5 rabbits',
       rabbitLimit: 'Limit of 5 reached', addRabbitTitle: 'Add rabbit',
       nameLabel: 'Name', namePh: 'e.g. Snow', editNamePh: 'e.g. Bunny',
@@ -2244,6 +2319,14 @@
       topicDeleted: 'トピックを削除しました',
       needName: '名前を入力してください',
       rabbitUpdated: '「{name}」を更新しました',
+      removeRabbit: 'うさぎを削除',
+      removeRabbitAsk: '「{name}」を削除しますか？プロフィールと毎日の記録も消え、元に戻せません。',
+      removeRabbitYes: '削除',
+      rabbitRemoved: '「{name}」を削除しました',
+      noRabbitName: 'うさぎはまだいません',
+      noRabbitHint: '＋ をタップして追加',
+      noRabbitSummary: 'うさぎがいません。上の ＋ か下のボタンから追加できます。',
+      needRabbitFirst: '先にうさぎを追加してください',
       addRabbit: 'うさぎを追加', addCountHint: '現在 {n}／{max} · 初期名「{name}」', renameRabbit: '名前を変更', maxRabbits: '最大5羽',
       rabbitLimit: '上限5羽に達しました', addRabbitTitle: 'うさぎを追加',
       nameLabel: '名前', namePh: '例：スノー', editNamePh: '例：うさぎ',
@@ -2380,8 +2463,10 @@
     try {
       const raw = localStorage.getItem(KEY_RABBITS);
       if (raw) {
-        rabbits = JSON.parse(raw);
-        if (!Array.isArray(rabbits) || rabbits.length === 0) throw new Error('empty');
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error('bad');
+        // Empty array is a real "no rabbits" state after the last one is removed.
+        rabbits = parsed;
       } else {
         rabbits = [seedRabbit(null)];
         saveRabbits();
@@ -2395,10 +2480,6 @@
       activeId = localStorage.getItem(KEY_ACTIVE);
     } catch (e) {
       activeId = null;
-    }
-    if (!activeId || !rabbits.find(r => r.id === activeId)) {
-      activeId = rabbits[0].id;
-      saveActive();
     }
 
     // ensure customTopics + diaryTitle on each rabbit (migrate older saves)
@@ -2424,6 +2505,13 @@
       ensureAvatarFrame(r);
     });
     if (topicsTouched) saveRabbits();
+
+    if (!rabbits.length) {
+      activeId = null;
+    } else if (!activeId || !rabbits.find(r => r.id === activeId)) {
+      activeId = rabbits[0].id;
+      saveActive();
+    }
 
     try {
       const rawLogs = localStorage.getItem(KEY_LOGS);
@@ -2572,11 +2660,13 @@
 
   function saveActive() {
     try {
-      localStorage.setItem(KEY_ACTIVE, activeId);
+      if (activeId) localStorage.setItem(KEY_ACTIVE, activeId);
+      else localStorage.removeItem(KEY_ACTIVE);
     } catch (e) {}
   }
 
   function getActive() {
+    if (!rabbits.length) return null;
     return rabbits.find(r => r.id === activeId) || rabbits[0];
   }
 
@@ -2630,6 +2720,7 @@
     const trimmed = (name || '').trim();
     if (!trimmed) return;
     const r = getActive();
+    if (!r) return;
     r.name = trimmed.slice(0, 12);
     saveRabbits();
     renderAll();
@@ -2736,6 +2827,7 @@
 
   function updateActiveAvatar(dataUrl, openEditorAfter) {
     const r = getActive();
+    if (!r) return;
     r.avatar = dataUrl;
     r.avatarFrame = defaultAvatarFrame();
     saveRabbits();
@@ -2849,6 +2941,12 @@
     document.querySelectorAll('#fontSegment button').forEach(b => {
       b.classList.toggle('selected', b.dataset.font === userSettings.fontSize);
     });
+
+    const hasRabbit = !!getActive();
+    const renameBtn = document.getElementById('btnRenameRabbit');
+    const editBtn = document.getElementById('btnEditProfile');
+    if (renameBtn) renameBtn.disabled = !hasRabbit;
+    if (editBtn) editBtn.disabled = !hasRabbit;
   }
 
   function startOfWeek(d) {
@@ -2868,7 +2966,7 @@
     for (let i = 0; i < 7; i++) {
       const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i);
       const active = isSameDay(d, viewDate);
-      const has = !!getLog(r.id, d);
+      const has = r ? !!getLog(r.id, d) : false;
       html += '<button type="button" class="week-day-btn' +
         (active ? ' active' : '') +
         (has ? ' has-log' : '') +
@@ -2904,8 +3002,36 @@
   function renderTodayContext() {
     const r = getActive();
     const hero = document.getElementById('todayHero');
+    const hint = document.getElementById('heroPhotoHint');
+    const phIcon = document.querySelector('#todayHero .ph-icon');
+    const fillBtn = document.getElementById('btnFillStatus');
     refreshAllAvatarViews();
-    if (hero && r) hero.classList.toggle('has-photo', !!r.avatar);
+    if (hero) {
+      hero.classList.toggle('no-rabbit', !r);
+      hero.title = r ? '點擊更換／加入照片' : t('noRabbitHint');
+    }
+    if (!r) {
+      if (hero) hero.classList.remove('has-photo');
+      document.getElementById('todayHeroName').textContent = t('noRabbitName');
+      document.getElementById('todayHeroAge').textContent = t('noRabbitHint');
+      document.getElementById('todayHeroTags').innerHTML = '';
+      if (hint) hint.textContent = t('noRabbitHint');
+      if (phIcon) phIcon.textContent = '🐰';
+      if (fillBtn) fillBtn.textContent = t('addRabbit');
+      renderWeekStrip();
+      renderMetricsFromLog(null, null);
+      const sumEl = document.getElementById('summaryLine');
+      if (sumEl) {
+        sumEl.textContent = t('noRabbitSummary');
+        sumEl.classList.remove('alert');
+      }
+      renderLogHeader();
+      return;
+    }
+    if (hint) hint.textContent = t('addPhoto');
+    if (phIcon) phIcon.textContent = '📷';
+    if (fillBtn) fillBtn.textContent = t('fillStatus');
+    if (hero) hero.classList.toggle('has-photo', !!r.avatar);
     document.getElementById('todayHeroName').textContent = r.name;
     const ageParts = [r.ageLabel, r.breed].filter(Boolean);
     const ageText = ageParts.join(' · ') || t('ageBreedUnset');
@@ -2950,7 +3076,7 @@
       hint.textContent = '';
     }
 
-    const w = (log && log.weight != null) ? log.weight : (r.weight != null ? r.weight : null);
+    const w = (log && log.weight != null) ? log.weight : (r && r.weight != null ? r.weight : null);
     document.getElementById('todayWeightValue').textContent = w != null ? (w + ' kg') : '—';
     const ws = document.getElementById('metricWeightStatus');
     if (log && log.weight != null) {
@@ -2965,8 +3091,11 @@
 
   function renderLogHeader() {
     const r = getActive();
-    document.getElementById('logHeaderSub').textContent =
-      formatDisplayDate(viewDate) + ' · ' + r.name;
+    const el = document.getElementById('logHeaderSub');
+    if (!el) return;
+    el.textContent = r
+      ? (formatDisplayDate(viewDate) + ' · ' + r.name)
+      : formatDisplayDate(viewDate);
   }
 
   function selectOption(field, value) {
@@ -3004,6 +3133,16 @@
 
   function loadLogIntoForm() {
     const r = getActive();
+    if (!r) {
+      selectOption('appetite', '');
+      selectOption('poop', '');
+      selectOption('activity', '');
+      selectOption('teeth', '');
+      document.getElementById('logWeightInput').value = '';
+      document.getElementById('logNotes').value = '';
+      renderLogHeader();
+      return;
+    }
     const log = getLog(r.id, viewDate) || emptyLog();
     selectOption('appetite', log.appetite || '');
     selectOption('poop', log.poop || '');
@@ -3018,6 +3157,10 @@
 
   function saveLogFromForm() {
     const r = getActive();
+    if (!r) {
+      showToast(t('needRabbitFirst'));
+      return;
+    }
     const weightRaw = document.getElementById('logWeightInput').value;
     const weight = weightRaw === '' ? null : Number(weightRaw);
     const entry = {
@@ -3055,6 +3198,7 @@
   }
 
   function ensureCustomTopics(r) {
+    if (!r) return [];
     if (!r.customTopics || !Array.isArray(r.customTopics)) r.customTopics = [];
     return r.customTopics;
   }
@@ -3063,6 +3207,12 @@
     const r = getActive();
     const el = document.getElementById('diaryTitle');
     if (!el) return;
+    if (!r) {
+      el.setAttribute('contenteditable', 'false');
+      el.textContent = t('defaultDiaryTitle');
+      return;
+    }
+    el.setAttribute('contenteditable', 'true');
     const title = (r.diaryTitle && String(r.diaryTitle).trim()) || t('defaultDiaryTitle');
     if (document.activeElement !== el) {
       el.textContent = title;
@@ -3072,6 +3222,7 @@
   function commitDiaryTitle() {
     const el = document.getElementById('diaryTitle');
     const r = getActive();
+    if (!r || !el) return;
     let title = (el.textContent || '').replace(/\u00a0/g, ' ').trim().slice(0, 24);
     if (!title) title = t('defaultDiaryTitle');
     r.diaryTitle = title;
@@ -3119,8 +3270,13 @@
 
   function renderCustomTopics() {
     const r = getActive();
-    const topics = ensureCustomTopics(r);
     const el = document.getElementById('customTopicsChips');
+    if (!el) return;
+    if (!r) {
+      el.innerHTML = '';
+      return;
+    }
+    const topics = ensureCustomTopics(r);
     let html = '';
     topics.forEach((label, idx) => {
       html += '<span class="topic-chip" contenteditable="true" spellcheck="false" data-idx="' + idx +
@@ -3222,10 +3378,12 @@
   }
 
   function openRenameModal() {
+    const r = getActive();
+    if (!r) return;
     modalMode = 'rename';
     nameModalTitle.textContent = t('renameRabbit');
     nameModalHint.textContent = t('renameHint');
-    nameModalInput.value = getActive().name;
+    nameModalInput.value = r.name;
     nameModal.classList.add('open');
     setTimeout(() => { nameModalInput.focus(); nameModalInput.select(); }, 50);
   }
@@ -3253,8 +3411,56 @@
   // Edit profile sheet
   const editProfileModal = document.getElementById('editProfileModal');
 
+  function resetRemoveConfirm() {
+    const panel = document.getElementById('editProfileRemoveConfirm');
+    const btn = document.getElementById('editProfileRemove');
+    if (panel) panel.hidden = true;
+    if (btn) btn.hidden = false;
+  }
+
+  function openRemoveConfirm() {
+    const r = getActive();
+    if (!r) return;
+    const panel = document.getElementById('editProfileRemoveConfirm');
+    const btn = document.getElementById('editProfileRemove');
+    const text = document.getElementById('editProfileRemoveConfirmText');
+    if (text) text.textContent = tf('removeRabbitAsk', { name: r.name });
+    if (btn) btn.hidden = true;
+    if (panel) {
+      panel.hidden = false;
+      panel.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function removeActiveRabbit() {
+    const r = getActive();
+    if (!r) return;
+    const removedName = r.name;
+    const removedId = r.id;
+    const idx = rabbits.findIndex(x => x.id === removedId);
+    if (idx < 0) return;
+    rabbits.splice(idx, 1);
+    const prefix = removedId + '|';
+    Object.keys(logs).forEach(k => {
+      if (k.indexOf(prefix) === 0) delete logs[k];
+    });
+    if (activeId === removedId) {
+      if (!rabbits.length) activeId = null;
+      else activeId = (rabbits[idx] || rabbits[idx - 1] || rabbits[0]).id;
+    }
+    saveRabbits();
+    saveLogs();
+    saveActive();
+    closePhotoEditor();
+    closeEditProfile();
+    renderAll();
+    showToast(tf('rabbitRemoved', { name: removedName }));
+  }
+
   function openEditProfile() {
     const r = getActive();
+    if (!r) return;
+    resetRemoveConfirm();
     document.getElementById('editName').value = r.name || '';
     document.getElementById('editAge').value = r.ageLabel || '';
     document.getElementById('editBreed').value = r.breed || '';
@@ -3267,10 +3473,12 @@
 
   function closeEditProfile() {
     editProfileModal.classList.remove('open');
+    resetRemoveConfirm();
   }
 
   function saveEditProfile() {
     const r = getActive();
+    if (!r) return;
     const name = document.getElementById('editName').value.trim();
     if (!name) {
       showToast(t('needName'));
@@ -3292,6 +3500,9 @@
 
   document.getElementById('editProfileCancel').addEventListener('click', closeEditProfile);
   document.getElementById('editProfileSave').addEventListener('click', saveEditProfile);
+  document.getElementById('editProfileRemove').addEventListener('click', openRemoveConfirm);
+  document.getElementById('editProfileRemoveCancel').addEventListener('click', resetRemoveConfirm);
+  document.getElementById('editProfileRemoveConfirmBtn').addEventListener('click', removeActiveRabbit);
   editProfileModal.addEventListener('click', (e) => {
     if (e.target === editProfileModal) closeEditProfile();
   });
@@ -3341,7 +3552,13 @@
 
   document.getElementById('weekPrev').addEventListener('click', () => changeWeek(-1));
   document.getElementById('weekNext').addEventListener('click', () => changeWeek(1));
-  document.getElementById('btnFillStatus').addEventListener('click', () => goToLogScreen());
+  document.getElementById('btnFillStatus').addEventListener('click', () => {
+    if (!getActive()) {
+      openAddModal();
+      return;
+    }
+    goToLogScreen();
+  });
 
   const diaryTitleEl = document.getElementById('diaryTitle');
   diaryTitleEl.addEventListener('keydown', (e) => {
@@ -3522,11 +3739,19 @@
   document.getElementById('btnHeroPhoto').addEventListener('click', (e) => {
     e.stopPropagation();
     const r = getActive();
+    if (!r) {
+      openAddModal();
+      return;
+    }
     if (!r.avatar) openAvatarPicker();
     else openPhotoEditor();
   });
   document.getElementById('btnHeroEditRabbit').addEventListener('click', (e) => {
     e.stopPropagation();
+    if (!getActive()) {
+      openAddModal();
+      return;
+    }
     openEditProfile();
   });
   document.getElementById('photoEditorReplace').addEventListener('click', () => {
@@ -3537,10 +3762,14 @@
   document.getElementById('btnProfilePickPhoto').addEventListener('click', () => openAvatarPicker());
 
   document.getElementById('todayHero').addEventListener('click', (e) => {
-    if (e.target.closest('#todaySwitcher') || e.target.closest('.rabbit-chip')) return;
+    if (e.target.closest('#todaySwitcher') || e.target.closest('.rabbit-chip') || e.target.closest('.rabbit-add-btn')) return;
     if (e.target.closest('.today-hero-card-actions')) return;
     if (e.target.closest('.today-hero-glass')) return;
     const r = getActive();
+    if (!r) {
+      openAddModal();
+      return;
+    }
     if (!r.avatar) openAvatarPicker();
   });
   document.getElementById('todaySwitcher').addEventListener('click', (e) => e.stopPropagation());
