@@ -1472,8 +1472,8 @@
   <div class="auth-screen" id="authScreen" aria-label="登入">
     <a href="#preview" class="auth-home-link" id="linkHomePreview" data-i18n="home">首頁</a>
     <div class="auth-brand">
-      <h1 data-i18n="brandTitle">兔兔 Tracker</h1>
-      <p id="authBrandSub" data-i18n="brandSub">高齡小動物每日觀察 · 侘寂記錄</p>
+      <h1 data-i18n="brandTitle">毛茸茸觀察手札</h1>
+      <p id="authBrandSub" data-i18n="brandSub">你的小兔子今天過得如何🐰</p>
     </div>
     <div class="auth-card mode-login" id="authCard">
       <div class="auth-tabs">
@@ -1524,7 +1524,6 @@
         <button type="button" class="auth-forgot-link auth-only-login" id="linkForgotPassword" data-i18n="forgotLink">忘記密碼？</button>
         <button type="submit" class="btn-primary" id="authSubmit" data-i18n="tabLogin">登入</button>
       </form>
-      <p class="auth-hint" id="authHint" data-i18n="authHint">每位使用者擁有獨立的兔子檔案與每日記錄。</p>
     </div>
     <div class="auth-dev-banner" id="authDevBanner" data-i18n="demoBanner">示範模式：資料只存在本機瀏覽器</div>
   </div>
@@ -2004,14 +2003,14 @@
 
   const I18N = {
     'zh-Hant': {
-      home: '首頁', brandTitle: '兔兔 Tracker', brandSub: '高齡小動物每日觀察 · 侘寂記錄',
+      home: '首頁', brandTitle: '毛茸茸觀察手札', brandSub: '你的小兔子今天過得如何🐰',
       tabLogin: '登入', tabSignup: '註冊', createAccount: '建立帳號',
       googleBtn: '使用 Google 帳戶登入', orDivider: '或',
       ownerName: '主人姓名', accountLabel: '登入帳號', loginId: '帳號或電郵', emailLabel: '電郵',
       password: '密碼', passwordConfirm: '確認密碼',
       displayNamePh: '兔子主人姓名', accountPh: '英數或底線，例如 bunny_owner', loginIdPh: '帳號或電郵',
       emailPh: 'you@example.com', passwordPh: '至少 6 字', passwordConfirmPh: '再輸入一次',
-      forgotLink: '忘記密碼？', authHint: '每位使用者擁有獨立的兔子檔案與每日記錄。',
+      forgotLink: '忘記密碼？',
       demoBanner: '示範模式：資料只存在本機瀏覽器',
       navToday: '今日', navLog: '記錄', navCal: '日曆', navMore: '更多',
       moreTitle: '更多', accountTitle: '帳戶／基本資料', displayName: '主人姓名',
@@ -2098,14 +2097,14 @@
       labelAppetite: '食慾', labelPoop: '便便', labelActivity: '活動', labelEyes: '眼睛'
     },
     en: {
-      home: 'Home', brandTitle: 'Tutu Tracker', brandSub: 'Daily senior pet notes · quiet care',
+      home: 'Home', brandTitle: 'Fluffy Observation Journal', brandSub: 'How is your bunny today? 🐰',
       tabLogin: 'Log in', tabSignup: 'Sign up', createAccount: 'Create account',
       googleBtn: 'Continue with Google', orDivider: 'or',
       ownerName: 'Owner name', accountLabel: 'Account', loginId: 'Account or email', emailLabel: 'Email',
       password: 'Password', passwordConfirm: 'Confirm password',
       displayNamePh: 'Rabbit owner name', accountPh: 'Letters, numbers, _ e.g. bunny_owner', loginIdPh: 'Account or email',
       emailPh: 'you@example.com', passwordPh: 'At least 6 characters', passwordConfirmPh: 'Enter again',
-      forgotLink: 'Forgot password?', authHint: 'Each user has separate rabbits and daily logs.',
+      forgotLink: 'Forgot password?',
       demoBanner: 'Demo mode: data stays in this browser only',
       navToday: 'Today', navLog: 'Log', navCal: 'Calendar', navMore: 'More',
       moreTitle: 'More', accountTitle: 'Account / Profile', displayName: 'Owner name',
@@ -2192,14 +2191,14 @@
       labelAppetite: 'Appetite', labelPoop: 'Poop', labelActivity: 'Activity', labelEyes: 'Eyes'
     },
     ja: {
-      home: 'ホーム', brandTitle: '兔兔 Tracker', brandSub: '高齢ペットの毎日の観察 · 静かな記録',
+      home: 'ホーム', brandTitle: 'もこもこ観察手帳', brandSub: '今日のうさぎ、元気？🐰',
       tabLogin: 'ログイン', tabSignup: '登録', createAccount: 'アカウント作成',
       googleBtn: 'Google アカウントでログイン', orDivider: 'または',
       ownerName: '飼い主名', accountLabel: 'ログインID', loginId: 'IDまたはメール', emailLabel: 'メール',
       password: 'パスワード', passwordConfirm: 'パスワード確認',
       displayNamePh: '飼い主の名前', accountPh: '英数字または _ 例 bunny_owner', loginIdPh: 'IDまたはメール',
       emailPh: 'you@example.com', passwordPh: '6文字以上', passwordConfirmPh: 'もう一度入力',
-      forgotLink: 'パスワードを忘れた', authHint: 'ユーザーごとにうさぎと日誌が分かれます。',
+      forgotLink: 'パスワードを忘れた',
       demoBanner: 'デモ：データはこのブラウザのみに保存',
       navToday: '今日', navLog: '記録', navCal: 'カレンダー', navMore: 'その他',
       moreTitle: 'その他', accountTitle: 'アカウント／基本情報', displayName: '飼い主名',
@@ -3705,7 +3704,6 @@
     setTxt('tabSignup', 'tabSignup');
     setTxt('btnGoogleDemoLabel', 'googleBtn');
     setTxt('authDivider', 'orDivider');
-    setTxt('authHint', 'authHint');
     setTxt('authDevBanner', 'demoBanner');
     const dn = document.getElementById('settingsDisplayName');
     if (dn) dn.placeholder = t('displayNamePh');
