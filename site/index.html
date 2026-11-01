@@ -116,13 +116,43 @@
     background: #E8D9C8;
     cursor: pointer;
   }
+  .today-hero-media {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
   .today-hero-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     display: none;
+    max-width: none;
+    pointer-events: none;
   }
   .today-hero.has-photo .today-hero-img { display: block; }
+  .hero-photo-actions {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 4;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    pointer-events: auto;
+  }
+  .hero-photo-btn {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 10px rgba(61, 56, 50, 0.08);
+  }
+  .hero-photo-btn:active { transform: scale(0.98); }
+  .today-hero:not(.has-photo) .hero-photo-actions { display: none; }
   .today-hero-placeholder {
     position: absolute;
     inset: 0;
@@ -314,11 +344,11 @@
     justify-content: center;
     font-size: 0.6875rem;
     color: var(--text-soft);
+    position: relative;
   }
   .rabbit-chip-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    max-width: none;
+    pointer-events: none;
   }
   .rabbit-chip-name {
     overflow: hidden;
@@ -854,10 +884,8 @@
     position: relative;
   }
   .avatar-circle img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
     display: none;
+    max-width: none;
   }
   .avatar-circle.has-photo img { display: block; }
   .avatar-placeholder {
@@ -907,6 +935,137 @@
     vertical-align: middle;
   }
   .profile-meta { color: var(--text-soft); font-size: 0.875rem; }
+
+  .edit-photo-block {
+    text-align: center;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .edit-photo-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .edit-photo-actions button {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+  .edit-photo-actions button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .edit-photo-actions button.primary-outline {
+    border-color: var(--accent);
+    color: var(--accent-deep);
+    background: #F4F7F3;
+  }
+
+  .photo-editor-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    background: rgba(61, 56, 50, 0.42);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 12px;
+  }
+  .photo-editor-backdrop.open { display: flex; }
+  .photo-editor-sheet {
+    width: min(480px, 100%);
+    max-height: min(92vh, 720px);
+    background: var(--bg);
+    border-radius: 20px 20px 16px 16px;
+    padding: 18px 16px 16px;
+    box-shadow: 0 12px 40px rgba(61, 56, 50, 0.18);
+    overflow: auto;
+  }
+  .photo-editor-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.25rem;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .photo-editor-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #E8D9C8;
+    border: 2px solid var(--line);
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+  }
+  .photo-editor-frame:active { cursor: grabbing; }
+  .photo-editor-frame img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    max-width: none;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .photo-editor-tools {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 14px 0 8px;
+  }
+  .photo-zoom-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 1.375rem;
+    line-height: 1;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .photo-zoom-btn:active { transform: scale(0.96); }
+  .photo-editor-hint {
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .photo-editor-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+  .photo-editor-actions button {
+    min-width: 88px;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .photo-editor-actions .btn-solid {
+    background: var(--accent-deep);
+    color: #fff;
+    border-color: var(--accent-deep);
+  }
 
   .status-tags {
     display: flex;
@@ -1340,7 +1499,13 @@
         <span class="diary-title" id="diaryTitle" contenteditable="true" spellcheck="false" data-placeholder="兔子日記" data-i18n-placeholder="defaultDiaryTitle" data-i18n-title="diaryTitleHint" title="點一下即可修改題目">兔子日記</span>
       </div>
       <div class="today-hero" id="todayHero" title="點擊更換／加入照片">
-        <img class="today-hero-img" id="todayHeroImg" alt="兔子照片">
+        <div class="today-hero-media" id="todayHeroMedia" aria-hidden="true">
+          <img class="today-hero-img" id="todayHeroImg" alt="兔子照片">
+        </div>
+        <div class="hero-photo-actions">
+          <button type="button" class="hero-photo-btn" id="btnHeroChangePhoto" data-i18n="changePhoto">更換照片</button>
+          <button type="button" class="hero-photo-btn" id="btnHeroAdjustPhoto" data-i18n="adjustPhoto">調整相片</button>
+        </div>
         <div class="today-hero-placeholder">
           <span class="ph-icon">📷</span>
           <span class="ph-text" id="heroPhotoHint" data-i18n="addPhoto">點擊加入兔兔照片</span>
@@ -1608,6 +1773,21 @@
   <div class="modal-backdrop" id="editProfileModal" role="dialog" aria-modal="true">
     <div class="modal-sheet tall">
       <div class="modal-title" id="editProfileTitle" data-i18n="editProfileTitle">編輯資料</div>
+      <div class="edit-photo-block">
+        <div class="avatar-wrap">
+          <div class="avatar-circle" id="editProfileAvatarCircle">
+            <img id="editProfileAvatarImg" alt="">
+            <div class="avatar-placeholder">
+              <span class="cam-icon">📷</span>
+              <span data-i18n="addPhotoShort">加入照片</span>
+            </div>
+          </div>
+        </div>
+        <div class="edit-photo-actions">
+          <button type="button" id="btnProfilePickPhoto" data-i18n="changePhoto">更換照片</button>
+          <button type="button" class="primary-outline" id="btnProfileAdjustPhoto" data-i18n="adjustPhoto" disabled>調整相片</button>
+        </div>
+      </div>
       <div class="form-row">
         <label for="editName" data-i18n="nameLabel">名字</label>
         <input type="text" id="editName" maxlength="12" placeholder="例如：兔兔" data-i18n-ph="editNamePh">
@@ -1636,6 +1816,25 @@
     </div>
   </div>
 
+  <!-- Photo crop / pan / zoom editor -->
+  <div class="photo-editor-backdrop" id="photoEditorModal" role="dialog" aria-modal="true" aria-labelledby="photoEditorTitle">
+    <div class="photo-editor-sheet">
+      <div class="photo-editor-title" id="photoEditorTitle" data-i18n="adjustPhoto">調整相片</div>
+      <div class="photo-editor-frame" id="photoEditorFrame">
+        <img id="photoEditorImg" alt="">
+      </div>
+      <div class="photo-editor-tools">
+        <button type="button" class="photo-zoom-btn" id="photoZoomOut" aria-label="Zoom out">−</button>
+        <button type="button" class="photo-zoom-btn" id="photoZoomIn" aria-label="Zoom in">+</button>
+      </div>
+      <p class="photo-editor-hint" id="photoEditorHint" data-i18n="photoEditorHint">拖移照片；雙指捏合或 +/- 縮放</p>
+      <div class="photo-editor-actions">
+        <button type="button" id="photoEditorReset" data-i18n="resetPhoto">重設</button>
+        <button type="button" id="photoEditorCancel" data-i18n="cancel">取消</button>
+        <button type="button" class="btn-solid" id="photoEditorDone" data-i18n="photoDone">完成</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Google demo account picker -->
   <div class="modal-backdrop center" id="googlePickerModal" role="dialog" aria-modal="true" aria-labelledby="googlePickerTitle">
@@ -1814,6 +2013,9 @@
       editProfileTitle: '編輯資料', ageLabel: '年齡／階段', agePh: '例如：高齡 · 約 8 歲',
       breedLabel: '品種', breedPh: '例如：垂耳兔', obsNotes: '觀察重點／備註',
       obsNotesPh: '例如：食慾 · 便便 · 活動量…', editProfileHint: '儲存後會更新今日封面與切換晶片',
+      changePhoto: '更換照片', adjustPhoto: '調整相片', addPhotoShort: '加入照片',
+      photoEditorHint: '拖移照片；雙指捏合或 +/- 縮放', resetPhoto: '重設', photoDone: '完成',
+      needPhotoFirst: '請先加入照片',
       googlePickTitle: '選擇帳戶', googlePickSub: '繼續使用「兔兔 Tracker」（示範）',
       googleEmailLabel: '或輸入 Gmail', gmailPh: 'you@gmail.com',
       googlePickNote: '此為離線示範選擇器，不會連到 Google。填入 GOOGLE_CLIENT_ID 後可改用正式登入。',
@@ -1902,6 +2104,9 @@
       editProfileTitle: 'Edit profile', ageLabel: 'Age / stage', agePh: 'e.g. Senior · ~8 yrs',
       breedLabel: 'Breed', breedPh: 'e.g. Lop', obsNotes: 'Focus / notes',
       obsNotesPh: 'e.g. appetite · poop · activity…', editProfileHint: 'Saves to Today cover and switcher chips',
+      changePhoto: 'Change photo', adjustPhoto: 'Adjust photo', addPhotoShort: 'Add photo',
+      photoEditorHint: 'Drag to move; pinch or +/- to zoom', resetPhoto: 'Reset', photoDone: 'Done',
+      needPhotoFirst: 'Add a photo first',
       googlePickTitle: 'Choose an account', googlePickSub: 'Continue to Tutu Tracker (demo)',
       googleEmailLabel: 'Or enter Gmail', gmailPh: 'you@gmail.com',
       googlePickNote: 'Offline demo picker — does not contact Google. Set GOOGLE_CLIENT_ID for real sign-in.',
@@ -1990,6 +2195,9 @@
       editProfileTitle: 'プロフィール編集', ageLabel: '年齢／段階', agePh: '例：高齢 · 約8歳',
       breedLabel: '品種', breedPh: '例：ロップイヤー', obsNotes: '観察ポイント／メモ',
       obsNotesPh: '例：食欲 · うんち · 活動量…', editProfileHint: '保存後、今日の表紙と切替チップに反映',
+      changePhoto: '写真を変更', adjustPhoto: '写真を調整', addPhotoShort: '写真を追加',
+      photoEditorHint: 'ドラッグで移動 · ピンチまたは +/- で拡大', resetPhoto: 'リセット', photoDone: '完了',
+      needPhotoFirst: '先に写真を追加してください',
       googlePickTitle: 'アカウントを選択', googlePickSub: '「兔兔 Tracker」を続行（デモ）',
       googleEmailLabel: 'または Gmail を入力', gmailPh: 'you@gmail.com',
       googlePickNote: 'オフラインのデモ選択です。Google には接続しません。GOOGLE_CLIENT_ID を入れると正式ログインできます。',
@@ -2102,6 +2310,7 @@
       breed: t('defaultBreed'),
       weight: 2.4,
       avatar: avatar || null,
+      avatarFrame: { scale: 1, panX: 0, panY: 0 },
       tags: DEFAULT_TAGS.map(tag => ({ ...tag })),
       notes: DEFAULT_NOTES,
       customTopics: [],
@@ -2154,6 +2363,7 @@
       } else {
         r.diaryTitle = r.diaryTitle.trim().slice(0, 24);
       }
+      ensureAvatarFrame(r);
     });
     if (topicsTouched) saveRabbits();
 
@@ -2358,16 +2568,131 @@
     renderAll();
   }
 
-  function updateActiveAvatar(dataUrl) {
+  function defaultAvatarFrame() {
+    return { scale: 1, panX: 0, panY: 0 };
+  }
+
+  function ensureAvatarFrame(r) {
+    if (!r) return defaultAvatarFrame();
+    if (!r.avatarFrame || typeof r.avatarFrame !== 'object') {
+      r.avatarFrame = defaultAvatarFrame();
+    } else {
+      const f = r.avatarFrame;
+      f.scale = (typeof f.scale === 'number' && f.scale >= 1) ? Math.min(f.scale, 4) : 1;
+      f.panX = typeof f.panX === 'number' ? f.panX : 0;
+      f.panY = typeof f.panY === 'number' ? f.panY : 0;
+    }
+    return r.avatarFrame;
+  }
+
+  function layoutFramedAvatar(img, container, frame) {
+    if (!img || !container || !frame) return;
+    const apply = () => {
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      if (!cw || !ch || !img.naturalWidth) return;
+      const nw = img.naturalWidth;
+      const nh = img.naturalHeight;
+      const cover = Math.max(cw / nw, ch / nh);
+      const baseW = nw * cover;
+      const baseH = nh * cover;
+      const scale = frame.scale || 1;
+      const panX = (frame.panX || 0) * cw;
+      const panY = (frame.panY || 0) * ch;
+      img.style.width = baseW + 'px';
+      img.style.height = baseH + 'px';
+      img.style.position = 'absolute';
+      img.style.left = '50%';
+      img.style.top = '50%';
+      img.style.transform =
+        'translate(calc(-50% + ' + panX + 'px), calc(-50% + ' + panY + 'px)) scale(' + scale + ')';
+      img.style.transformOrigin = 'center center';
+    };
+    if (img.complete && img.naturalWidth) apply();
+    else {
+      img.onload = () => {
+        apply();
+        img.onload = null;
+      };
+    }
+  }
+
+  function applyAvatarToContainer(container, img, rabbit) {
+    if (!rabbit || !rabbit.avatar) {
+      if (img) {
+        img.removeAttribute('src');
+        img.style.transform = '';
+      }
+      if (container) container.classList.remove('has-photo');
+      return;
+    }
+    ensureAvatarFrame(rabbit);
+    if (container) container.classList.add('has-photo');
+    if (!img) return;
+    if (img.getAttribute('src') !== rabbit.avatar) img.src = rabbit.avatar;
+    layoutFramedAvatar(img, container, rabbit.avatarFrame);
+  }
+
+  function refreshAllAvatarViews() {
+    const active = getActive();
+    applyAvatarToContainer(
+      document.getElementById('todayHeroMedia'),
+      document.getElementById('todayHeroImg'),
+      active
+    );
+    const hero = document.getElementById('todayHero');
+    if (hero) hero.classList.toggle('has-photo', !!(active && active.avatar));
+
+    document.querySelectorAll('.rabbit-chip').forEach(chip => {
+      const rid = chip.dataset.id;
+      const r = rabbits.find(x => x.id === rid);
+      const wrap = chip.querySelector('.rabbit-chip-avatar');
+      const img = wrap && wrap.querySelector('img');
+      if (!wrap) return;
+      if (r && r.avatar) {
+        wrap.classList.add('has-photo');
+        if (!img) return;
+        applyAvatarToContainer(wrap, img, r);
+      } else {
+        wrap.classList.remove('has-photo');
+      }
+    });
+
+    const editCircle = document.getElementById('editProfileAvatarCircle');
+    const editImg = document.getElementById('editProfileAvatarImg');
+    const adjustBtn = document.getElementById('btnProfileAdjustPhoto');
+    if (editCircle && editImg) {
+      applyAvatarToContainer(editCircle, editImg, active);
+      if (adjustBtn) adjustBtn.disabled = !(active && active.avatar);
+    }
+  }
+
+  function updateActiveAvatar(dataUrl, openEditorAfter) {
     const r = getActive();
     r.avatar = dataUrl;
+    r.avatarFrame = defaultAvatarFrame();
     saveRabbits();
     renderAll();
+    if (openEditorAfter && dataUrl) {
+      setTimeout(() => openPhotoEditor(), 120);
+    }
+  }
+
+  function updateActiveAvatarFrame(frame) {
+    const r = getActive();
+    if (!r || !r.avatar) return;
+    r.avatarFrame = {
+      scale: frame.scale,
+      panX: frame.panX,
+      panY: frame.panY
+    };
+    saveRabbits();
+    refreshAllAvatarViews();
   }
 
   function chipAvatarHtml(r) {
     if (r.avatar) {
-      return '<span class="rabbit-chip-avatar"><img src="' + r.avatar + '" alt=""></span>';
+      return '<span class="rabbit-chip-avatar has-photo"><img src="' + r.avatar + '" alt=""></span>';
     }
     return '<span class="rabbit-chip-avatar">🐰</span>';
   }
@@ -2507,14 +2832,8 @@
   function renderTodayContext() {
     const r = getActive();
     const hero = document.getElementById('todayHero');
-    const heroImg = document.getElementById('todayHeroImg');
-    if (r.avatar) {
-      heroImg.src = r.avatar;
-      hero.classList.add('has-photo');
-    } else {
-      heroImg.removeAttribute('src');
-      hero.classList.remove('has-photo');
-    }
+    refreshAllAvatarViews();
+    if (hero && r) hero.classList.toggle('has-photo', !!r.avatar);
     document.getElementById('todayHeroName').textContent = r.name;
     const ageParts = [r.ageLabel, r.breed].filter(Boolean);
     document.getElementById('todayHeroAge').textContent = ageParts.join(' · ') || t('ageBreedUnset');
@@ -2870,6 +3189,7 @@
     document.getElementById('editWeight').value = r.weight != null ? r.weight : '';
     document.getElementById('editNotes').value = r.notes || '';
     editProfileModal.classList.add('open');
+    refreshAllAvatarViews();
     setTimeout(() => document.getElementById('editName').focus(), 50);
   }
 
@@ -2973,11 +3293,177 @@
 
   // Avatar per active rabbit (picker shared; change from 今日封面)
   const avatarInput = document.getElementById('avatarInput');
+  const photoEditorModal = document.getElementById('photoEditorModal');
+  const photoEditorFrame = document.getElementById('photoEditorFrame');
+  const photoEditorImg = document.getElementById('photoEditorImg');
+  let photoEditorDraft = defaultAvatarFrame();
+  let photoEditorPanPx = { x: 0, y: 0 };
+  let photoEditorDrag = null;
+  let photoEditorPinch = null;
 
   function openAvatarPicker() { avatarInput.click(); }
+
+  function editorFrameSize() {
+    const rect = photoEditorFrame.getBoundingClientRect();
+    return { w: rect.width || 1, h: rect.height || 1 };
+  }
+
+  function syncEditorPixelsFromDraft() {
+    const size = editorFrameSize();
+    photoEditorPanPx.x = photoEditorDraft.panX * size.w;
+    photoEditorPanPx.y = photoEditorDraft.panY * size.h;
+  }
+
+  function syncDraftFromEditorPixels() {
+    const size = editorFrameSize();
+    photoEditorDraft.panX = photoEditorPanPx.x / size.w;
+    photoEditorDraft.panY = photoEditorPanPx.y / size.h;
+  }
+
+  function paintPhotoEditor() {
+    const size = editorFrameSize();
+    layoutFramedAvatar(photoEditorImg, photoEditorFrame, {
+      scale: photoEditorDraft.scale,
+      panX: photoEditorPanPx.x / size.w,
+      panY: photoEditorPanPx.y / size.h
+    });
+  }
+
+  function openPhotoEditor() {
+    const r = getActive();
+    if (!r || !r.avatar) {
+      showToast(t('needPhotoFirst'));
+      return;
+    }
+    ensureAvatarFrame(r);
+    photoEditorDraft = {
+      scale: r.avatarFrame.scale,
+      panX: r.avatarFrame.panX,
+      panY: r.avatarFrame.panY
+    };
+    photoEditorImg.src = r.avatar;
+    photoEditorModal.classList.add('open');
+    const ready = () => {
+      syncEditorPixelsFromDraft();
+      paintPhotoEditor();
+    };
+    if (photoEditorImg.complete && photoEditorImg.naturalWidth) ready();
+    else photoEditorImg.onload = () => {
+      photoEditorImg.onload = null;
+      ready();
+    };
+  }
+
+  function closePhotoEditor() {
+    photoEditorModal.classList.remove('open');
+    photoEditorDrag = null;
+    photoEditorPinch = null;
+  }
+
+  function commitPhotoEditor() {
+    syncDraftFromEditorPixels();
+    updateActiveAvatarFrame({
+      scale: photoEditorDraft.scale,
+      panX: photoEditorDraft.panX,
+      panY: photoEditorDraft.panY
+    });
+    closePhotoEditor();
+    showToast(t('saved'));
+  }
+
+  function resetPhotoEditorDraft() {
+    photoEditorDraft = defaultAvatarFrame();
+    photoEditorPanPx = { x: 0, y: 0 };
+    paintPhotoEditor();
+  }
+
+  function bumpPhotoEditorScale(delta) {
+    photoEditorDraft.scale = Math.min(4, Math.max(1, photoEditorDraft.scale + delta));
+    paintPhotoEditor();
+  }
+
+  function touchDistance(touches) {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+  }
+
+  photoEditorFrame.addEventListener('pointerdown', (e) => {
+    if (photoEditorPinch) return;
+    photoEditorDrag = { startX: e.clientX, startY: e.clientY, panX: photoEditorPanPx.x, panY: photoEditorPanPx.y };
+    photoEditorFrame.setPointerCapture(e.pointerId);
+  });
+  photoEditorFrame.addEventListener('pointermove', (e) => {
+    if (!photoEditorDrag) return;
+    photoEditorPanPx.x = photoEditorDrag.panX + (e.clientX - photoEditorDrag.startX);
+    photoEditorPanPx.y = photoEditorDrag.panY + (e.clientY - photoEditorDrag.startY);
+    paintPhotoEditor();
+  });
+  function endPhotoEditorDrag(e) {
+    if (photoEditorDrag) {
+      try { photoEditorFrame.releasePointerCapture(e.pointerId); } catch (err) { /* ok */ }
+      photoEditorDrag = null;
+    }
+  }
+  photoEditorFrame.addEventListener('pointerup', endPhotoEditorDrag);
+  photoEditorFrame.addEventListener('pointercancel', endPhotoEditorDrag);
+
+  photoEditorFrame.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      photoEditorDrag = null;
+      photoEditorPinch = {
+        dist: touchDistance(e.touches),
+        scale: photoEditorDraft.scale
+      };
+    }
+  }, { passive: true });
+  photoEditorFrame.addEventListener('touchmove', (e) => {
+    if (photoEditorPinch && e.touches.length === 2) {
+      const dist = touchDistance(e.touches);
+      if (photoEditorPinch.dist > 0) {
+        const ratio = dist / photoEditorPinch.dist;
+        photoEditorDraft.scale = Math.min(4, Math.max(1, photoEditorDraft.scale * ratio));
+        photoEditorPinch.dist = dist;
+        paintPhotoEditor();
+      }
+      e.preventDefault();
+    }
+  }, { passive: false });
+  photoEditorFrame.addEventListener('touchend', () => {
+    if (photoEditorPinch) photoEditorPinch = null;
+  });
+
+  photoEditorFrame.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    bumpPhotoEditorScale(e.deltaY > 0 ? -0.08 : 0.08);
+  }, { passive: false });
+
+  document.getElementById('photoEditorDone').addEventListener('click', commitPhotoEditor);
+  document.getElementById('photoEditorCancel').addEventListener('click', closePhotoEditor);
+  document.getElementById('photoEditorReset').addEventListener('click', resetPhotoEditorDraft);
+  document.getElementById('photoZoomIn').addEventListener('click', () => bumpPhotoEditorScale(0.12));
+  document.getElementById('photoZoomOut').addEventListener('click', () => bumpPhotoEditorScale(-0.12));
+  photoEditorModal.addEventListener('click', (e) => {
+    if (e.target === photoEditorModal) closePhotoEditor();
+  });
+
+  document.getElementById('btnHeroAdjustPhoto').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openPhotoEditor();
+  });
+  document.getElementById('btnHeroChangePhoto').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openAvatarPicker();
+  });
+  document.getElementById('btnProfileAdjustPhoto').addEventListener('click', () => openPhotoEditor());
+  document.getElementById('btnProfilePickPhoto').addEventListener('click', () => openAvatarPicker());
+
   document.getElementById('todayHero').addEventListener('click', (e) => {
     if (e.target.closest('#todaySwitcher') || e.target.closest('.rabbit-chip')) return;
-    openAvatarPicker();
+    if (e.target.closest('.hero-photo-actions')) return;
+    const r = getActive();
+    if (!r.avatar) openAvatarPicker();
   });
   document.getElementById('todaySwitcher').addEventListener('click', (e) => e.stopPropagation());
 
@@ -2986,7 +3472,7 @@
     if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
     reader.onload = () => {
-      updateActiveAvatar(reader.result);
+      updateActiveAvatar(reader.result, true);
       avatarInput.value = '';
     };
     reader.readAsDataURL(file);
