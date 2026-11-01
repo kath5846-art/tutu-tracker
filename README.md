@@ -1,17 +1,49 @@
 # 兔兔 Tracker · Tutu Tracker
 
-高齡兔子（與小動物）的每日觀察記錄 Web App。侘寂風格 UI、多兔切換（最多 5 隻）、今日首圖、週日期條、狀態標籤、自訂題目與可編輯日記標題。**每位使用者登入後擁有獨立的兔子檔案與日誌**（Supabase 或本機 mock 模式）。
+高齡兔子（與小動物）的每日觀察記錄 Web App（侘寂風格 UI）。**目前對外展示與 GitHub Pages 上線的是單檔 HTML Demo**（[`site/index.html`](./site/index.html)），含登入、首頁預覽、多語系、字級、多兔切換與完整 Tracker 畫面。
+
+舊版 **Vite + React + TypeScript** 原始碼仍保留在 [`src/`](./src/)（可選 Supabase 後端），供日後接回正式後端；**Pages 不再建置 React**。
 
 ---
 
-## 功能
+## 開啟 HTML Demo（本機）
 
-- 登入／註冊（Supabase Email+密碼；可選 Magic Link）
-- 未設定後端時：**開發 mock 模式**（本機 mock 帳號 + `localStorage`）
-- 今日、填寫記錄、日曆、兔兔檔案（與原型 HTML 相同 UX）
-- 食慾／便便／活動／體重／牙齒／痛楚與備註
+在 repo 根目錄用任意靜態伺服器提供 `site/` 資料夾（不要用 `file://` 開啟，Google Identity Services 與部分行為需要 HTTP origin）：
 
-## 本機開發
+```bash
+# 任選其一
+npx --yes serve site -l 8080
+python3 -m http.server 8080 --directory site
+```
+
+瀏覽器開啟 `http://localhost:8080/`。
+
+### Demo 登入與資料
+
+- **一般註冊／登入**：飼主姓名、帳號、電郵、密碼（示範用，無真實伺服器）。
+- **Google**：未設定 Client ID 時為**離線示範帳戶選擇器**；若要真實 OAuth，在 `site/index.html` 底部將 `const GOOGLE_CLIENT_ID = '';` 改為你的網頁 Client ID，並在 Google Cloud Console 將授權 JavaScript 來源設為你使用的 origin（例如 `http://localhost:8080`）。
+- **忘記密碼（Demo）**：會產生暫時密碼並**直接顯示在畫面上**（僅示範，非正式寄信流程）。
+- 所有帳號與兔子資料存在**本機 `localStorage`**，清除瀏覽器資料即會消失。
+
+### 語言與字級（「更多」設定）
+
+| 語言 | `zh-Hant`（預設）、`en`、`ja` |
+| 字級 | `sm` / `md` / `lg`（以 `rem` 縮放整體 UI） |
+
+---
+
+## GitHub Pages 部署
+
+合併到 **`main`** 後，[`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml) 會將 **`site/`** 目錄原樣發佈到 Pages（無 Node 建置步驟）。
+
+1. GitHub **Settings → Pages** → **Source** 選 **GitHub Actions**（勿用手動 `gh-pages` 分支）。
+2. 部署完成後：**https://kath5846-art.github.io/tutu-tracker/**
+
+若要更新線上 Demo，修改 [`site/index.html`](./site/index.html) 並合併至 `main` 即可。
+
+---
+
+## React 版（選用，本機開發）
 
 ```bash
 cp .env.example .env
@@ -19,72 +51,30 @@ npm install
 npm run dev
 ```
 
-瀏覽器開啟終端機顯示的網址（通常 `http://localhost:5173`）。
+未填 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` 時為 mock 模式。Supabase 設定見 [`supabase/schema.sql`](./supabase/schema.sql) 與 `.env.example`。
 
-### Mock 模式（預設）
+建置（非 Pages 路徑）：`npm run build` · `npm run preview`
 
-`.env` 中 **不填** `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` 即可。畫面會顯示「開發模式」提示；在「註冊」建立任意電郵與至少 6 字密碼，資料只存在**目前瀏覽器**。
+### Vercel
 
-### Supabase 正式後端
+Framework：**Vite** · Build：`npm run build` · Output：`dist` · 環境變數見 `.env.example`。
 
-1. 在 [Supabase](https://supabase.com) 建立專案。
-2. SQL Editor 執行 [`supabase/schema.sql`](./supabase/schema.sql)。
-3. Authentication → Providers 啟用 Email（若要 Magic Link 一併設定）。
-4. 將 **Project URL** 與 **anon public key** 填入 `.env`：
-
-```env
-VITE_SUPABASE_URL=https://xxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...
-```
-
-5. 重新 `npm run dev`，註冊新帳號即可雲端同步。
-
-## 建置
-
-```bash
-npm run build
-npm run preview
-```
-
-## 部署
-
-### Vercel（建議）
-
-1. 匯入此 GitHub repo。
-2. Framework Preset：**Vite**；Build：`npm run build`；Output：`dist`。
-3. 設定環境變數 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`（可選）。
-4. 根目錄已有 [`vercel.json`](./vercel.json) 支援 SPA 路由。
-
-### GitHub Pages
-
-此 repo 含 [`.github/workflows/deploy-pages.yml`](./.github/workflows/deploy-pages.yml)：合併到 `main` 後會自動建置並部署（`VITE_BASE_PATH=/tutu-tracker/`）。
-
-1. **合併部署 PR 後**，到 GitHub **Settings → Pages**，**Source** 選 **GitHub Actions**（不要用手動 `gh-pages` 分支）。
-2. 首次部署完成後，網站網址：**https://kath5846-art.github.io/tutu-tracker/**
-3. **不需**在 repo secrets 設定 Supabase 即可上線；未設定 `VITE_SUPABASE_*` 時為 **mock 模式**（本機 mock 帳號 + `localStorage`）。若要雲端同步，再在 Settings → Secrets and variables → Actions 加入 `VITE_SUPABASE_URL`、`VITE_SUPABASE_ANON_KEY`，並在 workflow 的 build 步驟傳入（或改用 repository variables）。
-
-本機模擬 Pages 路徑：
-
-```bash
-VITE_BASE_PATH=/tutu-tracker/ npm run build
-npm run preview
-```
+---
 
 ## 專案結構
 
 | 路徑 | 說明 |
 |------|------|
-| `src/styles/app.css` | 侘寂 UI（源自原型 draft） |
-| `src/context/` | Auth、Tracker 狀態 |
-| `src/lib/dataService.ts` | Supabase / mock 資料層 |
-| `supabase/schema.sql` | 資料表與 RLS |
+| `site/index.html` | **目前對外 Demo**（Pages 發佈來源） |
+| `src/` | React 版 UI 與 Supabase/mock 資料層 |
+| `supabase/schema.sql` | 正式後端 schema（選用） |
 
 ## 授權
 
-MIT（可依需求調整）
+MIT
 
 ---
 
 ## English (brief)
 
-**Tutu Tracker** is a multi-user daily care log for elderly rabbits (wabi-sabi UI). Stack: **Vite + React + TypeScript**, **Supabase Auth & Postgres** (optional). Without Supabase env vars, the app runs in **mock mode** (local accounts + `localStorage`). See `.env.example`, `npm run dev`, deploy to **Vercel** or **GitHub Pages** with `VITE_BASE_PATH` when needed.
+**Tutu Tracker** is a wabi-sabi daily care log for elderly rabbits. **Production demo:** single-file [`site/index.html`](./site/index.html) (localStorage demo auth; optional real Google via `GOOGLE_CLIENT_ID`). **GitHub Pages** deploys the `site/` folder on push to `main` (Source: GitHub Actions). Languages: zh-Hant, en, ja; font sizes sm/md/lg. Legacy **Vite + React** code remains under `src/` for optional Supabase development.
