@@ -396,6 +396,14 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .rabbit-chip.pinned::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-deep);
+    flex-shrink: 0;
+  }
   .rabbit-add-btn {
     width: 34px;
     height: 34px;
@@ -487,6 +495,29 @@
     padding-top: 14px;
     border-top: 1px solid var(--line);
   }
+  .btn-pin-rabbit {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent-deep);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    cursor: pointer;
+  }
+  .btn-pin-rabbit:hover,
+  .btn-pin-rabbit:focus-visible {
+    background: rgba(143, 161, 138, 0.16);
+  }
+  .btn-pin-rabbit.is-pinned {
+    background: #E8F0E6;
+    border-color: var(--accent-deep);
+    font-weight: 500;
+  }
+  .btn-pin-rabbit:active { transform: scale(0.985); }
+  .btn-pin-rabbit[hidden] { display: none !important; }
   .btn-remove-rabbit {
     width: 100%;
     padding: 12px;
@@ -1910,6 +1941,7 @@
         <button type="button" class="btn-solid" id="editProfileSave" data-i18n="save">儲存</button>
       </div>
       <div class="edit-remove-wrap">
+        <button type="button" class="btn-pin-rabbit" id="editProfilePin" aria-pressed="false">置頂</button>
         <button type="button" class="btn-remove-rabbit" id="editProfileRemove" data-i18n="removeRabbit">移除兔子項目</button>
         <div class="remove-confirm" id="editProfileRemoveConfirm" hidden>
           <p class="modal-hint" id="editProfileRemoveConfirmText"></p>
@@ -2119,6 +2151,11 @@
       removeRabbitAsk: '確定移除「{name}」？這隻兔子的資料與每日記錄會一併刪除，且無法復原。',
       removeRabbitYes: '移除',
       rabbitRemoved: '已移除「{name}」',
+      pinRabbit: '置頂',
+      unpinRabbit: '取消置頂',
+      pinnedMark: '已置頂',
+      rabbitPinned: '已將「{name}」置頂',
+      rabbitUnpinned: '已取消「{name}」置頂',
       noRabbitName: '尚未有兔子',
       noRabbitHint: '點 ＋ 新增一隻兔子',
       noRabbitSummary: '目前沒有兔子。點上方 ＋ 或下方按鈕新增。',
@@ -2221,6 +2258,11 @@
       removeRabbitAsk: 'Remove “{name}”? This rabbit’s profile and daily logs will be deleted and cannot be undone.',
       removeRabbitYes: 'Remove',
       rabbitRemoved: 'Removed “{name}”',
+      pinRabbit: 'Pin to front',
+      unpinRabbit: 'Unpin',
+      pinnedMark: 'Pinned',
+      rabbitPinned: 'Pinned “{name}” to the front',
+      rabbitUnpinned: 'Unpinned “{name}”',
       noRabbitName: 'No rabbits yet',
       noRabbitHint: 'Tap + to add a rabbit',
       noRabbitSummary: 'No rabbits yet. Tap + above or the button below to add one.',
@@ -2323,6 +2365,11 @@
       removeRabbitAsk: '「{name}」を削除しますか？プロフィールと毎日の記録も消え、元に戻せません。',
       removeRabbitYes: '削除',
       rabbitRemoved: '「{name}」を削除しました',
+      pinRabbit: '先頭に固定',
+      unpinRabbit: '固定を解除',
+      pinnedMark: '固定中',
+      rabbitPinned: '「{name}」を先頭に固定しました',
+      rabbitUnpinned: '「{name}」の固定を解除しました',
       noRabbitName: 'うさぎはまだいません',
       noRabbitHint: '＋ をタップして追加',
       noRabbitSummary: 'うさぎがいません。上の ＋ か下のボタンから追加できます。',
@@ -2503,6 +2550,16 @@
         r.diaryTitle = r.diaryTitle.trim().slice(0, 24);
       }
       ensureAvatarFrame(r);
+    });
+    let pinKept = false;
+    rabbits.forEach(r => {
+      if (r.pinned && !pinKept) {
+        r.pinned = true;
+        pinKept = true;
+      } else if (r.pinned) {
+        r.pinned = false;
+        topicsTouched = true;
+      }
     });
     if (topicsTouched) saveRabbits();
 
@@ -2864,12 +2921,20 @@
       .replace(/"/g, '&quot;');
   }
 
+  function orderedRabbits() {
+    const list = rabbits.slice();
+    list.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+    return list;
+  }
+
   function renderSwitcher(container, { showAdd }) {
     if (!container) return;
     const full = rabbits.length >= MAX_RABBITS;
-    let html = rabbits.map(r => {
+    let html = orderedRabbits().map(r => {
       const active = r.id === activeId ? ' active' : '';
-      return '<button type="button" class="rabbit-chip' + active + '" data-id="' + r.id + '">' +
+      const pinned = r.pinned ? ' pinned' : '';
+      const pinTitle = r.pinned ? ' title="' + escapeHtml(t('pinnedMark')) + '"' : '';
+      return '<button type="button" class="rabbit-chip' + active + pinned + '" data-id="' + r.id + '"' + pinTitle + '>' +
         chipAvatarHtml(r) +
         '<span class="rabbit-chip-name">' + escapeHtml(r.name) + '</span>' +
         '</button>';
@@ -3411,11 +3476,40 @@
   // Edit profile sheet
   const editProfileModal = document.getElementById('editProfileModal');
 
+  function syncPinButton() {
+    const btn = document.getElementById('editProfilePin');
+    const r = getActive();
+    if (!btn) return;
+    const confirming = document.getElementById('editProfileRemoveConfirm');
+    if (!r || (confirming && !confirming.hidden)) {
+      btn.hidden = true;
+      return;
+    }
+    const pinned = !!r.pinned;
+    btn.hidden = false;
+    btn.textContent = pinned ? t('unpinRabbit') : t('pinRabbit');
+    btn.classList.toggle('is-pinned', pinned);
+    btn.setAttribute('aria-pressed', pinned ? 'true' : 'false');
+  }
+
+  function togglePinActive() {
+    const r = getActive();
+    if (!r) return;
+    const next = !r.pinned;
+    rabbits.forEach(x => { x.pinned = false; });
+    r.pinned = next;
+    saveRabbits();
+    renderAll();
+    syncPinButton();
+    showToast(tf(next ? 'rabbitPinned' : 'rabbitUnpinned', { name: r.name }));
+  }
+
   function resetRemoveConfirm() {
     const panel = document.getElementById('editProfileRemoveConfirm');
     const btn = document.getElementById('editProfileRemove');
     if (panel) panel.hidden = true;
     if (btn) btn.hidden = false;
+    syncPinButton();
   }
 
   function openRemoveConfirm() {
@@ -3423,9 +3517,11 @@
     if (!r) return;
     const panel = document.getElementById('editProfileRemoveConfirm');
     const btn = document.getElementById('editProfileRemove');
+    const pinBtn = document.getElementById('editProfilePin');
     const text = document.getElementById('editProfileRemoveConfirmText');
     if (text) text.textContent = tf('removeRabbitAsk', { name: r.name });
     if (btn) btn.hidden = true;
+    if (pinBtn) pinBtn.hidden = true;
     if (panel) {
       panel.hidden = false;
       panel.scrollIntoView({ block: 'nearest' });
@@ -3500,6 +3596,7 @@
 
   document.getElementById('editProfileCancel').addEventListener('click', closeEditProfile);
   document.getElementById('editProfileSave').addEventListener('click', saveEditProfile);
+  document.getElementById('editProfilePin').addEventListener('click', togglePinActive);
   document.getElementById('editProfileRemove').addEventListener('click', openRemoveConfirm);
   document.getElementById('editProfileRemoveCancel').addEventListener('click', resetRemoveConfirm);
   document.getElementById('editProfileRemoveConfirmBtn').addEventListener('click', removeActiveRabbit);
@@ -3966,6 +4063,7 @@
     if (langSeg) langSeg.setAttribute('aria-label', t('langTitle'));
     const fontSeg = document.getElementById('fontSegment');
     if (fontSeg) fontSeg.setAttribute('aria-label', t('fontTitle'));
+    if (typeof syncPinButton === 'function') syncPinButton();
   }
 
   function applyUserSettings() {
