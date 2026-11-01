@@ -1486,14 +1486,6 @@
           <div class="option" data-value="已檢查" data-i18n="valChecked">已檢查</div>
         </div>
       </div>
-      <div class="form-group" id="field-pain">
-        <label data-i18n="pain">痛楚 / 不適</label>
-        <div class="options" data-field="pain">
-          <div class="option" data-value="無" data-i18n="valNone">無</div>
-          <div class="option" data-value="輕微" data-i18n="valMild">輕微</div>
-          <div class="option" data-value="明顯" data-i18n="valObvious">明顯</div>
-        </div>
-      </div>
       <div class="form-group">
         <label data-i18n="notes">備註</label>
         <textarea id="logNotes" rows="3" placeholder="今日觀察到的細節…" data-i18n-ph="notesPh"></textarea>
@@ -1566,7 +1558,6 @@
           <button type="button" data-font="md" id="fontOptMd">標準</button>
           <button type="button" data-font="lg" id="fontOptLg">大</button>
         </div>
-        <p class="settings-hint" id="fontSizeHint" style="margin-top:10px;font-size:0.8125rem;color:var(--text-soft);line-height:1.45;">小 15px · 標準 17px · 大 22px（適合老花閱讀）</p>
       </div>
 
       <div class="settings-card" id="cardRabbits">
@@ -1787,12 +1778,12 @@
       trendTitle: '體重趨勢（近 8 週）', trendNote: '整體穩定，輕微波動',
       weekObs: '本週觀察', recentLogs: '最近記錄', calMonthSample: '2026年10月',
       logTitle: '今日記錄', weightKg: '體重 (kg)', weightPh: '例如 2.4',
-      teeth: '牙齒狀況', pain: '痛楚 / 不適', notes: '備註', notesPh: '今日觀察到的細節…',
+      teeth: '牙齒狀況', notes: '備註', notesPh: '今日觀察到的細節…',
       saveLog: '儲存今日記錄',
       valGood: '良好', valFair: '普通', valLess: '較少', valRefuse: '拒絕',
       valNormal: '正常', valSoft: '偏軟', valAbnormal: '異常',
       valActive: '活躍', valReduced: '稍減', valMuchLess: '明顯減少',
-      valNeedWatch: '需留意', valChecked: '已檢查', valNone: '無', valMild: '輕微', valObvious: '明顯',
+      valNeedWatch: '需留意', valChecked: '已檢查',
       wdMon: '一', wdTue: '二', wdWed: '三', wdThu: '四', wdFri: '五', wdSat: '六', wdSun: '日',
       weekdayPrefix: '星期',
       sampleActDown: '活動稍減', sampleAllOk: '一切正常', sampleAppetiteAct: '食慾好 · 活動稍減',
@@ -1809,6 +1800,8 @@
       summaryOk: '今日狀態大致正常，已儲存記錄。',
       summaryWatchSuffix: '。其餘見下方指標。建議持續觀察。',
       activityHint: '活動偏少，可加備註觀察細節',
+      activityNoteReduced: '需要注意',
+      activityNoteMuchLess: '請檢查兔子是否不舒服, 可以的話盡快就醫',
       monthFmt: '{m}月{d}日',
       savedStatus: '已儲存「{name}」{date}狀態',
       topicDeleted: '已刪除題目',
@@ -1848,7 +1841,7 @@
       errNewPasswordMismatch: '兩次新密碼不一致',
       errSendTemp: '無法傳送暫時密碼', errResetFail: '重設失敗',
       errGoogleFail: 'Google 登入失敗', errGooglePayload: '無法讀取 Google 帳戶資料',
-      labelAppetite: '食慾', labelPoop: '便便', labelActivity: '活動', labelPain: '痛楚'
+      labelAppetite: '食慾', labelPoop: '便便', labelActivity: '活動'
     },
     en: {
       home: 'Home', brandTitle: 'Tutu Tracker', brandSub: 'Daily senior pet notes · quiet care',
@@ -1873,12 +1866,12 @@
       trendTitle: 'Weight trend (8 weeks)', trendNote: 'Mostly stable, slight swings',
       weekObs: 'This week', recentLogs: 'Recent logs', calMonthSample: 'October 2026',
       logTitle: 'Today’s log', weightKg: 'Weight (kg)', weightPh: 'e.g. 2.4',
-      teeth: 'Teeth', pain: 'Pain / discomfort', notes: 'Notes', notesPh: 'Details you noticed today…',
+      teeth: 'Teeth', notes: 'Notes', notesPh: 'Details you noticed today…',
       saveLog: 'Save today’s log',
       valGood: 'Good', valFair: 'Fair', valLess: 'Less', valRefuse: 'Refused',
       valNormal: 'Normal', valSoft: 'Soft', valAbnormal: 'Abnormal',
       valActive: 'Active', valReduced: 'Lower', valMuchLess: 'Much lower',
-      valNeedWatch: 'Watch', valChecked: 'Checked', valNone: 'None', valMild: 'Mild', valObvious: 'Clear',
+      valNeedWatch: 'Watch', valChecked: 'Checked',
       wdMon: 'Mon', wdTue: 'Tue', wdWed: 'Wed', wdThu: 'Thu', wdFri: 'Fri', wdSat: 'Sat', wdSun: 'Sun',
       weekdayPrefix: '',
       sampleActDown: 'Less active', sampleAllOk: 'All normal', sampleAppetiteAct: 'Good appetite · less active',
@@ -1895,6 +1888,8 @@
       summaryOk: 'Looks mostly normal today. Log saved.',
       summaryWatchSuffix: '. See metrics below. Keep watching.',
       activityHint: 'Activity is low — add a note if useful',
+      activityNoteReduced: 'Needs attention',
+      activityNoteMuchLess: 'Please check if the rabbit is unwell; if possible, seek veterinary care soon',
       monthFmt: '{m}/{d}',
       savedStatus: 'Saved status for “{name}” · {date}',
       topicDeleted: 'Topic deleted',
@@ -1934,7 +1929,7 @@
       errNewPasswordMismatch: 'New passwords do not match',
       errSendTemp: 'Could not send temp password', errResetFail: 'Reset failed',
       errGoogleFail: 'Google sign-in failed', errGooglePayload: 'Could not read Google account',
-      labelAppetite: 'Appetite', labelPoop: 'Poop', labelActivity: 'Activity', labelPain: 'Pain'
+      labelAppetite: 'Appetite', labelPoop: 'Poop', labelActivity: 'Activity'
     },
     ja: {
       home: 'ホーム', brandTitle: '兔兔 Tracker', brandSub: '高齢ペットの毎日の観察 · 静かな記録',
@@ -1959,12 +1954,12 @@
       trendTitle: '体重トレンド（直近8週）', trendNote: '全体は安定、わずかな変動',
       weekObs: '今週の観察', recentLogs: '最近の記録', calMonthSample: '2026年10月',
       logTitle: '今日の記録', weightKg: '体重 (kg)', weightPh: '例 2.4',
-      teeth: '歯の状態', pain: '痛み／不快', notes: 'メモ', notesPh: '今日気づいたこと…',
+      teeth: '歯の状態', notes: 'メモ', notesPh: '今日気づいたこと…',
       saveLog: '今日の記録を保存',
       valGood: '良好', valFair: '普通', valLess: '少なめ', valRefuse: '拒否',
       valNormal: '正常', valSoft: '柔らかめ', valAbnormal: '異常',
       valActive: '活発', valReduced: 'やや減', valMuchLess: '明らかに減',
-      valNeedWatch: '要注意', valChecked: '確認済', valNone: 'なし', valMild: '軽い', valObvious: '明らか',
+      valNeedWatch: '要注意', valChecked: '確認済',
       wdMon: '月', wdTue: '火', wdWed: '水', wdThu: '木', wdFri: '金', wdSat: '土', wdSun: '日',
       weekdayPrefix: '',
       sampleActDown: '活動やや減', sampleAllOk: '問題なし', sampleAppetiteAct: '食欲良好 · 活動やや減',
@@ -1981,6 +1976,8 @@
       summaryOk: '今日の状態はおおむね正常です。記録を保存しました。',
       summaryWatchSuffix: '。下の指標も確認し、様子を見ましょう。',
       activityHint: '活動が少なめです。メモを追加できます',
+      activityNoteReduced: '要注意',
+      activityNoteMuchLess: 'うさぎの具合を確認し、可能なら早めに受診してください',
       monthFmt: '{m}月{d}日',
       savedStatus: '「{name}」の{date}の状態を保存しました',
       topicDeleted: 'トピックを削除しました',
@@ -2020,7 +2017,7 @@
       errNewPasswordMismatch: '新しいパスワードが一致しません',
       errSendTemp: '一時パスワードを送信できません', errResetFail: '再設定に失敗しました',
       errGoogleFail: 'Google ログインに失敗しました', errGooglePayload: 'Google アカウント情報を読めません',
-      labelAppetite: '食欲', labelPoop: 'うんち', labelActivity: '活動', labelPain: '痛み'
+      labelAppetite: '食欲', labelPoop: 'うんち', labelActivity: '活動'
     }
   };
 
@@ -2028,8 +2025,7 @@
     '良好': 'valGood', '普通': 'valFair', '較少': 'valLess', '拒絕': 'valRefuse',
     '正常': 'valNormal', '偏軟': 'valSoft', '異常': 'valAbnormal',
     '活躍': 'valActive', '稍減': 'valReduced', '明顯減少': 'valMuchLess',
-    '需留意': 'valNeedWatch', '已檢查': 'valChecked',
-    '無': 'valNone', '輕微': 'valMild', '明顯': 'valObvious'
+    '需留意': 'valNeedWatch', '已檢查': 'valChecked'
   };
 
   function normalizeLang(lang) {
@@ -2086,12 +2082,12 @@
     { label: '體重穩定', style: 'good' }
   ];
 
-  const DEFAULT_NOTES = '食慾 · 便便形狀與數量 · 活動量 · 牙齒磨損 · 體重變化 · 痛楚跡象';
+  const DEFAULT_NOTES = '食慾 · 便便形狀與數量 · 活動量 · 牙齒磨損 · 體重變化';
 
   let rabbits = [];
   let activeId = null;
   let modalMode = 'add'; // 'add' | 'rename'
-  let logs = {}; // { "rabbitId|YYYY-MM-DD": { appetite, poop, activity, weight, teeth, pain, notes } }
+  let logs = {}; // { "rabbitId|YYYY-MM-DD": { appetite, poop, activity, weight, teeth, notes } }
   let viewDate = new Date(); // selected day on 今日 / 記錄
 
   function uid() {
@@ -2226,7 +2222,7 @@
   }
 
   function emptyLog() {
-    return { appetite: '', poop: '', activity: '', weight: null, teeth: '', pain: '', notes: '' };
+    return { appetite: '', poop: '', activity: '', weight: null, teeth: '', notes: '' };
   }
 
   function deriveTagsFromLog(log) {
@@ -2284,7 +2280,6 @@
     if (log.appetite && !(log.appetite === '良好' || log.appetite === '普通')) watches.push(t('labelAppetite') + localizeValue(log.appetite));
     if (log.poop && log.poop !== '正常') watches.push(t('labelPoop') + localizeValue(log.poop));
     if (log.activity && !(log.activity === '活躍' || log.activity === '普通')) watches.push(t('labelActivity') + localizeValue(log.activity));
-    if (log.pain && log.pain !== '無') watches.push(t('labelPain') + localizeValue(log.pain));
     if (watches.length) {
       const sep = currentLang() === 'en' ? ', ' : '、';
       return { text: watches.join(sep) + t('summaryWatchSuffix'), alert: true };
@@ -2597,6 +2592,26 @@
     return sel ? sel.dataset.value : '';
   }
 
+  function allActivityAutoNoteTexts() {
+    return ['zh-Hant', 'en', 'ja'].flatMap(function (lang) {
+      const pack = I18N[lang];
+      return [pack.activityNoteReduced, pack.activityNoteMuchLess];
+    });
+  }
+
+  function applyActivityNotesOnSelect(activityValue) {
+    const ta = document.getElementById('logNotes');
+    if (!ta) return;
+    const cur = ta.value.trim();
+    if (activityValue === '稍減') {
+      ta.value = t('activityNoteReduced');
+    } else if (activityValue === '明顯減少') {
+      ta.value = t('activityNoteMuchLess');
+    } else if (activityValue === '活躍' || activityValue === '普通') {
+      if (allActivityAutoNoteTexts().includes(cur)) ta.value = '';
+    }
+  }
+
   function loadLogIntoForm() {
     const r = getActive();
     const log = getLog(r.id, viewDate) || emptyLog();
@@ -2604,7 +2619,6 @@
     selectOption('poop', log.poop || '');
     selectOption('activity', log.activity || '');
     selectOption('teeth', log.teeth || '');
-    selectOption('pain', log.pain || '');
     document.getElementById('logWeightInput').value =
       log.weight != null ? log.weight : (r.weight != null ? r.weight : '');
     document.getElementById('logNotes').value = log.notes || '';
@@ -2621,7 +2635,6 @@
       activity: getSelectedOption('activity'),
       weight: (weight != null && !Number.isNaN(weight)) ? weight : null,
       teeth: getSelectedOption('teeth'),
-      pain: getSelectedOption('pain'),
       notes: document.getElementById('logNotes').value.trim()
     };
     logs[logKey(r.id, viewDate)] = entry;
@@ -2908,6 +2921,9 @@
       const parent = opt.parentElement;
       parent.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
       opt.classList.add('selected');
+      if (parent.dataset.field === 'activity') {
+        applyActivityNotesOnSelect(opt.dataset.value);
+      }
     });
   });
 
