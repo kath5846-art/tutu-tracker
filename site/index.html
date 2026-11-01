@@ -236,6 +236,7 @@
     padding: 0;
     border: none;
   }
+  .today-hero-tags:empty { display: none; }
   .today-hero-tags .status-tag {
     font-size: 0.75rem;
     padding: 4px 10px;
@@ -270,11 +271,15 @@
   .rabbit-switcher.compact.on-hero .rabbit-add-btn {
     flex-shrink: 0;
   }
+  /* Same outer size as a name chip; JS copies the live chip height so font scales stay matched. */
   .rabbit-switcher.compact.on-hero .rabbit-add-btn {
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
     background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -584,8 +589,10 @@
   .week-days {
     flex: 1;
     display: flex;
-    justify-content: space-between;
-    gap: 2px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
   }
   .week-day-btn {
     width: 34px;
@@ -617,12 +624,6 @@
   .week-day-btn.has-log:not(.active) {
     border-color: var(--accent);
     color: var(--accent-deep);
-  }
-  .week-caption {
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--text-soft);
-    margin: -6px 0 12px;
   }
 
   .summary-line {
@@ -1681,7 +1682,6 @@
         <div class="week-days" id="weekDays"></div>
         <button type="button" class="week-nav-btn" id="weekNext" aria-label="下一週">›</button>
       </div>
-      <div class="week-caption" id="weekCaption">今日</div>
 
       <div class="fill-cta-wrap">
         <button type="button" class="btn-fill-status" id="btnFillStatus" data-i18n="fillStatus">填寫今日狀態</button>
@@ -2998,6 +2998,18 @@
     return list;
   }
 
+  function fitHeroAddButton(container) {
+    if (!container || !container.classList.contains('on-hero')) return;
+    const addBtn = container.querySelector('.rabbit-add-btn');
+    if (!addBtn) return;
+    const chip = container.querySelector('.rabbit-chip');
+    const h = chip ? chip.getBoundingClientRect().height : 0;
+    if (h > 0) {
+      addBtn.style.width = h + 'px';
+      addBtn.style.height = h + 'px';
+    }
+  }
+
   function renderSwitcher(container, { showAdd }) {
     if (!container) return;
     const full = rabbits.length >= MAX_RABBITS;
@@ -3021,6 +3033,7 @@
       }
     }
     container.innerHTML = html;
+    fitHeroAddButton(container);
 
     container.querySelectorAll('.rabbit-chip').forEach(chip => {
       chip.addEventListener('click', (e) => {
@@ -3123,15 +3136,14 @@
         }
       });
     });
-    document.getElementById('weekCaption').textContent =
-      dateLabelFor(viewDate) + ' · ' + formatDisplayDate(viewDate);
   }
 
   function renderHeroTags(log) {
-    const tags = deriveTagsFromLog(log);
+    // Quiet states (正常 / 已記) stay off the hero row. Pending and watch stay.
+    const tags = deriveTagsFromLog(log).filter(tag => tag.style !== 'good');
     const el = document.getElementById('todayHeroTags');
-    el.innerHTML = tags.map(t =>
-      '<span class="status-tag' + (t.style ? ' ' + t.style : '') + '">' + escapeHtml(t.label) + '</span>'
+    el.innerHTML = tags.map(tag =>
+      '<span class="status-tag' + (tag.style ? ' ' + tag.style : '') + '">' + escapeHtml(tag.label) + '</span>'
     ).join('');
   }
 
@@ -3748,6 +3760,9 @@
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       item.classList.add('active');
       document.getElementById('screen-' + item.dataset.screen).classList.add('active');
+      if (item.dataset.screen === 'today') {
+        fitHeroAddButton(document.getElementById('todaySwitcher'));
+      }
       if (item.dataset.screen === 'log') loadLogIntoForm();
     });
   });
