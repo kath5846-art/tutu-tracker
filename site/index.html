@@ -128,31 +128,43 @@
     pointer-events: none;
   }
   .today-hero.has-photo .today-hero-img { display: block; }
-  .hero-photo-actions {
+  .hero-overlay-fabs {
     position: absolute;
-    top: 12px;
-    left: 12px;
+    inset: 0;
     z-index: 4;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    pointer-events: auto;
+    pointer-events: none;
   }
-  .hero-photo-btn {
-    padding: 8px 14px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.65);
-    background: rgba(255, 255, 255, 0.82);
+  .hero-fab {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.88);
     color: var(--text);
-    font-family: inherit;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: 1.25rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    backdrop-filter: blur(6px);
-    box-shadow: 0 2px 10px rgba(61, 56, 50, 0.08);
+    pointer-events: auto;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 12px rgba(61, 56, 50, 0.12);
   }
-  .hero-photo-btn:active { transform: scale(0.98); }
-  .today-hero:not(.has-photo) .hero-photo-actions { display: none; }
+  .hero-fab:active { transform: scale(0.96); }
+  .hero-fab-photo {
+    right: 14px;
+    bottom: 72px;
+  }
+  .hero-fab-rabbit {
+    top: 44px;
+    right: 12px;
+    font-size: 1.125rem;
+  }
   .today-hero-placeholder {
     position: absolute;
     inset: 0;
@@ -1502,9 +1514,9 @@
         <div class="today-hero-media" id="todayHeroMedia" aria-hidden="true">
           <img class="today-hero-img" id="todayHeroImg" alt="兔子照片">
         </div>
-        <div class="hero-photo-actions">
-          <button type="button" class="hero-photo-btn" id="btnHeroChangePhoto" data-i18n="changePhoto">更換照片</button>
-          <button type="button" class="hero-photo-btn" id="btnHeroAdjustPhoto" data-i18n="adjustPhoto">調整相片</button>
+        <div class="hero-overlay-fabs" aria-hidden="false">
+          <button type="button" class="hero-fab hero-fab-rabbit" id="btnHeroEditRabbit" data-i18n-title="heroEditRabbitTitle" title="編輯兔兔資料">🐰</button>
+          <button type="button" class="hero-fab hero-fab-photo" id="btnHeroPhoto" data-i18n-title="heroPhotoTitle" title="照片">📷</button>
         </div>
         <div class="today-hero-placeholder">
           <span class="ph-icon">📷</span>
@@ -1530,10 +1542,6 @@
         <button type="button" class="week-nav-btn" id="weekNext" aria-label="下一週">›</button>
       </div>
       <div class="week-caption" id="weekCaption">今日</div>
-
-      <div class="summary-line" id="summaryLine">
-        尚未填寫今日狀態，點下方按鈕開始記錄。
-      </div>
 
       <div class="fill-cta-wrap">
         <button type="button" class="btn-fill-status" id="btnFillStatus" data-i18n="fillStatus">填寫今日狀態</button>
@@ -1575,6 +1583,15 @@
           </div>
           <div class="metric-value" id="todayWeightValue">—</div>
           <div class="metric-note" id="metricWeightNote" data-i18n="tapUpdate">點擊可更新</div>
+        </div>
+
+        <div class="metric-card" id="metricEyes" onclick="quickEdit('eyes')">
+          <div class="metric-header">
+            <div class="metric-title" data-i18n="metricEyes">眼睛狀況</div>
+            <div class="metric-status" id="metricEyesStatus">—</div>
+          </div>
+          <div class="metric-value" id="metricEyesValue">未記錄</div>
+          <div class="metric-note" id="metricEyesNote">點擊填寫</div>
         </div>
       </div>
 
@@ -1651,6 +1668,14 @@
           <div class="option" data-value="已檢查" data-i18n="valChecked">已檢查</div>
         </div>
       </div>
+      <div class="form-group" id="field-eyes">
+        <label data-i18n="metricEyes">眼睛狀況</label>
+        <div class="options" data-field="eyes">
+          <div class="option" data-value="正常" data-i18n="valNormal">正常</div>
+          <div class="option" data-value="淚眼(有淚痕)" data-i18n="valEyeWatery">淚眼(有淚痕)</div>
+          <div class="option" data-value="紅筋" data-i18n="valEyeRed">紅筋</div>
+        </div>
+      </div>
       <div class="form-group">
         <label data-i18n="notes">備註</label>
         <textarea id="logNotes" rows="3" placeholder="今日觀察到的細節…" data-i18n-ph="notesPh"></textarea>
@@ -1722,15 +1747,6 @@
           <button type="button" data-font="sm" id="fontOptSm">小</button>
           <button type="button" data-font="md" id="fontOptMd">標準</button>
           <button type="button" data-font="lg" id="fontOptLg">大</button>
-        </div>
-      </div>
-
-      <div class="settings-card" id="cardRabbits">
-        <div class="settings-card-title" id="labelMyRabbits">我的兔兔</div>
-        <div class="rabbit-switcher" id="moreSwitcher" aria-label="兔子列表"></div>
-        <div class="more-rabbit-actions">
-          <button type="button" id="btnRenameRabbit">改名</button>
-          <button type="button" class="primary" id="btnEditProfile">編輯兔兔資料</button>
         </div>
       </div>
 
@@ -1829,6 +1845,7 @@
       </div>
       <p class="photo-editor-hint" id="photoEditorHint" data-i18n="photoEditorHint">拖移照片；雙指捏合或 +/- 縮放</p>
       <div class="photo-editor-actions">
+        <button type="button" id="photoEditorReplace" data-i18n="changePhoto">更換照片</button>
         <button type="button" id="photoEditorReset" data-i18n="resetPhoto">重設</button>
         <button type="button" id="photoEditorCancel" data-i18n="cancel">取消</button>
         <button type="button" class="btn-solid" id="photoEditorDone" data-i18n="photoDone">完成</button>
@@ -1972,7 +1989,7 @@
       about: '兔兔 Tracker · Demo', previewMode: '預覽模式', signOut: '登出', backLogin: '返回登入',
       saved: '已儲存設定', edit: '編輯', tempSent: '已傳送暫時密碼（示範）',
       addPhoto: '點擊加入兔兔照片', fillStatus: '填寫今日狀態',
-      metricAppetite: '食慾', metricPoop: '便便', metricActivity: '活動', metricWeight: '體重',
+      metricAppetite: '食慾', metricPoop: '便便', metricActivity: '活動', metricWeight: '體重', metricEyes: '眼睛狀況',
       tapUpdate: '點擊可更新', tapFill: '點擊填寫', notRecorded: '未記錄', recorded: '已記',
       trendTitle: '體重趨勢（近 8 週）', trendNote: '整體穩定，輕微波動',
       weekObs: '本週觀察', recentLogs: '最近記錄', calMonthSample: '2026年10月',
@@ -1983,6 +2000,7 @@
       valNormal: '正常', valSoft: '偏軟', valAbnormal: '異常',
       valActive: '活躍', valReduced: '稍減', valMuchLess: '明顯減少',
       valNeedWatch: '需留意', valChecked: '已檢查',
+      valEyeWatery: '淚眼(有淚痕)', valEyeRed: '紅筋',
       wdMon: '一', wdTue: '二', wdWed: '三', wdThu: '四', wdFri: '五', wdSat: '六', wdSun: '日',
       weekdayPrefix: '星期',
       sampleActDown: '活動稍減', sampleAllOk: '一切正常', sampleAppetiteAct: '食慾好 · 活動稍減',
@@ -1995,6 +2013,7 @@
       tagPoopPending: '便便待記', tagPoopOk: '便便正常', tagPoopWatch: '便便留意',
       tagActivityPending: '活動待記', tagActivityOk: '活動正常', tagActivityWatch: '活動留意',
       tagWeightPending: '體重待記', tagWeightOk: '體重穩定', tagWeightRecorded: '體重已記',
+      tagEyePending: '眼睛待記', tagEyeOk: '眼睛正常', tagEyeWatch: '眼睛留意',
       summaryEmpty: '尚未填寫今日狀態，點下方按鈕開始記錄。',
       summaryOk: '今日狀態大致正常，已儲存記錄。',
       summaryWatchSuffix: '。其餘見下方指標。建議持續觀察。',
@@ -2016,6 +2035,7 @@
       changePhoto: '更換照片', adjustPhoto: '調整相片', addPhotoShort: '加入照片',
       photoEditorHint: '拖移照片；雙指捏合或 +/- 縮放', resetPhoto: '重設', photoDone: '完成',
       needPhotoFirst: '請先加入照片',
+      heroPhotoTitle: '照片（加入、更換或調整）', heroEditRabbitTitle: '編輯兔兔基本資料',
       googlePickTitle: '選擇帳戶', googlePickSub: '繼續使用「兔兔 Tracker」（示範）',
       googleEmailLabel: '或輸入 Gmail', gmailPh: 'you@gmail.com',
       googlePickNote: '此為離線示範選擇器，不會連到 Google。填入 GOOGLE_CLIENT_ID 後可改用正式登入。',
@@ -2043,7 +2063,7 @@
       errNewPasswordMismatch: '兩次新密碼不一致',
       errSendTemp: '無法傳送暫時密碼', errResetFail: '重設失敗',
       errGoogleFail: 'Google 登入失敗', errGooglePayload: '無法讀取 Google 帳戶資料',
-      labelAppetite: '食慾', labelPoop: '便便', labelActivity: '活動'
+      labelAppetite: '食慾', labelPoop: '便便', labelActivity: '活動', labelEyes: '眼睛'
     },
     en: {
       home: 'Home', brandTitle: 'Tutu Tracker', brandSub: 'Daily senior pet notes · quiet care',
@@ -2063,7 +2083,7 @@
       about: 'Tutu Tracker · Demo', previewMode: 'Preview mode', signOut: 'Sign out', backLogin: 'Back to login',
       saved: 'Settings saved', edit: 'Edit', tempSent: 'Temp password sent (demo)',
       addPhoto: 'Tap to add a photo', fillStatus: 'Log today’s status',
-      metricAppetite: 'Appetite', metricPoop: 'Poop', metricActivity: 'Activity', metricWeight: 'Weight',
+      metricAppetite: 'Appetite', metricPoop: 'Poop', metricActivity: 'Activity', metricWeight: 'Weight', metricEyes: 'Eyes',
       tapUpdate: 'Tap to update', tapFill: 'Tap to fill', notRecorded: 'Not logged', recorded: 'Logged',
       trendTitle: 'Weight trend (8 weeks)', trendNote: 'Mostly stable, slight swings',
       weekObs: 'This week', recentLogs: 'Recent logs', calMonthSample: 'October 2026',
@@ -2074,6 +2094,7 @@
       valNormal: 'Normal', valSoft: 'Soft', valAbnormal: 'Abnormal',
       valActive: 'Active', valReduced: 'Lower', valMuchLess: 'Much lower',
       valNeedWatch: 'Watch', valChecked: 'Checked',
+      valEyeWatery: 'Watery / tear stains', valEyeRed: 'Red vessels',
       wdMon: 'Mon', wdTue: 'Tue', wdWed: 'Wed', wdThu: 'Thu', wdFri: 'Fri', wdSat: 'Sat', wdSun: 'Sun',
       weekdayPrefix: '',
       sampleActDown: 'Less active', sampleAllOk: 'All normal', sampleAppetiteAct: 'Good appetite · less active',
@@ -2086,6 +2107,7 @@
       tagPoopPending: 'Poop pending', tagPoopOk: 'Poop OK', tagPoopWatch: 'Poop watch',
       tagActivityPending: 'Activity pending', tagActivityOk: 'Activity OK', tagActivityWatch: 'Activity watch',
       tagWeightPending: 'Weight pending', tagWeightOk: 'Weight stable', tagWeightRecorded: 'Weight logged',
+      tagEyePending: 'Eyes pending', tagEyeOk: 'Eyes normal', tagEyeWatch: 'Eyes watch',
       summaryEmpty: 'No status yet — tap below to start logging.',
       summaryOk: 'Looks mostly normal today. Log saved.',
       summaryWatchSuffix: '. See metrics below. Keep watching.',
@@ -2107,6 +2129,7 @@
       changePhoto: 'Change photo', adjustPhoto: 'Adjust photo', addPhotoShort: 'Add photo',
       photoEditorHint: 'Drag to move; pinch or +/- to zoom', resetPhoto: 'Reset', photoDone: 'Done',
       needPhotoFirst: 'Add a photo first',
+      heroPhotoTitle: 'Photo — add, replace, or adjust', heroEditRabbitTitle: 'Edit rabbit profile',
       googlePickTitle: 'Choose an account', googlePickSub: 'Continue to Tutu Tracker (demo)',
       googleEmailLabel: 'Or enter Gmail', gmailPh: 'you@gmail.com',
       googlePickNote: 'Offline demo picker — does not contact Google. Set GOOGLE_CLIENT_ID for real sign-in.',
@@ -2134,7 +2157,7 @@
       errNewPasswordMismatch: 'New passwords do not match',
       errSendTemp: 'Could not send temp password', errResetFail: 'Reset failed',
       errGoogleFail: 'Google sign-in failed', errGooglePayload: 'Could not read Google account',
-      labelAppetite: 'Appetite', labelPoop: 'Poop', labelActivity: 'Activity'
+      labelAppetite: 'Appetite', labelPoop: 'Poop', labelActivity: 'Activity', labelEyes: 'Eyes'
     },
     ja: {
       home: 'ホーム', brandTitle: '兔兔 Tracker', brandSub: '高齢ペットの毎日の観察 · 静かな記録',
@@ -2154,7 +2177,7 @@
       about: '兔兔 Tracker · Demo', previewMode: 'プレビュー', signOut: 'ログアウト', backLogin: 'ログインに戻る',
       saved: '設定を保存しました', edit: '編集', tempSent: '一時パスワードを送信（デモ）',
       addPhoto: 'タップして写真を追加', fillStatus: '今日の状態を記入',
-      metricAppetite: '食欲', metricPoop: 'うんち', metricActivity: '活動', metricWeight: '体重',
+      metricAppetite: '食欲', metricPoop: 'うんち', metricActivity: '活動', metricWeight: '体重', metricEyes: '目の状態',
       tapUpdate: 'タップして更新', tapFill: 'タップして記入', notRecorded: '未記録', recorded: '記録済',
       trendTitle: '体重トレンド（直近8週）', trendNote: '全体は安定、わずかな変動',
       weekObs: '今週の観察', recentLogs: '最近の記録', calMonthSample: '2026年10月',
@@ -2165,6 +2188,7 @@
       valNormal: '正常', valSoft: '柔らかめ', valAbnormal: '異常',
       valActive: '活発', valReduced: 'やや減', valMuchLess: '明らかに減',
       valNeedWatch: '要注意', valChecked: '確認済',
+      valEyeWatery: '涙目（涙痕）', valEyeRed: '充血／赤筋',
       wdMon: '月', wdTue: '火', wdWed: '水', wdThu: '木', wdFri: '金', wdSat: '土', wdSun: '日',
       weekdayPrefix: '',
       sampleActDown: '活動やや減', sampleAllOk: '問題なし', sampleAppetiteAct: '食欲良好 · 活動やや減',
@@ -2177,6 +2201,7 @@
       tagPoopPending: 'うんち未記', tagPoopOk: 'うんち正常', tagPoopWatch: 'うんち注意',
       tagActivityPending: '活動未記', tagActivityOk: '活動正常', tagActivityWatch: '活動注意',
       tagWeightPending: '体重未記', tagWeightOk: '体重安定', tagWeightRecorded: '体重記録済',
+      tagEyePending: '目未記', tagEyeOk: '目正常', tagEyeWatch: '目注意',
       summaryEmpty: '今日の状態は未記入です。下のボタンから記録を始めましょう。',
       summaryOk: '今日の状態はおおむね正常です。記録を保存しました。',
       summaryWatchSuffix: '。下の指標も確認し、様子を見ましょう。',
@@ -2198,6 +2223,7 @@
       changePhoto: '写真を変更', adjustPhoto: '写真を調整', addPhotoShort: '写真を追加',
       photoEditorHint: 'ドラッグで移動 · ピンチまたは +/- で拡大', resetPhoto: 'リセット', photoDone: '完了',
       needPhotoFirst: '先に写真を追加してください',
+      heroPhotoTitle: '写真（追加・変更・調整）', heroEditRabbitTitle: 'うさぎの基本情報を編集',
       googlePickTitle: 'アカウントを選択', googlePickSub: '「兔兔 Tracker」を続行（デモ）',
       googleEmailLabel: 'または Gmail を入力', gmailPh: 'you@gmail.com',
       googlePickNote: 'オフラインのデモ選択です。Google には接続しません。GOOGLE_CLIENT_ID を入れると正式ログインできます。',
@@ -2225,7 +2251,7 @@
       errNewPasswordMismatch: '新しいパスワードが一致しません',
       errSendTemp: '一時パスワードを送信できません', errResetFail: '再設定に失敗しました',
       errGoogleFail: 'Google ログインに失敗しました', errGooglePayload: 'Google アカウント情報を読めません',
-      labelAppetite: '食欲', labelPoop: 'うんち', labelActivity: '活動'
+      labelAppetite: '食欲', labelPoop: 'うんち', labelActivity: '活動', labelEyes: '目'
     }
   };
 
@@ -2233,7 +2259,8 @@
     '良好': 'valGood', '普通': 'valFair', '較少': 'valLess', '拒絕': 'valRefuse',
     '正常': 'valNormal', '偏軟': 'valSoft', '異常': 'valAbnormal',
     '活躍': 'valActive', '稍減': 'valReduced', '明顯減少': 'valMuchLess',
-    '需留意': 'valNeedWatch', '已檢查': 'valChecked'
+    '需留意': 'valNeedWatch', '已檢查': 'valChecked',
+    '淚眼(有淚痕)': 'valEyeWatery', '紅筋': 'valEyeRed'
   };
 
   function normalizeLang(lang) {
@@ -2295,7 +2322,7 @@
   let rabbits = [];
   let activeId = null;
   let modalMode = 'add'; // 'add' | 'rename'
-  let logs = {}; // { "rabbitId|YYYY-MM-DD": { appetite, poop, activity, weight, teeth, notes } }
+  let logs = {}; // { "rabbitId|YYYY-MM-DD": { appetite, poop, activity, weight, teeth, eyes, notes } }
   let viewDate = new Date(); // selected day on 今日 / 記錄
 
   function uid() {
@@ -2432,7 +2459,7 @@
   }
 
   function emptyLog() {
-    return { appetite: '', poop: '', activity: '', weight: null, teeth: '', notes: '' };
+    return { appetite: '', poop: '', activity: '', weight: null, teeth: '', eyes: '', notes: '' };
   }
 
   function deriveTagsFromLog(log) {
@@ -2440,7 +2467,8 @@
       { label: t('tagAppetitePending'), style: '' },
       { label: t('tagPoopPending'), style: '' },
       { label: t('tagActivityPending'), style: '' },
-      { label: t('tagWeightPending'), style: '' }
+      { label: t('tagWeightPending'), style: '' },
+      { label: t('tagEyePending'), style: '' }
     ];
     function appetiteTag(v) {
       if (!v) return { label: t('tagAppetitePending'), style: '' };
@@ -2461,7 +2489,12 @@
       if (v == null || v === '') return { label: t('tagWeightPending'), style: '' };
       return { label: t('tagWeightRecorded'), style: 'good' };
     }
-    return [appetiteTag(log.appetite), poopTag(log.poop), activityTag(log.activity), weightTag(log.weight)];
+    function eyeTag(v) {
+      if (!v) return { label: t('tagEyePending'), style: '' };
+      if (v === '正常') return { label: t('tagEyeOk'), style: 'good' };
+      return { label: t('tagEyeWatch'), style: 'watch' };
+    }
+    return [appetiteTag(log.appetite), poopTag(log.poop), activityTag(log.activity), weightTag(log.weight), eyeTag(log.eyes)];
   }
 
   function statusClassFor(field, value) {
@@ -2469,6 +2502,7 @@
     if (field === 'appetite') return (value === '良好' || value === '普通') ? 'good' : 'watch';
     if (field === 'poop') return value === '正常' ? 'good' : 'watch';
     if (field === 'activity') return (value === '活躍' || value === '普通') ? 'good' : 'watch';
+    if (field === 'eyes') return value === '正常' ? 'good' : (value ? 'watch' : '');
     if (field === 'weight') return 'good';
     return '';
   }
@@ -2478,18 +2512,20 @@
     if (field === 'appetite') return (value === '良好' || value === '普通') ? t('statusOk') : t('statusWatch');
     if (field === 'poop') return value === '正常' ? t('statusOk') : t('statusWatch');
     if (field === 'activity') return (value === '活躍' || value === '普通') ? t('statusOk') : t('statusWatch');
+    if (field === 'eyes') return value === '正常' ? t('statusOk') : (value ? t('statusWatch') : '—');
     if (field === 'weight') return t('recorded');
     return localizeValue(value);
   }
 
   function buildSummary(log) {
-    if (!log || (!log.appetite && !log.poop && !log.activity && log.weight == null)) {
+    if (!log || (!log.appetite && !log.poop && !log.activity && log.weight == null && !log.teeth && !log.eyes)) {
       return { text: t('summaryEmpty'), alert: false };
     }
     const watches = [];
     if (log.appetite && !(log.appetite === '良好' || log.appetite === '普通')) watches.push(t('labelAppetite') + localizeValue(log.appetite));
     if (log.poop && log.poop !== '正常') watches.push(t('labelPoop') + localizeValue(log.poop));
     if (log.activity && !(log.activity === '活躍' || log.activity === '普通')) watches.push(t('labelActivity') + localizeValue(log.activity));
+    if (log.eyes && log.eyes !== '正常') watches.push(t('labelEyes') + localizeValue(log.eyes));
     if (watches.length) {
       const sep = currentLang() === 'en' ? ', ' : '、';
       return { text: watches.join(sep) + t('summaryWatchSuffix'), alert: true };
@@ -2846,11 +2882,6 @@
   }
 
   function renderMetricsFromLog(log, r) {
-    const summary = buildSummary(log);
-    const sumEl = document.getElementById('summaryLine');
-    sumEl.textContent = summary.text;
-    sumEl.classList.toggle('alert', summary.alert);
-
     function setMetric(prefix, field, value, noteEmpty) {
       const statusEl = document.getElementById('metric' + prefix + 'Status');
       const valueEl = document.getElementById('metric' + prefix + 'Value');
@@ -2869,6 +2900,7 @@
     setMetric('Appetite', 'appetite', log && log.appetite);
     setMetric('Poop', 'poop', log && log.poop);
     setMetric('Activity', 'activity', log && log.activity);
+    setMetric('Eyes', 'eyes', log && log.eyes);
 
     const hint = document.getElementById('metricActivityHint');
     if (log && log.activity && statusClassFor('activity', log.activity) === 'watch') {
@@ -2938,6 +2970,7 @@
     selectOption('poop', log.poop || '');
     selectOption('activity', log.activity || '');
     selectOption('teeth', log.teeth || '');
+    selectOption('eyes', log.eyes || '');
     document.getElementById('logWeightInput').value =
       log.weight != null ? log.weight : (r.weight != null ? r.weight : '');
     document.getElementById('logNotes').value = log.notes || '';
@@ -2954,6 +2987,7 @@
       activity: getSelectedOption('activity'),
       weight: (weight != null && !Number.isNaN(weight)) ? weight : null,
       teeth: getSelectedOption('teeth'),
+      eyes: getSelectedOption('eyes'),
       notes: document.getElementById('logNotes').value.trim()
     };
     logs[logKey(r.id, viewDate)] = entry;
@@ -3123,7 +3157,6 @@
 
   function renderAll() {
     renderSwitcher(document.getElementById('todaySwitcher'), { showAdd: false });
-    renderSwitcher(document.getElementById('moreSwitcher'), { showAdd: true });
     renderDiaryTitle();
     renderCustomTopics();
     renderMore();
@@ -3218,7 +3251,6 @@
     showToast(tf('rabbitUpdated', { name: r.name }));
   }
 
-  document.getElementById('btnEditProfile').addEventListener('click', openEditProfile);
   document.getElementById('editProfileCancel').addEventListener('click', closeEditProfile);
   document.getElementById('editProfileSave').addEventListener('click', saveEditProfile);
   editProfileModal.addEventListener('click', (e) => {
@@ -3448,12 +3480,18 @@
     if (e.target === photoEditorModal) closePhotoEditor();
   });
 
-  document.getElementById('btnHeroAdjustPhoto').addEventListener('click', (e) => {
+  document.getElementById('btnHeroPhoto').addEventListener('click', (e) => {
     e.stopPropagation();
-    openPhotoEditor();
+    const r = getActive();
+    if (!r.avatar) openAvatarPicker();
+    else openPhotoEditor();
   });
-  document.getElementById('btnHeroChangePhoto').addEventListener('click', (e) => {
+  document.getElementById('btnHeroEditRabbit').addEventListener('click', (e) => {
     e.stopPropagation();
+    openEditProfile();
+  });
+  document.getElementById('photoEditorReplace').addEventListener('click', () => {
+    closePhotoEditor();
     openAvatarPicker();
   });
   document.getElementById('btnProfileAdjustPhoto').addEventListener('click', () => openPhotoEditor());
@@ -3461,7 +3499,7 @@
 
   document.getElementById('todayHero').addEventListener('click', (e) => {
     if (e.target.closest('#todaySwitcher') || e.target.closest('.rabbit-chip')) return;
-    if (e.target.closest('.hero-photo-actions')) return;
+    if (e.target.closest('.hero-overlay-fabs')) return;
     const r = getActive();
     if (!r.avatar) openAvatarPicker();
   });
@@ -3516,8 +3554,6 @@
     });
     renderAll();
   });
-
-  document.getElementById('btnRenameRabbit').addEventListener('click', openRenameModal);
 
 
   /* ========== Auth (mock + Google demo / GIS) ========== */
@@ -3620,9 +3656,6 @@
     setTxt('fontOptSm', 'fontSm');
     setTxt('fontOptMd', 'fontMd');
     setTxt('fontOptLg', 'fontLg');
-    setTxt('labelMyRabbits', 'myRabbits');
-    setTxt('btnRenameRabbit', 'rename');
-    setTxt('btnEditProfile', 'editRabbit');
     setTxt('aboutLine', 'about');
     setTxt('linkForgotPassword', 'forgotLink');
     setTxt('linkHomePreview', 'home');
