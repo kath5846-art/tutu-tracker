@@ -708,13 +708,29 @@
     display: flex;
     justify-content: space-between;
   }
-  .trend-svg { width: 100%; height: 70px; }
+  .trend-svg { width: 100%; height: 70px; display: block; }
+  .trend-chart.is-empty .trend-svg { display: none; }
+  .trend-empty {
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8px 12px;
+    color: var(--text-soft);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+  }
+  .trend-empty[hidden] { display: none !important; }
   .trend-note {
     font-size: 0.75rem;
     color: var(--text-soft);
     margin-top: 6px;
     text-align: right;
   }
+  .trend-note:empty { display: none; }
 
   .section-title {
     font-family: 'Noto Serif TC', serif;
@@ -730,14 +746,32 @@
   }
   .week-item {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 18px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--line);
   }
   .week-item:last-child { border-bottom: none; }
   .week-day { font-size: 0.875rem; }
-  .week-summary { font-size: 0.8125rem; color: var(--text-soft); }
+  .week-summary {
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    line-height: 1.45;
+  }
+  button.week-item {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    font-family: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  button.week-item:active { background: rgba(61, 56, 50, 0.03); }
+  .week-item.week-empty { justify-content: center; }
+  .week-item.week-empty .week-summary { flex: none; text-align: center; }
 
   .form-group { margin-bottom: 18px; }
   label { display: block; font-size: 0.875rem; margin-bottom: 7px; }
@@ -770,20 +804,64 @@
   .fill-cta-wrap {
     margin: 0 0 10px;
   }
+  .fill-cta-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .btn-fill-status,
+  .btn-quick-normal {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 12px 10px;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.3;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    white-space: normal;
+  }
   .btn-fill-status {
-    width: 100%;
-    padding: 12px 14px;
     background: var(--accent-deep);
     color: #fff;
     border: none;
-    border-radius: 14px;
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    box-shadow: var(--shadow);
   }
   .btn-fill-status:active { transform: scale(0.985); }
+  .btn-quick-normal {
+    background: var(--surface);
+    color: var(--accent-deep);
+    border: 1px solid var(--accent);
+  }
+  .btn-quick-normal:active { transform: scale(0.985); }
+  .btn-quick-normal[hidden] { display: none !important; }
+  .quick-confirm,
+  .backup-confirm {
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+  }
+  .quick-confirm[hidden],
+  .backup-confirm[hidden] { display: none !important; }
+  .quick-confirm p,
+  .backup-confirm p {
+    margin: 0 0 10px;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .inline-confirm-actions { display: flex; gap: 8px; }
+  .inline-confirm-actions .btn-ghost,
+  .inline-confirm-actions .btn-solid {
+    flex: 1;
+    padding: 10px 12px;
+  }
 
   .btn-edit-profile {
     display: inline-block;
@@ -952,6 +1030,19 @@
     cursor: pointer;
   }
   .btn-save-settings:active { transform: scale(0.98); }
+  .backup-hint {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    line-height: 1.5;
+    margin: 0 0 12px;
+  }
+  .backup-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .backup-actions .btn-save-settings { margin-top: 0; }
+  .btn-backup-import {
+    background: transparent;
+    color: var(--accent-deep);
+    border: 1px solid var(--accent);
+  }
   .segmented {
     display: flex;
     gap: 6px;
@@ -1714,7 +1805,17 @@
       </div>
 
       <div class="fill-cta-wrap">
-        <button type="button" class="btn-fill-status" id="btnFillStatus" data-i18n="fillStatus">填寫今日狀態</button>
+        <div class="fill-cta-row">
+          <button type="button" class="btn-fill-status" id="btnFillStatus" data-i18n="fillStatus">填寫今日狀態</button>
+          <button type="button" class="btn-quick-normal" id="btnQuickNormal" data-i18n="quickNormal">今日一切正常</button>
+        </div>
+        <div class="quick-confirm" id="quickNormalConfirm" hidden>
+          <p id="quickNormalConfirmText">今日已有記錄。要改成食慾良好、便便正常、活動活躍、眼睛正常嗎？體重、牙齒與備註會保留。</p>
+          <div class="inline-confirm-actions">
+            <button type="button" class="btn-ghost" id="quickNormalCancel" data-i18n="cancel">取消</button>
+            <button type="button" class="btn-solid" id="quickNormalApply" data-i18n="quickNormalApply">改成正常</button>
+          </div>
+        </div>
       </div>
 
       <div class="metrics">
@@ -1768,28 +1869,26 @@
       <div class="trend-card">
         <div class="trend-title">
           <span id="trendTitle" data-i18n="trendTitle">體重趨勢（近 8 週）</span>
-          <span style="color:var(--text-soft);font-size:13px;">2.35 – 2.48</span>
+          <span id="trendRange" style="color:var(--text-soft);font-size:13px;">—</span>
         </div>
-        <svg class="trend-svg" viewBox="0 0 320 70" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#8FA18A" stop-opacity="0.25"/>
-              <stop offset="100%" stop-color="#8FA18A" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <path d="M0,48 L40,45 L80,42 L120,44 L160,38 L200,40 L240,36 L280,34 L320,32" fill="none" stroke="#6B7D66" stroke-width="2" stroke-linecap="round"/>
-          <path d="M0,48 L40,45 L80,42 L120,44 L160,38 L200,40 L240,36 L280,34 L320,32 L320,70 L0,70 Z" fill="url(#g)"/>
-        </svg>
-        <div class="trend-note" id="trendNote" data-i18n="trendNote">整體穩定，輕微波動</div>
+        <div class="trend-chart" id="trendChart">
+          <svg class="trend-svg" id="trendSvg" viewBox="0 0 320 70" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#8FA18A" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#8FA18A" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path id="trendLine" fill="none" stroke="#6B7D66" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            <path id="trendArea" fill="url(#g)"/>
+          </svg>
+          <div class="trend-empty" id="trendEmpty" hidden></div>
+        </div>
+        <div class="trend-note" id="trendNote"></div>
       </div>
 
       <div class="section-title" id="weekObsTitle" data-i18n="weekObs">本週觀察</div>
-      <div class="week-list" id="weekObsList">
-        <div class="week-item"><div class="week-day">10/29 <span data-i18n="wdThu">四</span></div><div class="week-summary" data-i18n="sampleActDown">活動稍減</div></div>
-        <div class="week-item"><div class="week-day">10/28 <span data-i18n="wdWed">三</span></div><div class="week-summary" data-i18n="sampleAllOk">一切正常</div></div>
-        <div class="week-item"><div class="week-day">10/27 <span data-i18n="wdTue">二</span></div><div class="week-summary" data-i18n="sampleAppetiteAct">食慾好 · 活動稍減</div></div>
-        <div class="week-item"><div class="week-day">10/26 <span data-i18n="wdMon">一</span></div><div class="week-summary" data-i18n="sampleAllOk">一切正常</div></div>
-      </div>
+      <div class="week-list" id="weekObsList"></div>
     </div>
 
     <!-- 記錄 -->
@@ -1867,11 +1966,7 @@
         <div class="cal-grid" id="calGrid"></div>
       </div>
       <div class="section-title" id="recentLogsTitle" data-i18n="recentLogs">最近記錄</div>
-      <div class="week-list">
-        <div class="week-item"><div class="week-day">10/29</div><div class="week-summary" data-i18n="sampleActDown">活動稍減</div></div>
-        <div class="week-item"><div class="week-day">10/28</div><div class="week-summary" data-i18n="sampleAllOk">一切正常</div></div>
-        <div class="week-item"><div class="week-day">10/27</div><div class="week-summary" data-i18n="sampleAppetiteAct">食慾好 · 活動稍減</div></div>
-      </div>
+      <div class="week-list" id="recentLogsList"></div>
     </div>
 
     <!-- 更多 -->
@@ -1914,6 +2009,23 @@
           <button type="button" data-font="sm" id="fontOptSm">小</button>
           <button type="button" data-font="md" id="fontOptMd">標準</button>
           <button type="button" data-font="lg" id="fontOptLg">大</button>
+        </div>
+      </div>
+
+      <div class="settings-card" id="cardBackup">
+        <div class="settings-card-title" id="labelBackupTitle" data-i18n="backupTitle">備份與還原</div>
+        <p class="backup-hint" id="backupHint" data-i18n="backupHint">下載目前帳戶的兔兔與每日記錄（JSON 檔）。還原會蓋過這個帳戶的本機資料，不會上傳到伺服器。</p>
+        <div class="backup-actions">
+          <button type="button" class="btn-save-settings" id="btnExportBackup" data-i18n="backupExport">下載備份</button>
+          <button type="button" class="btn-save-settings btn-backup-import" id="btnImportBackup" data-i18n="backupImport">從檔案還原</button>
+        </div>
+        <input type="file" id="backupFile" accept="application/json,.json" hidden>
+        <div class="backup-confirm" id="backupConfirm" hidden>
+          <p id="backupConfirmText"></p>
+          <div class="inline-confirm-actions">
+            <button type="button" class="btn-ghost" id="backupCancel" data-i18n="cancel">取消</button>
+            <button type="button" class="btn-solid" id="backupApply" data-i18n="backupApply">還原</button>
+          </div>
         </div>
       </div>
 
@@ -2264,7 +2376,32 @@
       errNewPasswordMismatch: '兩次新密碼不一致',
       errSendTemp: '無法傳送暫時密碼', errResetFail: '重設失敗',
       errGoogleFail: 'Google 登入失敗', errGooglePayload: '無法讀取 Google 帳戶資料',
-      labelAppetite: '食慾', labelPoop: '便便', labelActivity: '活動', labelEyes: '眼睛'
+      labelAppetite: '食慾', labelPoop: '便便', labelActivity: '活動', labelEyes: '眼睛',
+      quickNormal: '今日一切正常',
+      quickNormalConfirm: '今日已有記錄。要改成食慾良好、便便正常、活動活躍、眼睛正常嗎？體重、牙齒與備註會保留。',
+      quickNormalApply: '改成正常',
+      quickNormalAlready: '今日已是一切正常',
+      weekEmpty: '本週尚未有記錄',
+      recentEmpty: '尚未有記錄',
+      weekObsRange: '{start} – {end}',
+      trendNeedMore: '至少兩筆體重先會顯示趨勢',
+      trendNone: '尚未記錄體重',
+      trendStable: '整體穩定',
+      trendSlight: '輕微波動',
+      trendUp: '近期略升',
+      trendDown: '近期略降',
+      backupTitle: '備份與還原',
+      backupHint: '下載目前帳戶的兔兔與每日記錄（JSON 檔）。還原會蓋過這個帳戶的本機資料，不會上傳到伺服器。',
+      backupExport: '下載備份',
+      backupImport: '從檔案還原',
+      backupConfirm: '還原會取代目前的兔兔與每日記錄（{rabbits} 隻、{logs} 筆）。確定還原？',
+      backupApply: '還原',
+      backupDone: '已還原備份',
+      backupSaved: '已下載備份',
+      backupInvalid: '這個檔案不是兔兔 Tracker 的備份',
+      backupReadFail: '無法讀取檔案',
+      backupTooMany: '備份超過 5 隻兔子，無法還原',
+      backupApplyFail: '無法寫入本機資料，可能是容量不足'
     },
     en: {
       home: 'Home', brandTitle: 'Fluffy Observation Journal', brandSub: 'How is your bunny today? 🐰',
@@ -2373,7 +2510,32 @@
       errNewPasswordMismatch: 'New passwords do not match',
       errSendTemp: 'Could not send temp password', errResetFail: 'Reset failed',
       errGoogleFail: 'Google sign-in failed', errGooglePayload: 'Could not read Google account',
-      labelAppetite: 'Appetite', labelPoop: 'Poop', labelActivity: 'Activity', labelEyes: 'Eyes'
+      labelAppetite: 'Appetite', labelPoop: 'Poop', labelActivity: 'Activity', labelEyes: 'Eyes',
+      quickNormal: 'All normal today',
+      quickNormalConfirm: 'Today already has a log. Replace appetite, poop, activity, and eyes with the healthy defaults? Weight, teeth, and notes stay as they are.',
+      quickNormalApply: 'Mark normal',
+      quickNormalAlready: 'Today is already marked all normal',
+      weekEmpty: 'No logs this week',
+      recentEmpty: 'No logs yet',
+      weekObsRange: '{start} – {end}',
+      trendNeedMore: 'Log weight at least twice to see a trend',
+      trendNone: 'No weight logged yet',
+      trendStable: 'Overall stable',
+      trendSlight: 'Slight fluctuation',
+      trendUp: 'Slightly up lately',
+      trendDown: 'Slightly down lately',
+      backupTitle: 'Backup & restore',
+      backupHint: 'Download this account’s rabbits and daily logs as JSON. Restore replaces this account’s data on this device only — nothing is uploaded.',
+      backupExport: 'Download backup',
+      backupImport: 'Restore from file',
+      backupConfirm: 'Restore will replace current rabbits and logs ({rabbits} rabbits, {logs} logs). Continue?',
+      backupApply: 'Restore',
+      backupDone: 'Backup restored',
+      backupSaved: 'Backup downloaded',
+      backupInvalid: 'This file is not a Tutu Tracker backup',
+      backupReadFail: 'Could not read the file',
+      backupTooMany: 'Backup has more than 5 rabbits and cannot be restored',
+      backupApplyFail: 'Could not save locally (storage may be full)'
     },
     ja: {
       home: 'ホーム', brandTitle: 'もこもこ観察手帳', brandSub: '今日のうさぎ、元気？🐰',
@@ -2482,7 +2644,32 @@
       errNewPasswordMismatch: '新しいパスワードが一致しません',
       errSendTemp: '一時パスワードを送信できません', errResetFail: '再設定に失敗しました',
       errGoogleFail: 'Google ログインに失敗しました', errGooglePayload: 'Google アカウント情報を読めません',
-      labelAppetite: '食欲', labelPoop: 'うんち', labelActivity: '活動', labelEyes: '目'
+      labelAppetite: '食欲', labelPoop: 'うんち', labelActivity: '活動', labelEyes: '目',
+      quickNormal: '今日はすべて正常',
+      quickNormalConfirm: '今日の記録が既にあります。食欲・うんち・活動・目を正常の初期値に変えますか？体重・歯・メモはそのまま残します。',
+      quickNormalApply: '正常にする',
+      quickNormalAlready: '今日はすでにすべて正常です',
+      weekEmpty: '今週の記録はまだありません',
+      recentEmpty: '記録はまだありません',
+      weekObsRange: '{start} – {end}',
+      trendNeedMore: '体重を2回以上記録すると傾向が表示されます',
+      trendNone: '体重はまだ未記録です',
+      trendStable: '全体として安定',
+      trendSlight: 'わずかな変動',
+      trendUp: '最近やや上昇',
+      trendDown: '最近やや下降',
+      backupTitle: 'バックアップと復元',
+      backupHint: 'このアカウントのうさぎと毎日の記録を JSON でダウンロードします。復元はこの端末の同じアカウントに上書きし、サーバーには送りません。',
+      backupExport: 'バックアップをダウンロード',
+      backupImport: 'ファイルから復元',
+      backupConfirm: '復元すると現在のうさぎと記録が置き換わります（{rabbits} 羽、{logs} 件）。復元しますか？',
+      backupApply: '復元',
+      backupDone: 'バックアップを復元しました',
+      backupSaved: 'バックアップをダウンロードしました',
+      backupInvalid: '兔兔 Tracker のバックアップファイルではありません',
+      backupReadFail: 'ファイルを読み取れませんでした',
+      backupTooMany: 'バックアップが5羽を超えているため復元できません',
+      backupApplyFail: '端末に保存できませんでした（容量不足の可能性）'
     }
   };
 
@@ -2555,6 +2742,12 @@
   let modalMode = 'add'; // 'add' | 'rename'
   let logs = {}; // { "rabbitId|YYYY-MM-DD": { appetite, poop, activity, weight, teeth, eyes, notes } }
   let viewDate = new Date(); // selected day on 今日 / 記錄
+  let quickNormalConfirmOpen = false;
+  let quickNormalRabbitId = null;
+  let pendingBackup = null;
+  const HEALTHY_DEFAULTS = { appetite: '良好', poop: '正常', activity: '活躍', eyes: '正常' };
+  const BACKUP_APP = 'tutu-tracker';
+  const BACKUP_VERSION = 1;
 
   function uid() {
     return 'r_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -3126,6 +3319,7 @@
     const editBtn = document.getElementById('btnEditProfile');
     if (renameBtn) renameBtn.disabled = !hasRabbit;
     if (editBtn) editBtn.disabled = !hasRabbit;
+    renderBackupConfirm();
   }
 
   function startOfWeek(d) {
@@ -3134,6 +3328,478 @@
     const diff = day === 0 ? -6 : 1 - day; // Monday start
     x.setDate(x.getDate() + diff);
     return x;
+  }
+
+  function logHasContent(log) {
+    if (!log || typeof log !== 'object') return false;
+    if (log.appetite || log.poop || log.activity || log.teeth || log.eyes) return true;
+    if (log.notes && String(log.notes).trim()) return true;
+    if (log.weight != null && log.weight !== '' && Number.isFinite(Number(log.weight))) return true;
+    return false;
+  }
+
+  function clipText(value, max) {
+    const text = String(value || '').replace(/\s+/g, ' ').trim();
+    if (text.length <= max) return text;
+    return text.slice(0, max) + '…';
+  }
+
+  function formatKgNum(n) {
+    const v = Math.round(Number(n) * 100) / 100;
+    if (!Number.isFinite(v)) return '';
+    return String(v);
+  }
+
+  function summarizeLog(log) {
+    if (!logHasContent(log)) return '';
+    const parts = [];
+    if (log.appetite) parts.push(t('labelAppetite') + ' ' + localizeValue(log.appetite));
+    if (log.poop) parts.push(t('labelPoop') + ' ' + localizeValue(log.poop));
+    if (log.activity) parts.push(t('labelActivity') + ' ' + localizeValue(log.activity));
+    if (log.eyes) parts.push(t('labelEyes') + ' ' + localizeValue(log.eyes));
+    if (log.weight != null && log.weight !== '' && Number.isFinite(Number(log.weight))) {
+      parts.push(formatKgNum(log.weight) + '\u00a0kg');
+    }
+    const notes = clipText(log.notes, 28);
+    if (notes) parts.push(notes);
+    return parts.join(' · ');
+  }
+
+  function dateFromKey(key) {
+    const norm = normalizeDateInput(key);
+    if (!norm) return null;
+    const p = norm.split('-');
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
+
+  function todayDate() {
+    const n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  }
+
+  function logsForRabbit(rabbitId) {
+    if (!rabbitId) return [];
+    const prefix = rabbitId + '|';
+    const out = [];
+    Object.keys(logs).forEach(k => {
+      if (k.indexOf(prefix) !== 0) return;
+      const dateKey = k.slice(prefix.length);
+      const date = dateFromKey(dateKey);
+      if (!date) return;
+      const log = logs[k];
+      if (!logHasContent(log)) return;
+      out.push({ dateKey: dateKey, date: date, log: log });
+    });
+    out.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+    return out;
+  }
+
+  function shortDateLabel(d) {
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + weekdayShort(d.getDay());
+  }
+
+  function renderLogRows(container, rows, emptyKey) {
+    if (!container) return;
+    if (!rows.length) {
+      container.innerHTML = '<div class="week-item week-empty"><div class="week-summary">' + escapeHtml(t(emptyKey)) + '</div></div>';
+      return;
+    }
+    container.innerHTML = rows.map(row =>
+      '<button type="button" class="week-item" data-date="' + escapeHtml(row.dateKey) + '">' +
+        '<div class="week-day">' + escapeHtml(shortDateLabel(row.date)) + '</div>' +
+        '<div class="week-summary">' + escapeHtml(summarizeLog(row.log)) + '</div>' +
+      '</button>'
+    ).join('');
+    container.querySelectorAll('button[data-date]').forEach(btn => {
+      btn.addEventListener('click', () => openLoggedDay(btn.dataset.date));
+    });
+  }
+
+  function renderWeekObservations() {
+    const title = document.getElementById('weekObsTitle');
+    const list = document.getElementById('weekObsList');
+    const r = getActive();
+    const mon = startOfWeek(viewDate);
+    const sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+    const todayMon = startOfWeek(new Date());
+    if (title) {
+      title.textContent = isSameDay(mon, todayMon)
+        ? t('weekObs')
+        : tf('weekObsRange', {
+          start: (mon.getMonth() + 1) + '/' + mon.getDate(),
+          end: (sun.getMonth() + 1) + '/' + sun.getDate()
+        });
+    }
+    if (!r) {
+      renderLogRows(list, [], 'weekEmpty');
+      return;
+    }
+    const monKey = toDateKey(mon);
+    const sunKey = toDateKey(sun);
+    const rows = logsForRabbit(r.id).filter(row => row.dateKey >= monKey && row.dateKey <= sunKey);
+    renderLogRows(list, rows, 'weekEmpty');
+  }
+
+  function renderRecentLogs() {
+    const list = document.getElementById('recentLogsList');
+    const r = getActive();
+    const rows = r ? logsForRabbit(r.id).slice(0, 5) : [];
+    renderLogRows(list, rows, 'recentEmpty');
+  }
+
+  function openLoggedDay(dateKey) {
+    const d = dateFromKey(dateKey);
+    if (!d) return;
+    viewDate = d;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const todayNav = document.querySelector('.nav-item[data-screen="today"]');
+    if (todayNav) todayNav.classList.add('active');
+    const screen = document.getElementById('screen-today');
+    if (screen) screen.classList.add('active');
+    renderTodayContext();
+  }
+
+  function weightsInWindow(rabbitId, endDate, days) {
+    const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (days - 1));
+    const startKey = toDateKey(start);
+    const endKey = toDateKey(end);
+    return logsForRabbit(rabbitId)
+      .filter(row => row.dateKey >= startKey && row.dateKey <= endKey && row.log.weight != null && row.log.weight !== '')
+      .map(row => ({ dateKey: row.dateKey, weight: Number(row.log.weight) }))
+      .filter(p => Number.isFinite(p.weight))
+      .sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+  }
+
+  function trendPhrase(points) {
+    const weights = points.map(p => p.weight);
+    const min = Math.min.apply(null, weights);
+    const max = Math.max.apply(null, weights);
+    const span = max - min;
+    const mean = weights.reduce((sum, n) => sum + n, 0) / weights.length;
+    if (span <= 0.05 || (mean && span / mean <= 0.02)) return t('trendStable');
+    const delta = weights[weights.length - 1] - weights[0];
+    if (delta >= 0.05) return t('trendUp');
+    if (delta <= -0.05) return t('trendDown');
+    return t('trendSlight');
+  }
+
+  function formatWeightRange(points) {
+    const weights = points.map(p => p.weight);
+    const min = Math.min.apply(null, weights);
+    const max = Math.max.apply(null, weights);
+    if (Math.abs(max - min) < 0.001) return formatKgNum(min) + ' kg';
+    return formatKgNum(min) + ' – ' + formatKgNum(max) + ' kg';
+  }
+
+  function renderWeightTrend() {
+    const rangeEl = document.getElementById('trendRange');
+    const noteEl = document.getElementById('trendNote');
+    const chart = document.getElementById('trendChart');
+    const emptyEl = document.getElementById('trendEmpty');
+    const line = document.getElementById('trendLine');
+    const area = document.getElementById('trendArea');
+    const r = getActive();
+    const points = r ? weightsInWindow(r.id, new Date(), 56) : [];
+    const anyWeight = !!(r && logsForRabbit(r.id).some(row =>
+      row.log.weight != null && row.log.weight !== '' && Number.isFinite(Number(row.log.weight))
+    ));
+    if (points.length < 2) {
+      if (rangeEl) rangeEl.textContent = '—';
+      if (noteEl) noteEl.textContent = '';
+      if (line) line.setAttribute('d', '');
+      if (area) area.setAttribute('d', '');
+      if (chart) chart.classList.add('is-empty');
+      if (emptyEl) {
+        emptyEl.hidden = false;
+        emptyEl.textContent = anyWeight ? t('trendNeedMore') : t('trendNone');
+      }
+      return;
+    }
+    if (chart) chart.classList.remove('is-empty');
+    if (emptyEl) emptyEl.hidden = true;
+    if (rangeEl) rangeEl.textContent = formatWeightRange(points);
+    if (noteEl) noteEl.textContent = trendPhrase(points);
+    const W = 320;
+    const H = 70;
+    const padY = 8;
+    const weights = points.map(p => p.weight);
+    const min = Math.min.apply(null, weights);
+    const max = Math.max.apply(null, weights);
+    function xAt(i) {
+      if (points.length === 1) return W / 2;
+      return (i / (points.length - 1)) * W;
+    }
+    function yAt(w) {
+      if (max === min) return H / 2;
+      const tNorm = (w - min) / (max - min);
+      return padY + (1 - tNorm) * (H - padY * 2);
+    }
+    const lineD = points.map((p, i) =>
+      (i === 0 ? 'M' : 'L') + xAt(i).toFixed(1) + ',' + yAt(p.weight).toFixed(1)
+    ).join(' ');
+    if (line) line.setAttribute('d', lineD);
+    if (area) area.setAttribute('d', lineD + ' L' + W + ',' + H + ' L0,' + H + ' Z');
+  }
+
+  function healthFieldsFilled(log) {
+    if (!log) return false;
+    return !!(log.appetite || log.poop || log.activity || log.eyes);
+  }
+
+  function isHealthyDefaults(log) {
+    if (!log) return false;
+    return log.appetite === HEALTHY_DEFAULTS.appetite &&
+      log.poop === HEALTHY_DEFAULTS.poop &&
+      log.activity === HEALTHY_DEFAULTS.activity &&
+      log.eyes === HEALTHY_DEFAULTS.eyes;
+  }
+
+  function syncQuickNormalConfirm() {
+    const r = getActive();
+    const btn = document.getElementById('btnQuickNormal');
+    const box = document.getElementById('quickNormalConfirm');
+    if (btn) btn.hidden = !r;
+    if (!r || !quickNormalConfirmOpen || quickNormalRabbitId !== r.id) {
+      if (!r || quickNormalRabbitId !== (r && r.id)) quickNormalConfirmOpen = false;
+      if (box) box.hidden = true;
+      return;
+    }
+    if (box) box.hidden = false;
+    const text = document.getElementById('quickNormalConfirmText');
+    if (text) text.textContent = t('quickNormalConfirm');
+  }
+
+  function commitQuickNormal(r, day, existing) {
+    const base = existing ? Object.assign({}, existing) : emptyLog();
+    base.appetite = HEALTHY_DEFAULTS.appetite;
+    base.poop = HEALTHY_DEFAULTS.poop;
+    base.activity = HEALTHY_DEFAULTS.activity;
+    base.eyes = HEALTHY_DEFAULTS.eyes;
+    if (base.notes == null) base.notes = '';
+    if (base.teeth == null) base.teeth = '';
+    if (base.weight === '' || (base.weight != null && !Number.isFinite(Number(base.weight)))) base.weight = null;
+    logs[logKey(r.id, day)] = base;
+    saveLogs();
+    r.tags = deriveTagsFromLog(base);
+    saveRabbits();
+    viewDate = day;
+    quickNormalConfirmOpen = false;
+    quickNormalRabbitId = r.id;
+    renderAll();
+    showToast(tf('savedStatus', { name: r.name, date: dateLabelFor(day) }));
+  }
+
+  function requestQuickNormal() {
+    const r = getActive();
+    if (!r) {
+      openAddModal();
+      return;
+    }
+    const day = todayDate();
+    const existing = getLog(r.id, day);
+    viewDate = day;
+    quickNormalRabbitId = r.id;
+    if (isHealthyDefaults(existing)) {
+      quickNormalConfirmOpen = false;
+      renderTodayContext();
+      showToast(t('quickNormalAlready'));
+      return;
+    }
+    if (healthFieldsFilled(existing)) {
+      quickNormalConfirmOpen = true;
+      renderTodayContext();
+      return;
+    }
+    commitQuickNormal(r, day, existing);
+  }
+
+  function sanitizeImportedLog(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const allow = {
+      appetite: ['良好', '普通', '較少', '拒絕'],
+      poop: ['正常', '較少', '偏軟', '異常'],
+      activity: ['活躍', '普通', '稍減', '明顯減少'],
+      teeth: ['正常', '需留意', '已檢查'],
+      eyes: ['正常', '淚眼(有淚痕)', '紅筋']
+    };
+    const entry = emptyLog();
+    Object.keys(allow).forEach(field => {
+      entry[field] = allow[field].indexOf(raw[field]) >= 0 ? raw[field] : '';
+    });
+    if (raw.weight != null && raw.weight !== '') {
+      const n = Number(raw.weight);
+      if (Number.isFinite(n) && n >= 0 && n < 100) entry.weight = Math.round(n * 100) / 100;
+    }
+    entry.notes = String(raw.notes || '').slice(0, 500);
+    return logHasContent(entry) ? entry : null;
+  }
+
+  function sanitizeImportedRabbit(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const id = String(raw.id || '').trim().slice(0, 64);
+    if (!/^[A-Za-z0-9_-]+$/.test(id)) return null;
+    const rabbit = {
+      id: id,
+      name: String(raw.name || '').trim().slice(0, 12) || t('defaultRabbitName'),
+      ageLabel: String(raw.ageLabel || '').slice(0, 24),
+      breed: String(raw.breed || '').slice(0, 24),
+      welcomeDate: normalizeDateInput(raw.welcomeDate),
+      birthday: normalizeDateInput(raw.birthday),
+      weight: null,
+      avatar: null,
+      avatarFrame: (raw.avatarFrame && typeof raw.avatarFrame === 'object') ? raw.avatarFrame : defaultAvatarFrame(),
+      tags: Array.isArray(raw.tags) ? raw.tags : [],
+      notes: String(raw.notes || '').slice(0, 240),
+      customTopics: Array.isArray(raw.customTopics) ? raw.customTopics : [],
+      diaryTitle: String(raw.diaryTitle || '').slice(0, 24),
+      pinned: raw.pinned === true
+    };
+    if (raw.weight != null && raw.weight !== '') {
+      const n = Number(raw.weight);
+      if (Number.isFinite(n) && n >= 0 && n < 100) rabbit.weight = Math.round(n * 100) / 100;
+    }
+    if (typeof raw.avatar === 'string' && raw.avatar.indexOf('data:image/') === 0 && raw.avatar.length < 2500000) {
+      rabbit.avatar = raw.avatar;
+    }
+    return rabbit;
+  }
+
+  function parseBackupText(text) {
+    let data;
+    try { data = JSON.parse(text); }
+    catch (e) { return { error: 'backupInvalid' }; }
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return { error: 'backupInvalid' };
+    if (data.app !== BACKUP_APP || data.version !== BACKUP_VERSION) return { error: 'backupInvalid' };
+    if (!Array.isArray(data.rabbits)) return { error: 'backupInvalid' };
+    if (data.logs != null && (typeof data.logs !== 'object' || Array.isArray(data.logs))) return { error: 'backupInvalid' };
+    if (data.rabbits.length > MAX_RABBITS) return { error: 'backupTooMany' };
+    const rabbitsOut = [];
+    const seen = {};
+    for (let i = 0; i < data.rabbits.length; i++) {
+      const rabbit = sanitizeImportedRabbit(data.rabbits[i]);
+      if (!rabbit || seen[rabbit.id]) return { error: 'backupInvalid' };
+      seen[rabbit.id] = true;
+      rabbitsOut.push(rabbit);
+    }
+    const logsOut = {};
+    const rawLogs = data.logs || {};
+    Object.keys(rawLogs).forEach(key => {
+      const sep = key.lastIndexOf('|');
+      if (sep <= 0) return;
+      const id = key.slice(0, sep);
+      const date = normalizeDateInput(key.slice(sep + 1));
+      if (!date || !seen[id]) return;
+      const entry = sanitizeImportedLog(rawLogs[key]);
+      if (entry) logsOut[id + '|' + date] = entry;
+    });
+    let active = typeof data.activeId === 'string' ? data.activeId : '';
+    if (!seen[active]) active = rabbitsOut.length ? rabbitsOut[0].id : '';
+    let settings = null;
+    if (data.settings && typeof data.settings === 'object' && !Array.isArray(data.settings)) {
+      settings = {
+        displayName: String(data.settings.displayName || '').slice(0, 40),
+        bio: String(data.settings.bio || '').slice(0, 120),
+        language: normalizeLang(data.settings.language || 'zh-Hant'),
+        fontSize: (data.settings.fontSize === 'sm' || data.settings.fontSize === 'lg') ? data.settings.fontSize : 'md'
+      };
+    }
+    return {
+      payload: {
+        rabbits: rabbitsOut,
+        logs: logsOut,
+        activeId: active,
+        settings: settings
+      }
+    };
+  }
+
+  function renderBackupConfirm() {
+    const box = document.getElementById('backupConfirm');
+    const text = document.getElementById('backupConfirmText');
+    if (!box) return;
+    if (!pendingBackup) {
+      box.hidden = true;
+      return;
+    }
+    box.hidden = false;
+    if (text) {
+      text.textContent = tf('backupConfirm', {
+        rabbits: pendingBackup.rabbits.length,
+        logs: Object.keys(pendingBackup.logs).length
+      });
+    }
+  }
+
+  function exportBackup() {
+    if (!KEY_RABBITS) return;
+    const payload = {
+      app: BACKUP_APP,
+      version: BACKUP_VERSION,
+      exportedAt: new Date().toISOString(),
+      activeId: activeId || null,
+      rabbits: rabbits,
+      logs: logs,
+      settings: {
+        displayName: userSettings.displayName || '',
+        bio: userSettings.bio || '',
+        language: normalizeLang(userSettings.language),
+        fontSize: userSettings.fontSize || 'md'
+      }
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'tutu-tracker-backup-' + toDateKey(new Date()) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    showToast(t('backupSaved'));
+  }
+
+  function applyBackup(payload) {
+    if (!KEY_RABBITS || !KEY_LOGS || !KEY_ACTIVE) {
+      showToast(t('backupApplyFail'));
+      return;
+    }
+    try {
+      localStorage.setItem(KEY_RABBITS, JSON.stringify(payload.rabbits));
+      localStorage.setItem(KEY_LOGS, JSON.stringify(payload.logs));
+      if (payload.activeId) localStorage.setItem(KEY_ACTIVE, payload.activeId);
+      else localStorage.removeItem(KEY_ACTIVE);
+    } catch (e) {
+      showToast(t('backupApplyFail'));
+      return;
+    }
+    if (payload.settings) {
+      userSettings.displayName = payload.settings.displayName;
+      userSettings.bio = payload.settings.bio;
+      userSettings.language = payload.settings.language;
+      userSettings.fontSize = payload.settings.fontSize;
+      saveSettings();
+      if (currentSession && !isPreviewMode) {
+        currentSession.ownerName = userSettings.displayName;
+        try {
+          const users = loadUsers();
+          const idx = users.findIndex(u => u.id === currentSession.id);
+          if (idx >= 0) {
+            users[idx].ownerName = userSettings.displayName;
+            saveUsers(users);
+          }
+          setSession(currentSession);
+        } catch (e) { /* keep restored rabbits even if the account name cannot update */ }
+      }
+    }
+    pendingBackup = null;
+    quickNormalConfirmOpen = false;
+    loadState();
+    loadSettings();
+    applyUserSettings();
+    renderAll();
+    showToast(t('backupDone'));
   }
 
   function renderWeekStrip() {
@@ -3145,7 +3811,7 @@
     for (let i = 0; i < 7; i++) {
       const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i);
       const active = isSameDay(d, viewDate);
-      const has = r ? !!getLog(r.id, d) : false;
+      const has = r ? logHasContent(getLog(r.id, d)) : false;
       html += '<button type="button" class="week-day-btn' +
         (active ? ' active' : '') +
         (has ? ' has-log' : '') +
@@ -3198,6 +3864,9 @@
       if (fillBtn) fillBtn.textContent = t('addRabbit');
       renderWeekStrip();
       renderMetricsFromLog(null, null);
+      renderWeekObservations();
+      renderWeightTrend();
+      syncQuickNormalConfirm();
       const sumEl = document.getElementById('summaryLine');
       if (sumEl) {
         sumEl.textContent = t('noRabbitSummary');
@@ -3221,6 +3890,9 @@
     renderHeroTags(log);
     renderWeekStrip();
     renderMetricsFromLog(log, r);
+    renderWeekObservations();
+    renderWeightTrend();
+    syncQuickNormalConfirm();
     renderLogHeader();
   }
 
@@ -3564,7 +4236,7 @@
       const date = new Date(y, m, day);
       const md = pad2(m + 1) + '-' + pad2(day);
       const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === day;
-      const recorded = !!(r && getLog(r.id, date));
+      const recorded = !!(r && logHasContent(getLog(r.id, date)));
       const isBday = !!(bday && md === bday);
       let cls = 'cal-day';
       if (recorded) cls += ' has-record';
@@ -3575,6 +4247,7 @@
       html += '<div class="' + cls + '"' + title + '><span>' + day + '</span>' + icon + '</div>';
     }
     grid.innerHTML = html;
+    renderRecentLogs();
   }
 
   function changeCalMonth(delta) {
@@ -3837,6 +4510,17 @@
       return;
     }
     goToLogScreen();
+  });
+  document.getElementById('btnQuickNormal').addEventListener('click', requestQuickNormal);
+  document.getElementById('quickNormalCancel').addEventListener('click', () => {
+    quickNormalConfirmOpen = false;
+    syncQuickNormalConfirm();
+  });
+  document.getElementById('quickNormalApply').addEventListener('click', () => {
+    const r = getActive();
+    if (!r) return;
+    const day = todayDate();
+    commitQuickNormal(r, day, getLog(r.id, day));
   });
 
   const diaryTitleEl = document.getElementById('diaryTitle');
@@ -4101,6 +4785,40 @@
       b.classList.toggle('selected', b.dataset.font === userSettings.fontSize);
     });
     renderAll();
+  });
+
+  document.getElementById('btnExportBackup').addEventListener('click', exportBackup);
+  document.getElementById('btnImportBackup').addEventListener('click', () => {
+    const input = document.getElementById('backupFile');
+    if (input) input.click();
+  });
+  document.getElementById('backupFile').addEventListener('change', () => {
+    const input = document.getElementById('backupFile');
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const parsed = parseBackupText(String(reader.result || ''));
+      if (parsed.error) {
+        pendingBackup = null;
+        renderBackupConfirm();
+        showToast(t(parsed.error));
+        return;
+      }
+      pendingBackup = parsed.payload;
+      renderBackupConfirm();
+    };
+    reader.onerror = () => showToast(t('backupReadFail'));
+    reader.readAsText(file);
+  });
+  document.getElementById('backupCancel').addEventListener('click', () => {
+    pendingBackup = null;
+    renderBackupConfirm();
+  });
+  document.getElementById('backupApply').addEventListener('click', () => {
+    if (!pendingBackup) return;
+    applyBackup(pendingBackup);
   });
 
 
