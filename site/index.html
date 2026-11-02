@@ -804,33 +804,38 @@
   .fill-cta-wrap {
     margin: 0 0 10px;
   }
-  .btn-fill-status {
-    width: 100%;
-    padding: 12px 14px;
-    background: var(--accent-deep);
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    box-shadow: var(--shadow);
+  .fill-cta-row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
   }
-  .btn-fill-status:active { transform: scale(0.985); }
+  .btn-fill-status,
   .btn-quick-normal {
-    width: 100%;
-    margin-top: 8px;
-    padding: 11px 14px;
-    background: var(--surface);
-    color: var(--accent-deep);
-    border: 1px solid var(--accent);
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 12px 10px;
     border-radius: 14px;
     font-family: inherit;
     font-size: 0.9375rem;
     font-weight: 500;
+    line-height: 1.3;
     cursor: pointer;
     box-shadow: var(--shadow);
+    white-space: normal;
+  }
+  .btn-fill-status {
+    background: var(--accent-deep);
+    color: #fff;
+    border: none;
+  }
+  .btn-fill-status:active { transform: scale(0.985); }
+  .btn-quick-normal {
+    background: var(--surface);
+    color: var(--accent-deep);
+    border: 1px solid var(--accent);
   }
   .btn-quick-normal:active { transform: scale(0.985); }
   .btn-quick-normal[hidden] { display: none !important; }
@@ -1800,8 +1805,10 @@
       </div>
 
       <div class="fill-cta-wrap">
-        <button type="button" class="btn-fill-status" id="btnFillStatus" data-i18n="fillStatus">填寫今日狀態</button>
-        <button type="button" class="btn-quick-normal" id="btnQuickNormal" data-i18n="quickNormal">今日一切正常</button>
+        <div class="fill-cta-row">
+          <button type="button" class="btn-fill-status" id="btnFillStatus" data-i18n="fillStatus">填寫今日狀態</button>
+          <button type="button" class="btn-quick-normal" id="btnQuickNormal" data-i18n="quickNormal">今日一切正常</button>
+        </div>
         <div class="quick-confirm" id="quickNormalConfirm" hidden>
           <p id="quickNormalConfirmText">今日已有記錄。要改成食慾良好、便便正常、活動活躍、眼睛正常嗎？體重、牙齒與備註會保留。</p>
           <div class="inline-confirm-actions">
