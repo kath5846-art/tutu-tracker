@@ -595,6 +595,7 @@
     min-width: 0;
   }
   .week-day-btn {
+    position: relative;
     width: 34px;
     height: 34px;
     border-radius: 50%;
@@ -624,6 +625,41 @@
   .week-day-btn.has-log:not(.active) {
     border-color: var(--accent);
     color: var(--accent-deep);
+  }
+  .week-day-btn.has-vet::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #C47A72;
+    box-shadow: 0 0 0 1px var(--bg);
+  }
+  .week-day-btn.active.has-vet::after {
+    background: #8B4548;
+    box-shadow: 0 0 0 1px var(--warm);
+  }
+  .vet-day-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: -2px 0 10px;
+    padding: 7px 12px;
+    border-radius: 12px;
+    background: #F8F1EE;
+    border: 1px solid #E7D5CF;
+    color: #6A4550;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+  }
+  .vet-day-line[hidden] { display: none !important; }
+  .vet-day-line .vet-day-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .summary-line {
@@ -789,6 +825,46 @@
     color: white;
     border-color: var(--accent-deep);
   }
+  .vet-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 14px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1.3;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .vet-toggle[aria-pressed="true"] {
+    background: #F8F1EE;
+    border-color: #E7D5CF;
+    color: #6A4550;
+  }
+  .vet-toggle:active { transform: scale(0.985); }
+  .vet-section {
+    background: var(--surface);
+    border: 1px solid #E7D5CF;
+    border-radius: 16px;
+    padding: 12px 14px 2px;
+    margin: -4px 0 16px;
+    box-shadow: var(--shadow);
+  }
+  .vet-section[hidden] { display: none !important; }
+  .vet-section-title {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #6A4550;
+    margin-bottom: 10px;
+  }
+  .vet-section .form-group { margin-bottom: 12px; }
+  .vet-section .form-group label { font-size: 0.8125rem; }
   textarea, input[type="number"], input[type="text"], input[type="date"] {
     width: 100%;
     padding: 11px 13px;
@@ -976,8 +1052,17 @@
     color: #6A4550;
     font-weight: 500;
   }
-  .cal-day .cal-bday-icon {
-    font-size: 0.85rem;
+  .cal-day .cal-marks {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    line-height: 1;
+    min-height: 0.85rem;
+  }
+  .cal-day .cal-bday-icon,
+  .cal-day .cal-vet-icon {
+    font-size: 0.72rem;
     line-height: 1;
   }
 
@@ -1804,6 +1889,11 @@
         <button type="button" class="week-nav-btn" id="weekNext" aria-label="下一週">›</button>
       </div>
 
+      <div class="vet-day-line" id="vetDayLine" hidden>
+        <span aria-hidden="true">🏥</span>
+        <span class="vet-day-text" id="vetDayLineText"></span>
+      </div>
+
       <div class="fill-cta-wrap">
         <div class="fill-cta-row">
           <button type="button" class="btn-fill-status" id="btnFillStatus" data-i18n="fillStatus">填寫今日狀態</button>
@@ -1948,6 +2038,33 @@
       <div class="form-group">
         <label data-i18n="notes">備註</label>
         <textarea id="logNotes" rows="3" placeholder="今日觀察到的細節…" data-i18n-ph="notesPh"></textarea>
+      </div>
+      <button type="button" class="vet-toggle" id="btnVetToggle" aria-pressed="false" aria-expanded="false" aria-controls="vetSection">
+        <span aria-hidden="true">🏥</span>
+        <span data-i18n="vetToggle">今日睇醫生</span>
+      </button>
+      <div class="vet-section" id="vetSection" hidden>
+        <div class="vet-section-title" data-i18n="vetSectionTitle">睇醫生記錄</div>
+        <div class="form-group">
+          <label for="vetReason" data-i18n="vetReason">睇醫生原因</label>
+          <input type="text" id="vetReason" maxlength="120" placeholder="例如：食慾下降、流眼水" data-i18n-ph="vetReasonPh" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="vetDiagnosis" data-i18n="vetDiagnosis">醫生講法／診斷</label>
+          <input type="text" id="vetDiagnosis" maxlength="240" placeholder="醫生點講…" data-i18n-ph="vetDiagnosisPh" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="vetMeds" data-i18n="vetMeds">藥物或護理指示</label>
+          <input type="text" id="vetMeds" maxlength="240" placeholder="藥名、次數、護理…" data-i18n-ph="vetMedsPh" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="vetFollowUp" data-i18n="vetFollowUp">下次覆診日期</label>
+          <input type="date" id="vetFollowUp">
+        </div>
+        <div class="form-group">
+          <label for="vetClinic" data-i18n="vetClinic">診所（選填）</label>
+          <input type="text" id="vetClinic" maxlength="60" placeholder="診所名稱" data-i18n-ph="vetClinicPh" autocomplete="off">
+        </div>
       </div>
       <button type="button" class="btn-primary" id="btnSaveLog" data-i18n="saveLog">儲存今日記錄</button>
     </div>
@@ -2378,9 +2495,23 @@
       errGoogleFail: 'Google 登入失敗', errGooglePayload: '無法讀取 Google 帳戶資料',
       labelAppetite: '食慾', labelPoop: '便便', labelActivity: '活動', labelEyes: '眼睛',
       quickNormal: '今日一切正常',
-      quickNormalConfirm: '今日已有記錄。要改成食慾良好、便便正常、活動活躍、眼睛正常嗎？體重、牙齒與備註會保留。',
+      quickNormalConfirm: '今日已有記錄。要改成食慾良好、便便正常、活動活躍、眼睛正常嗎？體重、牙齒、備註與睇醫生紀錄會保留。',
       quickNormalApply: '改成正常',
       quickNormalAlready: '今日已是一切正常',
+      vetToggle: '今日睇醫生',
+      vetSectionTitle: '睇醫生記錄',
+      vetReason: '睇醫生原因',
+      vetReasonPh: '例如：食慾下降、流眼水',
+      vetDiagnosis: '醫生講法／診斷',
+      vetDiagnosisPh: '醫生點講…',
+      vetMeds: '藥物或護理指示',
+      vetMedsPh: '藥名、次數、護理…',
+      vetFollowUp: '下次覆診日期',
+      vetClinic: '診所（選填）',
+      vetClinicPh: '診所名稱',
+      vetDayBadge: '今日睇醫生',
+      vetSummary: '睇醫生',
+      vetFollowUpShort: '覆診 {date}',
       weekEmpty: '本週尚未有記錄',
       recentEmpty: '尚未有記錄',
       weekObsRange: '{start} – {end}',
@@ -2512,9 +2643,23 @@
       errGoogleFail: 'Google sign-in failed', errGooglePayload: 'Could not read Google account',
       labelAppetite: 'Appetite', labelPoop: 'Poop', labelActivity: 'Activity', labelEyes: 'Eyes',
       quickNormal: 'All normal today',
-      quickNormalConfirm: 'Today already has a log. Replace appetite, poop, activity, and eyes with the healthy defaults? Weight, teeth, and notes stay as they are.',
+      quickNormalConfirm: 'Today already has a log. Replace appetite, poop, activity, and eyes with the healthy defaults? Weight, teeth, notes, and vet notes stay as they are.',
       quickNormalApply: 'Mark normal',
       quickNormalAlready: 'Today is already marked all normal',
+      vetToggle: 'Vet visit today',
+      vetSectionTitle: 'Vet visit',
+      vetReason: 'Reason',
+      vetReasonPh: 'e.g. less appetite, watery eyes',
+      vetDiagnosis: 'What the vet said',
+      vetDiagnosisPh: 'Diagnosis or advice…',
+      vetMeds: 'Meds / care instructions',
+      vetMedsPh: 'Name, dose, care…',
+      vetFollowUp: 'Follow-up date',
+      vetClinic: 'Clinic (optional)',
+      vetClinicPh: 'Clinic name',
+      vetDayBadge: 'Vet visit today',
+      vetSummary: 'Vet visit',
+      vetFollowUpShort: 'Follow-up {date}',
       weekEmpty: 'No logs this week',
       recentEmpty: 'No logs yet',
       weekObsRange: '{start} – {end}',
@@ -2646,9 +2791,23 @@
       errGoogleFail: 'Google ログインに失敗しました', errGooglePayload: 'Google アカウント情報を読めません',
       labelAppetite: '食欲', labelPoop: 'うんち', labelActivity: '活動', labelEyes: '目',
       quickNormal: '今日はすべて正常',
-      quickNormalConfirm: '今日の記録が既にあります。食欲・うんち・活動・目を正常の初期値に変えますか？体重・歯・メモはそのまま残します。',
+      quickNormalConfirm: '今日の記録が既にあります。食欲・うんち・活動・目を正常の初期値に変えますか？体重・歯・メモ・受診メモはそのまま残します。',
       quickNormalApply: '正常にする',
       quickNormalAlready: '今日はすでにすべて正常です',
+      vetToggle: '今日は受診',
+      vetSectionTitle: '受診メモ',
+      vetReason: '受診の理由',
+      vetReasonPh: '例：食欲低下、涙目',
+      vetDiagnosis: '先生の説明・診断',
+      vetDiagnosisPh: '先生の説明…',
+      vetMeds: '薬・ケアの指示',
+      vetMedsPh: '薬名・回数・ケア…',
+      vetFollowUp: '次回の受診日',
+      vetClinic: '病院（任意）',
+      vetClinicPh: '病院名',
+      vetDayBadge: '今日は受診',
+      vetSummary: '受診',
+      vetFollowUpShort: '次回 {date}',
       weekEmpty: '今週の記録はまだありません',
       recentEmpty: '記録はまだありません',
       weekObsRange: '{start} – {end}',
@@ -2740,7 +2899,7 @@
   let rabbits = [];
   let activeId = null;
   let modalMode = 'add'; // 'add' | 'rename'
-  let logs = {}; // { "rabbitId|YYYY-MM-DD": { appetite, poop, activity, weight, teeth, eyes, notes } }
+  let logs = {}; // { "rabbitId|YYYY-MM-DD": { appetite, poop, activity, weight, teeth, eyes, notes, vet? } }
   let viewDate = new Date(); // selected day on 今日 / 記錄
   let quickNormalConfirmOpen = false;
   let quickNormalRabbitId = null;
@@ -2928,6 +3087,35 @@
 
   function emptyLog() {
     return { appetite: '', poop: '', activity: '', weight: null, teeth: '', eyes: '', notes: '' };
+  }
+
+  function emptyVet() {
+    return { on: false, reason: '', diagnosis: '', meds: '', followUp: '', clinic: '' };
+  }
+
+  function normalizeVet(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const vet = {
+      on: raw.on === true,
+      reason: String(raw.reason || '').trim().slice(0, 120),
+      diagnosis: String(raw.diagnosis || '').trim().slice(0, 240),
+      meds: String(raw.meds || '').trim().slice(0, 240),
+      followUp: normalizeDateInput(raw.followUp),
+      clinic: String(raw.clinic || '').trim().slice(0, 60)
+    };
+    const hasText = !!(vet.reason || vet.diagnosis || vet.meds || vet.followUp || vet.clinic);
+    if (!vet.on && !hasText) return null;
+    return vet;
+  }
+
+  function vetIsOn(log) {
+    return !!(log && log.vet && log.vet.on === true);
+  }
+
+  function formatIsoDay(iso) {
+    const d = dateFromKey(iso);
+    if (!d) return '';
+    return tf('monthFmt', { m: d.getMonth() + 1, d: d.getDate() });
   }
 
   function deriveTagsFromLog(log) {
@@ -3335,6 +3523,7 @@
     if (log.appetite || log.poop || log.activity || log.teeth || log.eyes) return true;
     if (log.notes && String(log.notes).trim()) return true;
     if (log.weight != null && log.weight !== '' && Number.isFinite(Number(log.weight))) return true;
+    if (vetIsOn(log)) return true;
     return false;
   }
 
@@ -3362,6 +3551,15 @@
     }
     const notes = clipText(log.notes, 28);
     if (notes) parts.push(notes);
+    if (vetIsOn(log)) {
+      const reason = clipText(log.vet.reason, 18);
+      const label = '🏥 ' + t('vetSummary');
+      parts.unshift(reason ? (label + ' ' + reason) : label);
+      if (log.vet.followUp) {
+        const when = formatIsoDay(log.vet.followUp);
+        if (when) parts.push(tf('vetFollowUpShort', { date: when }));
+      }
+    }
     return parts.join(' · ');
   }
 
@@ -3633,7 +3831,10 @@
       if (Number.isFinite(n) && n >= 0 && n < 100) entry.weight = Math.round(n * 100) / 100;
     }
     entry.notes = String(raw.notes || '').slice(0, 500);
-    return logHasContent(entry) ? entry : null;
+    const vet = normalizeVet(raw.vet);
+    if (vet) entry.vet = vet;
+    if (!logHasContent(entry) && !vet) return null;
+    return entry;
   }
 
   function sanitizeImportedRabbit(raw) {
@@ -3811,10 +4012,13 @@
     for (let i = 0; i < 7; i++) {
       const d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i);
       const active = isSameDay(d, viewDate);
-      const has = r ? logHasContent(getLog(r.id, d)) : false;
+      const dayLog = r ? getLog(r.id, d) : null;
+      const has = logHasContent(dayLog);
+      const vet = vetIsOn(dayLog);
       html += '<button type="button" class="week-day-btn' +
         (active ? ' active' : '') +
         (has ? ' has-log' : '') +
+        (vet ? ' has-vet' : '') +
         '" data-offset="' + i + '" aria-label="' + labels[i] + '">' +
         '<span>' + labels[i] + '</span>' +
         '<span class="wd-num">' + d.getDate() + '</span>' +
@@ -3863,6 +4067,7 @@
       if (phIcon) phIcon.textContent = '🐰';
       if (fillBtn) fillBtn.textContent = t('addRabbit');
       renderWeekStrip();
+      renderVetDayLine(null);
       renderMetricsFromLog(null, null);
       renderWeekObservations();
       renderWeightTrend();
@@ -3889,6 +4094,7 @@
     const log = getLog(r.id, viewDate);
     renderHeroTags(log);
     renderWeekStrip();
+    renderVetDayLine(log);
     renderMetricsFromLog(log, r);
     renderWeekObservations();
     renderWeightTrend();
@@ -3937,6 +4143,64 @@
       ws.className = 'metric-status';
     }
     document.getElementById('metricWeight').classList.remove('watch');
+  }
+
+  function renderVetDayLine(log) {
+    const line = document.getElementById('vetDayLine');
+    const text = document.getElementById('vetDayLineText');
+    if (!line || !text) return;
+    if (!vetIsOn(log)) {
+      line.hidden = true;
+      text.textContent = '';
+      return;
+    }
+    const bits = [isSameDay(viewDate, todayDate()) ? t('vetDayBadge') : t('vetSummary')];
+    const reason = clipText(log.vet.reason, 22);
+    if (reason) bits.push(reason);
+    if (log.vet.followUp) {
+      const when = formatIsoDay(log.vet.followUp);
+      if (when) bits.push(tf('vetFollowUpShort', { date: when }));
+    }
+    text.textContent = bits.join(' · ');
+    line.hidden = false;
+  }
+
+  function setVetToggle(on) {
+    const btn = document.getElementById('btnVetToggle');
+    const section = document.getElementById('vetSection');
+    const pressed = !!on;
+    if (btn) {
+      btn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+      btn.setAttribute('aria-expanded', pressed ? 'true' : 'false');
+    }
+    if (section) section.hidden = !pressed;
+  }
+
+  function fillVetForm(vet) {
+    const v = vet || emptyVet();
+    const reason = document.getElementById('vetReason');
+    const diagnosis = document.getElementById('vetDiagnosis');
+    const meds = document.getElementById('vetMeds');
+    const follow = document.getElementById('vetFollowUp');
+    const clinic = document.getElementById('vetClinic');
+    if (reason) reason.value = v.reason || '';
+    if (diagnosis) diagnosis.value = v.diagnosis || '';
+    if (meds) meds.value = v.meds || '';
+    if (follow) follow.value = v.followUp || '';
+    if (clinic) clinic.value = v.clinic || '';
+    setVetToggle(!!v.on);
+  }
+
+  function readVetFromForm() {
+    const btn = document.getElementById('btnVetToggle');
+    return normalizeVet({
+      on: !!(btn && btn.getAttribute('aria-pressed') === 'true'),
+      reason: (document.getElementById('vetReason') || {}).value,
+      diagnosis: (document.getElementById('vetDiagnosis') || {}).value,
+      meds: (document.getElementById('vetMeds') || {}).value,
+      followUp: (document.getElementById('vetFollowUp') || {}).value,
+      clinic: (document.getElementById('vetClinic') || {}).value
+    });
   }
 
   function renderLogHeader() {
@@ -3990,6 +4254,7 @@
       selectOption('teeth', '');
       document.getElementById('logWeightInput').value = '';
       document.getElementById('logNotes').value = '';
+      fillVetForm(null);
       renderLogHeader();
       return;
     }
@@ -4002,6 +4267,7 @@
     document.getElementById('logWeightInput').value =
       log.weight != null ? log.weight : (r.weight != null ? r.weight : '');
     document.getElementById('logNotes').value = log.notes || '';
+    fillVetForm(log.vet);
     renderLogHeader();
   }
 
@@ -4022,6 +4288,8 @@
       eyes: getSelectedOption('eyes'),
       notes: document.getElementById('logNotes').value.trim()
     };
+    const vet = readVetFromForm();
+    if (vet) entry.vet = vet;
     logs[logKey(r.id, viewDate)] = entry;
     saveLogs();
     if (entry.weight != null) {
@@ -4236,14 +4504,23 @@
       const date = new Date(y, m, day);
       const md = pad2(m + 1) + '-' + pad2(day);
       const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === day;
-      const recorded = !!(r && logHasContent(getLog(r.id, date)));
+      const dayLog = r ? getLog(r.id, date) : null;
+      const recorded = logHasContent(dayLog);
       const isBday = !!(bday && md === bday);
+      const isVet = vetIsOn(dayLog);
       let cls = 'cal-day';
       if (recorded) cls += ' has-record';
       if (isToday) cls += ' today';
       if (isBday) cls += ' birthday';
-      const title = isBday ? ' title="' + escapeHtml(tf('birthdayOf', { name: r.name })) + '"' : '';
-      const icon = isBday ? '<span class="cal-bday-icon" aria-hidden="true">🐰</span>' : '';
+      if (isVet) cls += ' has-vet';
+      const titleParts = [];
+      if (isBday) titleParts.push(tf('birthdayOf', { name: r.name }));
+      if (isVet) titleParts.push(t('vetSummary'));
+      const title = titleParts.length ? ' title="' + escapeHtml(titleParts.join(' · ')) + '"' : '';
+      const marks = [];
+      if (isBday) marks.push('<span class="cal-bday-icon" aria-hidden="true">🐰</span>');
+      if (isVet) marks.push('<span class="cal-vet-icon" aria-hidden="true">🏥</span>');
+      const icon = marks.length ? '<span class="cal-marks">' + marks.join('') + '</span>' : '';
       html += '<div class="' + cls + '"' + title + '><span>' + day + '</span>' + icon + '</div>';
     }
     grid.innerHTML = html;
@@ -4541,6 +4818,10 @@
     commitDiaryTitle();
   });
   document.getElementById('btnSaveLog').addEventListener('click', saveLogFromForm);
+  document.getElementById('btnVetToggle').addEventListener('click', () => {
+    const btn = document.getElementById('btnVetToggle');
+    setVetToggle(!(btn && btn.getAttribute('aria-pressed') === 'true'));
+  });
 
   // Avatar per active rabbit (picker shared; change from 今日封面)
   const avatarInput = document.getElementById('avatarInput');
