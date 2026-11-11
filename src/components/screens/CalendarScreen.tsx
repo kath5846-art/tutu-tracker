@@ -41,7 +41,7 @@ export function CalendarScreen() {
   return (
     <>
       <header style={{ marginBottom: 20 }}>
-        <h1 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 24, fontWeight: 500 }}>
+        <h1 style={{ fontFamily: "var(--font-ui)", fontSize: 24, fontWeight: 500 }}>
           日曆
         </h1>
         <div style={{ fontSize: 14, color: 'var(--text-soft)', marginTop: 4 }}>{monthLabel}</div>
