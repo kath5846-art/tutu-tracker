@@ -855,7 +855,28 @@ textarea, input[type="number"], input[type="text"] {
   padding: 4px 12px;
 }
 .nav-item.active { color: var(--text); }
-.nav-icon { font-size: 20px; margin-bottom: 2px; }
+.ph {
+  width: 1em;
+  height: 1em;
+  display: block;
+  flex-shrink: 0;
+}
+.week-nav-btn .ph {
+  width: 1.35em;
+  height: 1.35em;
+}
+.rabbit-chip-avatar .ph {
+  width: 70%;
+  height: 70%;
+}
+.nav-icon {
+  font-size: 20px;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
 
   @media (min-width: 520px) {
     body { background: #EFEAE3; }

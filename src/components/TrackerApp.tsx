@@ -7,6 +7,7 @@ import { Toast } from './Toast'
 import { CalendarScreen } from './screens/CalendarScreen'
 import { LogScreen } from './screens/LogScreen'
 import { ProfileScreen } from './screens/ProfileScreen'
+import { PhosphorIcon } from './PhosphorIcon'
 import { TodayScreen } from './screens/TodayScreen'
 
 type Screen = 'today' | 'log' | 'calendar' | 'profile'
@@ -85,10 +86,10 @@ export function TrackerApp() {
       <div className="bottom-nav">
         {(
           [
-            ['today', '⌂', '今日'],
-            ['log', '✎', '記錄'],
-            ['calendar', '📅', '日曆'],
-            ['profile', '👤', '檔案'],
+            ['today', 'house-fill', '今日'],
+            ['log', 'pencil-simple-fill', '記錄'],
+            ['calendar', 'calendar-blank-fill', '日曆'],
+            ['profile', 'user-fill', '檔案'],
           ] as const
         ).map(([id, icon, label]) => (
           <div
@@ -96,7 +97,9 @@ export function TrackerApp() {
             className={'nav-item' + (screen === id ? ' active' : '')}
             onClick={() => setScreen(id)}
           >
-            <div className="nav-icon">{icon}</div>
+            <div className="nav-icon">
+              <PhosphorIcon name={icon} />
+            </div>
             {label}
           </div>
         ))}

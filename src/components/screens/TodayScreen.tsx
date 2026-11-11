@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { PhosphorIcon } from '../PhosphorIcon'
 import { RabbitSwitcher } from '../RabbitSwitcher'
 import { useTracker } from '../../context/TrackerProvider'
 import { MAX_CUSTOM_TOPICS } from '../../lib/constants'
@@ -107,7 +108,9 @@ export function TodayScreen({ onFillStatus, onQuickEdit, onOpenAvatar }: Props) 
           <img className="today-hero-img" src={activeRabbit.avatar} alt="兔子照片" />
         )}
         <div className="today-hero-placeholder">
-          <span className="ph-icon">📷</span>
+          <span className="ph-icon">
+            <PhosphorIcon name="camera-fill" />
+          </span>
           <span className="ph-text">點擊加入兔兔照片</span>
         </div>
         <RabbitSwitcher
@@ -143,7 +146,7 @@ export function TodayScreen({ onFillStatus, onQuickEdit, onOpenAvatar }: Props) 
 
       <div className="week-strip" aria-label="選擇日期">
         <button type="button" className="week-nav-btn" aria-label="上一週" onClick={() => changeWeek(-1)}>
-          ‹
+          <PhosphorIcon name="caret-left-fill" />
         </button>
         <div className="week-days">
           {weekDays.map((d, i) => {
@@ -167,7 +170,7 @@ export function TodayScreen({ onFillStatus, onQuickEdit, onOpenAvatar }: Props) 
           })}
         </div>
         <button type="button" className="week-nav-btn" aria-label="下一週" onClick={() => changeWeek(1)}>
-          ›
+          <PhosphorIcon name="caret-right-fill" />
         </button>
       </div>
       <div className="week-caption">
