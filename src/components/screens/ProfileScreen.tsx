@@ -51,7 +51,7 @@ export function ProfileScreen({ onAddRabbit, onRename }: Props) {
   return (
     <>
       <header style={{ marginBottom: 16 }}>
-        <h1 style={{ fontFamily: "'Noto Serif TC', serif", fontSize: 24, fontWeight: 500 }}>
+        <h1 style={{ fontFamily: "var(--font-ui)", fontSize: 24, fontWeight: 500 }}>
           兔兔檔案
         </h1>
         <div style={{ fontSize: 13, color: 'var(--text-soft)', marginTop: 4 }}>
