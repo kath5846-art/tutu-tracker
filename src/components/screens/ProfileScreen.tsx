@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { PhosphorIcon } from '../PhosphorIcon'
 import { RabbitSwitcher } from '../RabbitSwitcher'
 import { EditProfileModal } from '../modals/EditProfileModal'
 import { useTracker } from '../../context/TrackerProvider'
@@ -74,7 +75,9 @@ export function ProfileScreen({ onAddRabbit, onRename }: Props) {
           <div className={'avatar-circle' + (activeRabbit.avatar ? ' has-photo' : '')}>
             {activeRabbit.avatar && <img src={activeRabbit.avatar} alt="兔子頭像" />}
             <div className="avatar-placeholder">
-              <span className="cam-icon">📷</span>
+              <span className="cam-icon">
+                <PhosphorIcon name="camera-fill" />
+              </span>
               <span>加入照片</span>
             </div>
           </div>

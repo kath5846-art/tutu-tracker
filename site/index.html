@@ -175,6 +175,22 @@
   }
   .hero-card-fab:active { transform: scale(0.96); }
   .hero-card-fab-photo { font-size: 1.25rem; }
+  /* Phosphor glyphs track each control's font-size. Button boxes stay put. */
+  .ph {
+    width: 1em;
+    height: 1em;
+    display: block;
+    flex-shrink: 0;
+  }
+  .ph[hidden] { display: none !important; }
+  .week-nav-btn .ph {
+    width: 1.35em;
+    height: 1.35em;
+  }
+  .rabbit-chip-avatar .ph {
+    width: 70%;
+    height: 70%;
+  }
   .today-hero-placeholder {
     position: absolute;
     inset: 0;
@@ -1387,6 +1403,10 @@
     color: var(--text);
     cursor: pointer;
     font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
   }
   .photo-zoom-btn:active { transform: scale(0.96); }
   .photo-editor-hint {
@@ -1469,7 +1489,14 @@
     padding: 4px 12px;
   }
   .nav-item.active { color: var(--text); }
-  .nav-icon { font-size: 1.25rem; margin-bottom: 2px; }
+  .nav-icon {
+    font-size: 1.25rem;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
 
   @media (min-width: 520px) {
     body { background: #EFEAE3; }
@@ -1808,6 +1835,21 @@
 </style>
 </head>
 <body>
+<!-- Phosphor Icons, filled weights. Copyright (c) 2023 Phosphor Icons. MIT License: https://github.com/phosphor-icons/core/blob/main/LICENSE -->
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" width="0" height="0" style="position:absolute">
+  <symbol id="ph-rabbit-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M199.28,149.8A71.58,71.58,0,0,0,193,129c19-37.94,30.45-88.28,17.34-110A22,22,0,0,0,190.94,8c-14.12,0-26,11.89-36.44,36.36-6.22,14.62-10.85,31.32-14,44.74a71.8,71.8,0,0,0-25,0c-3.13-13.42-7.76-30.12-14-44.74C91.1,19.89,79.18,8,65.06,8A22,22,0,0,0,45.64,19.08C32.53,40.76,44,91.1,63,129a71.58,71.58,0,0,0-6.26,20.76A52,52,0,1,0,128,225.52l-21.12-19.37a8,8,0,1,1,10.24-12.3L128,202.9l10.88-9.05a8,8,0,0,1,10.24,12.3L128,225.52a52,52,0,1,0,71.28-75.72Zm-126-36.53A218.45,218.45,0,0,1,58.4,67.08c-3.49-18.13-3.15-33,.93-39.72A6,6,0,0,1,65.06,24c6.61,0,14.52,9.7,21.72,26.62,5.93,13.94,10.35,30.12,13.33,43a71.72,71.72,0,0,0-26.88,19.64ZM100,176a12,12,0,1,1,12-12A12,12,0,0,1,100,176Zm56,0a12,12,0,1,1,12-12A12,12,0,0,1,156,176Zm20.55-69.17a71.89,71.89,0,0,0-20.66-13.2c3-12.89,7.4-29.07,13.33-43C176.42,33.7,184.33,24,190.94,24a6,6,0,0,1,5.73,3.36c4.08,6.74,4.42,21.59.93,39.72a218.45,218.45,0,0,1-14.83,46.19A72.6,72.6,0,0,0,176.55,106.83Z"/></symbol>
+  <symbol id="ph-camera-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M208,56H180.28L166.65,35.56A8,8,0,0,0,160,32H96a8,8,0,0,0-6.65,3.56L75.71,56H48A24,24,0,0,0,24,80V192a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V80A24,24,0,0,0,208,56Zm-44,76a36,36,0,1,1-36-36A36,36,0,0,1,164,132Z"/></symbol>
+  <symbol id="ph-house-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M224,120v96a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V164a4,4,0,0,0-4-4H108a4,4,0,0,0-4,4v52a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V120a16,16,0,0,1,4.69-11.31l80-80a16,16,0,0,1,22.62,0l80,80A16,16,0,0,1,224,120Z"/></symbol>
+  <symbol id="ph-pencil-simple-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM192,108.68,147.31,64l24-24L216,84.68Z"/></symbol>
+  <symbol id="ph-calendar-blank-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,48H48V48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24Z"/></symbol>
+  <symbol id="ph-gear-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M216,130.16q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.6,107.6,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.29,107.29,0,0,0-26.25-10.86,8,8,0,0,0-7.06,1.48L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.6,107.6,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z"/></symbol>
+  <symbol id="ph-caret-left-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M168,48V208a8,8,0,0,1-13.66,5.66l-80-80a8,8,0,0,1,0-11.32l80-80A8,8,0,0,1,168,48Z"/></symbol>
+  <symbol id="ph-caret-right-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M181.66,133.66l-80,80A8,8,0,0,1,88,208V48a8,8,0,0,1,13.66-5.66l80,80A8,8,0,0,1,181.66,133.66Z"/></symbol>
+  <symbol id="ph-plus-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM184,136H136v48a8,8,0,0,1-16,0V136H72a8,8,0,0,1,0-16h48V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z"/></symbol>
+  <symbol id="ph-minus-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM184,136H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Z"/></symbol>
+  <symbol id="ph-first-aid-kit-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M216,56H176V48a24,24,0,0,0-24-24H104A24,24,0,0,0,80,48v8H40A16,16,0,0,0,24,72V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V72A16,16,0,0,0,216,56Zm-64,88H136v16a8,8,0,0,1-16,0V144H104a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16a8,8,0,0,1,0,16Zm8-88H96V48a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z"/></symbol>
+</svg>
+
 
   <!-- Auth -->
   <div class="auth-screen" id="authScreen" aria-label="登入">
@@ -1884,7 +1926,7 @@
           <img class="today-hero-img" id="todayHeroImg" alt="兔子照片">
         </div>
         <div class="today-hero-placeholder">
-          <span class="ph-icon">📷</span>
+          <span class="ph-icon" id="heroPhIcon"><svg class="ph ph-rabbit" hidden aria-hidden="true" focusable="false"><use href="#ph-rabbit-fill"></use></svg><svg class="ph ph-camera" aria-hidden="true" focusable="false"><use href="#ph-camera-fill"></use></svg></span>
           <span class="ph-text" id="heroPhotoHint" data-i18n="addPhoto">點擊加入兔兔照片</span>
         </div>
         <div class="rabbit-switcher compact on-hero" id="todaySwitcher" aria-label="切換兔子"></div>
@@ -1895,8 +1937,8 @@
                 <span class="today-hero-name" id="todayHeroName">兔兔</span><span class="today-hero-meta-sep" id="todayHeroMetaSep"> · </span><span class="today-hero-age" id="todayHeroAge">高齡 · 約 8 歲 · 垂耳兔</span>
               </div>
               <div class="today-hero-card-actions">
-                <button type="button" class="hero-card-fab" id="btnHeroEditRabbit" data-i18n-title="heroEditRabbitTitle" title="編輯兔兔資料">🐰</button>
-                <button type="button" class="hero-card-fab hero-card-fab-photo" id="btnHeroPhoto" data-i18n-title="heroPhotoTitle" title="照片">📷</button>
+                <button type="button" class="hero-card-fab" id="btnHeroEditRabbit" data-i18n-title="heroEditRabbitTitle" title="編輯兔兔資料"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-rabbit-fill"></use></svg></button>
+                <button type="button" class="hero-card-fab hero-card-fab-photo" id="btnHeroPhoto" data-i18n-title="heroPhotoTitle" title="照片"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-camera-fill"></use></svg></button>
               </div>
             </div>
           </div>
@@ -1909,9 +1951,9 @@
       </div>
 
       <div class="week-strip" aria-label="選擇日期">
-        <button type="button" class="week-nav-btn" id="weekPrev" aria-label="上一週">‹</button>
+        <button type="button" class="week-nav-btn" id="weekPrev" aria-label="上一週"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-caret-left-fill"></use></svg></button>
         <div class="week-days" id="weekDays"></div>
-        <button type="button" class="week-nav-btn" id="weekNext" aria-label="下一週">›</button>
+        <button type="button" class="week-nav-btn" id="weekNext" aria-label="下一週"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-caret-right-fill"></use></svg></button>
       </div>
 
       <div class="vet-day-line" id="vetDayLine" hidden>
@@ -2065,7 +2107,7 @@
         <textarea id="logNotes" rows="3" placeholder="今日觀察到的細節…" data-i18n-ph="notesPh"></textarea>
       </div>
       <button type="button" class="vet-toggle" id="btnVetToggle" aria-pressed="false" aria-expanded="false" aria-controls="vetSection">
-        <span aria-hidden="true">🏥</span>
+        <span aria-hidden="true"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-first-aid-kit-fill"></use></svg></span>
         <span data-i18n="vetToggle">今日睇醫生</span>
       </button>
       <div class="vet-section" id="vetSection" hidden>
@@ -2099,9 +2141,9 @@
       <header style="margin-bottom:20px;">
         <h1 id="calTitle" style="font-family:var(--font-ui);font-size:24px;font-weight:500;" data-i18n="navCal">日曆</h1>
         <div class="cal-month-bar">
-          <button type="button" class="week-nav-btn" id="calPrev" aria-label="上一月">‹</button>
+          <button type="button" class="week-nav-btn" id="calPrev" aria-label="上一月"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-caret-left-fill"></use></svg></button>
           <div id="calMonthLabel">2026年11月</div>
-          <button type="button" class="week-nav-btn" id="calNext" aria-label="下一月">›</button>
+          <button type="button" class="week-nav-btn" id="calNext" aria-label="下一月"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-caret-right-fill"></use></svg></button>
         </div>
       </header>
       <div class="calendar">
@@ -2179,16 +2221,16 @@
 
   <div class="bottom-nav" id="bottomNav">
     <div class="nav-item active" data-screen="today">
-      <div class="nav-icon">⌂</div><span class="nav-label" data-nav="today">今日</span>
+      <div class="nav-icon"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-house-fill"></use></svg></div><span class="nav-label" data-nav="today">今日</span>
     </div>
     <div class="nav-item" data-screen="log">
-      <div class="nav-icon">✎</div><span class="nav-label" data-nav="log">記錄</span>
+      <div class="nav-icon"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-pencil-simple-fill"></use></svg></div><span class="nav-label" data-nav="log">記錄</span>
     </div>
     <div class="nav-item" data-screen="calendar">
-      <div class="nav-icon">📅</div><span class="nav-label" data-nav="calendar">日曆</span>
+      <div class="nav-icon"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-calendar-blank-fill"></use></svg></div><span class="nav-label" data-nav="calendar">日曆</span>
     </div>
     <div class="nav-item" data-screen="more">
-      <div class="nav-icon">⚙️</div><span class="nav-label" data-nav="more">更多</span>
+      <div class="nav-icon"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-gear-fill"></use></svg></div><span class="nav-label" data-nav="more">更多</span>
     </div>
   </div>
 
@@ -2215,7 +2257,7 @@
           <div class="avatar-circle" id="editProfileAvatarCircle">
             <img id="editProfileAvatarImg" alt="">
             <div class="avatar-placeholder">
-              <span class="cam-icon">📷</span>
+              <span class="cam-icon"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-camera-fill"></use></svg></span>
               <span data-i18n="addPhotoShort">加入照片</span>
             </div>
           </div>
@@ -2280,8 +2322,8 @@
         <img id="photoEditorImg" alt="">
       </div>
       <div class="photo-editor-tools">
-        <button type="button" class="photo-zoom-btn" id="photoZoomOut" aria-label="Zoom out">−</button>
-        <button type="button" class="photo-zoom-btn" id="photoZoomIn" aria-label="Zoom in">+</button>
+        <button type="button" class="photo-zoom-btn" id="photoZoomOut" aria-label="Zoom out"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-minus-fill"></use></svg></button>
+        <button type="button" class="photo-zoom-btn" id="photoZoomIn" aria-label="Zoom in"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-plus-fill"></use></svg></button>
       </div>
       <p class="photo-editor-hint" id="photoEditorHint" data-i18n="photoEditorHint">拖移照片；雙指捏合或 +/- 縮放</p>
       <div class="photo-editor-actions">
@@ -3413,11 +3455,15 @@
     refreshAllAvatarViews();
   }
 
+  function phIconHtml(name) {
+    return '<svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-' + name + '"></use></svg>';
+  }
+
   function chipAvatarHtml(r) {
     if (r.avatar) {
       return '<span class="rabbit-chip-avatar has-photo"><img src="' + r.avatar + '" alt=""></span>';
     }
-    return '<span class="rabbit-chip-avatar">🐰</span>';
+    return '<span class="rabbit-chip-avatar">' + phIconHtml('rabbit-fill') + '</span>';
   }
 
   function escapeHtml(s) {
@@ -3463,7 +3509,7 @@
       html += '<button type="button" class="rabbit-add-btn" id="' + container.id + 'Add"' +
         (full ? ' disabled' : '') +
         ' title="' + escapeHtml(full ? t('rabbitLimit') : t('addRabbitTitle')) + '"' +
-        ' aria-label="' + escapeHtml(full ? t('rabbitLimit') : t('addRabbitTitle')) + '">＋</button>';
+        ' aria-label="' + escapeHtml(full ? t('rabbitLimit') : t('addRabbitTitle')) + '">' + phIconHtml('plus-fill') + '</button>';
       if (full) {
         html += '<div class="rabbit-limit-note">' + escapeHtml(t('rabbitLimit')) + '</div>';
       }
@@ -4089,7 +4135,12 @@
       document.getElementById('todayHeroAge').textContent = t('noRabbitHint');
       document.getElementById('todayHeroTags').innerHTML = '';
       if (hint) hint.textContent = t('noRabbitHint');
-      if (phIcon) phIcon.textContent = '🐰';
+      if (phIcon) {
+        const rabbitSvg = phIcon.querySelector('.ph-rabbit');
+        const cameraSvg = phIcon.querySelector('.ph-camera');
+        if (rabbitSvg) rabbitSvg.hidden = false;
+        if (cameraSvg) cameraSvg.hidden = true;
+      }
       if (fillBtn) fillBtn.textContent = t('addRabbit');
       renderWeekStrip();
       renderVetDayLine(null);
@@ -4106,7 +4157,12 @@
       return;
     }
     if (hint) hint.textContent = t('addPhoto');
-    if (phIcon) phIcon.textContent = '📷';
+    if (phIcon) {
+      const rabbitSvg = phIcon.querySelector('.ph-rabbit');
+      const cameraSvg = phIcon.querySelector('.ph-camera');
+      if (rabbitSvg) rabbitSvg.hidden = true;
+      if (cameraSvg) cameraSvg.hidden = false;
+    }
     if (fillBtn) fillBtn.textContent = t('fillStatus');
     if (hero) hero.classList.toggle('has-photo', !!r.avatar);
     document.getElementById('todayHeroName').textContent = r.name;

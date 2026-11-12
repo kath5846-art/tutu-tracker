@@ -1,3 +1,4 @@
+import { PhosphorIcon } from './PhosphorIcon'
 import { MAX_RABBITS } from '../lib/constants'
 import type { Rabbit } from '../types'
 
@@ -42,7 +43,7 @@ export function RabbitSwitcher({
           }}
         >
           <span className="rabbit-chip-avatar">
-            {r.avatar ? <img src={r.avatar} alt="" /> : '🐰'}
+            {r.avatar ? <img src={r.avatar} alt="" /> : <PhosphorIcon name="rabbit-fill" />}
           </span>
           <span className="rabbit-chip-name">{r.name}</span>
         </button>
@@ -56,7 +57,7 @@ export function RabbitSwitcher({
             title={full ? '已達上限 5 隻' : '新增兔子'}
             onClick={onAdd}
           >
-            ＋
+            <PhosphorIcon name="plus-fill" />
           </button>
           {full && <div className="rabbit-limit-note">已達上限 5 隻</div>}
         </>
