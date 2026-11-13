@@ -906,6 +906,22 @@
   }
   .vet-section .form-group { margin-bottom: 12px; }
   .vet-section .form-group label { font-size: 0.8125rem; }
+  .vet-cost-field { position: relative; }
+  .vet-cost-prefix {
+    position: absolute;
+    left: 13px;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    font-size: 0.9375rem;
+    color: var(--text-soft);
+    pointer-events: none;
+    line-height: 1;
+  }
+  .vet-cost-field input[type="number"] {
+    padding-left: calc(13px + 3.4em);
+  }
   textarea, input[type="number"], input[type="text"], input[type="date"] {
     width: 100%;
     padding: 11px 13px;
@@ -1847,7 +1863,7 @@
   <symbol id="ph-caret-right-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M181.66,133.66l-80,80A8,8,0,0,1,88,208V48a8,8,0,0,1,13.66-5.66l80,80A8,8,0,0,1,181.66,133.66Z"/></symbol>
   <symbol id="ph-plus-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM184,136H136v48a8,8,0,0,1-16,0V136H72a8,8,0,0,1,0-16h48V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z"/></symbol>
   <symbol id="ph-minus-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM184,136H72a8,8,0,0,1,0-16H184a8,8,0,0,1,0,16Z"/></symbol>
-  <symbol id="ph-first-aid-kit-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M216,56H176V48a24,24,0,0,0-24-24H104A24,24,0,0,0,80,48v8H40A16,16,0,0,0,24,72V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V72A16,16,0,0,0,216,56Zm-64,88H136v16a8,8,0,0,1-16,0V144H104a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16a8,8,0,0,1,0,16Zm8-88H96V48a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8Z"/></symbol>
+  <symbol id="ph-stethoscope-fill" viewBox="0 0 256 256"><path fill="currentColor" d="M240,160a32,32,0,1,0-39.93,31,8,8,0,0,0-.07,1,32,32,0,0,1-32,32H144a32,32,0,0,1-32-32V151.48c31.47-4,56-31.47,56-64.31V40a8,8,0,0,0-8-8H136a8,8,0,0,0,0,16h16V87.17c0,26.58-21.25,48.49-47.36,48.83A48,48,0,0,1,56,88V48H72a8,8,0,0,0,0-16H48a8,8,0,0,0-8,8V88a64,64,0,0,0,56,63.49V192a48.05,48.05,0,0,0,48,48h24a48.05,48.05,0,0,0,48-48,8,8,0,0,0-.07-1A32,32,0,0,0,240,160Zm-32,8a8,8,0,1,1,8-8A8,8,0,0,1,208,168Z"/></symbol>
 </svg>
 
 
@@ -2107,8 +2123,8 @@
         <textarea id="logNotes" rows="3" placeholder="今日觀察到的細節…" data-i18n-ph="notesPh"></textarea>
       </div>
       <button type="button" class="vet-toggle" id="btnVetToggle" aria-pressed="false" aria-expanded="false" aria-controls="vetSection">
-        <span aria-hidden="true"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-first-aid-kit-fill"></use></svg></span>
-        <span data-i18n="vetToggle">今日睇醫生</span>
+        <span aria-hidden="true"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-stethoscope-fill"></use></svg></span>
+        <span data-i18n="vetToggle">睇醫生</span>
       </button>
       <div class="vet-section" id="vetSection" hidden>
         <div class="vet-section-title" data-i18n="vetSectionTitle">睇醫生記錄</div>
@@ -2131,6 +2147,13 @@
         <div class="form-group">
           <label for="vetClinic" data-i18n="vetClinic">診所（選填）</label>
           <input type="text" id="vetClinic" maxlength="60" placeholder="診所名稱" data-i18n-ph="vetClinicPh" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="vetCost" data-i18n="vetCost">費用</label>
+          <div class="vet-cost-field">
+            <span class="vet-cost-prefix" aria-hidden="true">HK$</span>
+            <input type="number" id="vetCost" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autocomplete="off">
+          </div>
         </div>
       </div>
       <button type="button" class="btn-primary" id="btnSaveLog" data-i18n="saveLog">儲存今日記錄</button>
@@ -2565,7 +2588,7 @@
       quickNormalConfirm: '今日已有記錄。要改成食慾良好、便便正常、活動活躍、眼睛正常嗎？體重、牙齒、備註與睇醫生紀錄會保留。',
       quickNormalApply: '改成正常',
       quickNormalAlready: '今日已是一切正常',
-      vetToggle: '今日睇醫生',
+      vetToggle: '睇醫生',
       vetSectionTitle: '睇醫生記錄',
       vetReason: '睇醫生原因',
       vetReasonPh: '例如：食慾下降、流眼水',
@@ -2576,6 +2599,7 @@
       vetFollowUp: '下次覆診日期',
       vetClinic: '診所（選填）',
       vetClinicPh: '診所名稱',
+      vetCost: '費用',
       vetDayBadge: '今日睇醫生',
       vetSummary: '睇醫生',
       vetFollowUpShort: '覆診 {date}',
@@ -2713,7 +2737,7 @@
       quickNormalConfirm: 'Today already has a log. Replace appetite, poop, activity, and eyes with the healthy defaults? Weight, teeth, notes, and vet notes stay as they are.',
       quickNormalApply: 'Mark normal',
       quickNormalAlready: 'Today is already marked all normal',
-      vetToggle: 'Vet visit today',
+      vetToggle: 'Vet visit',
       vetSectionTitle: 'Vet visit',
       vetReason: 'Reason',
       vetReasonPh: 'e.g. less appetite, watery eyes',
@@ -2724,6 +2748,7 @@
       vetFollowUp: 'Follow-up date',
       vetClinic: 'Clinic (optional)',
       vetClinicPh: 'Clinic name',
+      vetCost: 'Fee',
       vetDayBadge: 'Vet visit today',
       vetSummary: 'Vet visit',
       vetFollowUpShort: 'Follow-up {date}',
@@ -2861,7 +2886,7 @@
       quickNormalConfirm: '今日の記録が既にあります。食欲・うんち・活動・目を正常の初期値に変えますか？体重・歯・メモ・受診メモはそのまま残します。',
       quickNormalApply: '正常にする',
       quickNormalAlready: '今日はすでにすべて正常です',
-      vetToggle: '今日は受診',
+      vetToggle: '受診',
       vetSectionTitle: '受診メモ',
       vetReason: '受診の理由',
       vetReasonPh: '例：食欲低下、涙目',
@@ -2872,6 +2897,7 @@
       vetFollowUp: '次回の受診日',
       vetClinic: '病院（任意）',
       vetClinicPh: '病院名',
+      vetCost: '費用',
       vetDayBadge: '今日は受診',
       vetSummary: '受診',
       vetFollowUpShort: '次回 {date}',
@@ -3157,7 +3183,14 @@
   }
 
   function emptyVet() {
-    return { on: false, reason: '', diagnosis: '', meds: '', followUp: '', clinic: '' };
+    return { on: false, reason: '', diagnosis: '', meds: '', followUp: '', clinic: '', cost: null };
+  }
+
+  function normalizeVetCost(raw) {
+    if (raw == null || raw === '') return null;
+    const n = typeof raw === 'number' ? raw : Number(String(raw).replace(/,/g, '').trim());
+    if (!Number.isFinite(n) || n < 0 || n >= 1000000) return null;
+    return Math.round(n * 100) / 100;
   }
 
   function normalizeVet(raw) {
@@ -3168,10 +3201,11 @@
       diagnosis: String(raw.diagnosis || '').trim().slice(0, 240),
       meds: String(raw.meds || '').trim().slice(0, 240),
       followUp: normalizeDateInput(raw.followUp),
-      clinic: String(raw.clinic || '').trim().slice(0, 60)
+      clinic: String(raw.clinic || '').trim().slice(0, 60),
+      cost: normalizeVetCost(raw.cost)
     };
-    const hasText = !!(vet.reason || vet.diagnosis || vet.meds || vet.followUp || vet.clinic);
-    if (!vet.on && !hasText) return null;
+    const hasDetail = !!(vet.reason || vet.diagnosis || vet.meds || vet.followUp || vet.clinic || vet.cost != null);
+    if (!vet.on && !hasDetail) return null;
     return vet;
   }
 
@@ -3610,6 +3644,13 @@
     return String(v);
   }
 
+  function formatVetCost(n) {
+    const v = Math.round(Number(n) * 100) / 100;
+    if (!Number.isFinite(v)) return '';
+    const text = v.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+    return 'HK$\u00a0' + text;
+  }
+
   function summarizeLog(log) {
     if (!logHasContent(log)) return '';
     const parts = [];
@@ -3626,6 +3667,10 @@
       const reason = clipText(log.vet.reason, 18);
       const label = '🏥 ' + t('vetSummary');
       parts.unshift(reason ? (label + ' ' + reason) : label);
+      if (log.vet.cost != null) {
+        const fee = formatVetCost(log.vet.cost);
+        if (fee) parts.push(fee);
+      }
       if (log.vet.followUp) {
         const when = formatIsoDay(log.vet.followUp);
         if (when) parts.push(tf('vetFollowUpShort', { date: when }));
@@ -4238,6 +4283,10 @@
     const bits = [isSameDay(viewDate, todayDate()) ? t('vetDayBadge') : t('vetSummary')];
     const reason = clipText(log.vet.reason, 22);
     if (reason) bits.push(reason);
+    if (log.vet.cost != null) {
+      const fee = formatVetCost(log.vet.cost);
+      if (fee) bits.push(fee);
+    }
     if (log.vet.followUp) {
       const when = formatIsoDay(log.vet.followUp);
       if (when) bits.push(tf('vetFollowUpShort', { date: when }));
@@ -4264,11 +4313,13 @@
     const meds = document.getElementById('vetMeds');
     const follow = document.getElementById('vetFollowUp');
     const clinic = document.getElementById('vetClinic');
+    const cost = document.getElementById('vetCost');
     if (reason) reason.value = v.reason || '';
     if (diagnosis) diagnosis.value = v.diagnosis || '';
     if (meds) meds.value = v.meds || '';
     if (follow) follow.value = v.followUp || '';
     if (clinic) clinic.value = v.clinic || '';
+    if (cost) cost.value = v.cost != null ? String(v.cost) : '';
     setVetToggle(!!v.on);
   }
 
@@ -4280,7 +4331,8 @@
       diagnosis: (document.getElementById('vetDiagnosis') || {}).value,
       meds: (document.getElementById('vetMeds') || {}).value,
       followUp: (document.getElementById('vetFollowUp') || {}).value,
-      clinic: (document.getElementById('vetClinic') || {}).value
+      clinic: (document.getElementById('vetClinic') || {}).value,
+      cost: (document.getElementById('vetCost') || {}).value
     });
   }
 
