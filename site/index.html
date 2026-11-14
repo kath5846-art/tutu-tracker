@@ -682,26 +682,6 @@
     background: #8B4548;
     box-shadow: 0 0 0 1px var(--warm);
   }
-  .vet-day-line {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: -2px 0 10px;
-    padding: 7px 12px;
-    border-radius: 12px;
-    background: #F8F1EE;
-    border: 1px solid #E7D5CF;
-    color: #6A4550;
-    font-size: 0.8125rem;
-    line-height: 1.35;
-  }
-  .vet-day-line[hidden] { display: none !important; }
-  .vet-day-line .vet-day-text {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
 
   .summary-line {
     background: var(--surface);
@@ -739,6 +719,26 @@
     gap: 4px;
   }
   .metric-title { font-size: 0.8125rem; font-weight: 500; }
+  #metricVet {
+    min-width: 0;
+  }
+  #metricVet .metric-title {
+    display: flex;
+    align-items: center;
+    gap: 0.28em;
+    min-width: 0;
+  }
+  #metricVet .metric-title span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #metricVet .metric-value,
+  #metricVet .metric-note {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .metric-status {
     font-size: 0.625rem;
     padding: 2px 7px;
@@ -835,6 +835,13 @@
     font-size: 0.8125rem;
     color: var(--text-soft);
     line-height: 1.45;
+  }
+  .week-summary .ph {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.18em;
+    margin-inline-end: 0.22em;
   }
   button.week-item {
     width: 100%;
@@ -1161,7 +1168,19 @@
   .cal-day .cal-bday-icon,
   .cal-day .cal-vet-icon {
     font-size: 0.72rem;
-    line-height: 1;
+    line-height: 0;
+    width: 0.72rem;
+    height: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    color: currentColor;
+  }
+  .cal-day .cal-bday-icon .ph,
+  .cal-day .cal-vet-icon .ph {
+    width: 0.72rem;
+    height: 0.72rem;
   }
 
 
@@ -2013,11 +2032,6 @@
         <button type="button" class="week-nav-btn" id="weekNext" aria-label="下一週"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-caret-right-fill"></use></svg></button>
       </div>
 
-      <div class="vet-day-line" id="vetDayLine" hidden>
-        <span aria-hidden="true">🏥</span>
-        <span class="vet-day-text" id="vetDayLineText"></span>
-      </div>
-
       <div class="fill-cta-wrap">
         <div class="fill-cta-row">
           <button type="button" class="btn-fill-status" id="btnFillStatus" data-i18n="fillStatus">填寫今日狀態</button>
@@ -2077,6 +2091,15 @@
           </div>
           <div class="metric-value" id="metricEyesValue">未記錄</div>
           <div class="metric-note" id="metricEyesNote">點擊填寫</div>
+        </div>
+
+        <div class="metric-card" id="metricVet" onclick="quickEdit('vet')">
+          <div class="metric-header">
+            <div class="metric-title"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-stethoscope-fill"></use></svg><span data-i18n="vetSummary">睇醫生</span></div>
+            <div class="metric-status" id="metricVetStatus">—</div>
+          </div>
+          <div class="metric-value" id="metricVetValue">未記錄</div>
+          <div class="metric-note" id="metricVetNote">點擊填寫</div>
         </div>
       </div>
 
@@ -3772,7 +3795,7 @@
     if (vetIsOn(log)) {
       const v = normalizeVet(log.vet) || log.vet;
       const reason = clipText(v.reason, 18);
-      const label = '🏥 ' + t('vetSummary');
+      const label = t('vetSummary');
       const head = [reason ? (label + ' ' + reason) : label];
       const doctor = clipText(v.doctor, 12);
       if (doctor) head.push(doctor);
@@ -3832,12 +3855,14 @@
       container.innerHTML = '<div class="week-item week-empty"><div class="week-summary">' + escapeHtml(t(emptyKey)) + '</div></div>';
       return;
     }
-    container.innerHTML = rows.map(row =>
-      '<button type="button" class="week-item" data-date="' + escapeHtml(row.dateKey) + '">' +
+    container.innerHTML = rows.map(row => {
+      let summary = escapeHtml(summarizeLog(row.log));
+      if (vetIsOn(row.log)) summary = phIconHtml('stethoscope-fill') + summary;
+      return '<button type="button" class="week-item" data-date="' + escapeHtml(row.dateKey) + '">' +
         '<div class="week-day">' + escapeHtml(shortDateLabel(row.date)) + '</div>' +
-        '<div class="week-summary">' + escapeHtml(summarizeLog(row.log)) + '</div>' +
-      '</button>'
-    ).join('');
+        '<div class="week-summary">' + summary + '</div>' +
+      '</button>';
+    }).join('');
     container.querySelectorAll('button[data-date]').forEach(btn => {
       btn.addEventListener('click', () => openLoggedDay(btn.dataset.date));
     });
@@ -4302,7 +4327,6 @@
       }
       if (fillBtn) fillBtn.textContent = t('addRabbit');
       renderWeekStrip();
-      renderVetDayLine(null);
       renderMetricsFromLog(null, null);
       renderWeekObservations();
       renderWeightTrend();
@@ -4334,7 +4358,6 @@
     const log = getLog(r.id, viewDate);
     renderHeroTags(log);
     renderWeekStrip();
-    renderVetDayLine(log);
     renderMetricsFromLog(log, r);
     renderWeekObservations();
     renderWeightTrend();
@@ -4383,25 +4406,36 @@
       ws.className = 'metric-status';
     }
     document.getElementById('metricWeight').classList.remove('watch');
+    renderVetCard(log);
   }
 
-  function renderVetDayLine(log) {
-    const line = document.getElementById('vetDayLine');
-    const text = document.getElementById('vetDayLineText');
-    if (!line || !text) return;
+  function flatText(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function renderVetCard(log) {
+    const statusEl = document.getElementById('metricVetStatus');
+    const valueEl = document.getElementById('metricVetValue');
+    const noteEl = document.getElementById('metricVetNote');
+    const card = document.getElementById('metricVet');
+    if (!statusEl || !valueEl || !noteEl) return;
+    if (card) card.classList.remove('watch');
     if (!vetIsOn(log)) {
-      line.hidden = true;
-      text.textContent = '';
+      statusEl.textContent = '—';
+      statusEl.className = 'metric-status';
+      valueEl.textContent = t('notRecorded');
+      noteEl.textContent = t('tapFill');
       return;
     }
-    const v = normalizeVet(log.vet) || log.vet;
-    const bits = [isSameDay(viewDate, todayDate()) ? t('vetDayBadge') : t('vetSummary')];
-    const doctor = clipText(v.doctor, 12);
+    const v = normalizeVet(log.vet) || log.vet || {};
+    statusEl.textContent = t('recorded');
+    statusEl.className = 'metric-status good';
+    valueEl.textContent = flatText(v.reason) || flatText(v.result) || '—';
+    const bits = [];
+    const clinic = flatText(v.clinic);
+    if (clinic) bits.push(clinic);
+    const doctor = flatText(v.doctor);
     if (doctor) bits.push(doctor);
-    const reason = clipText(v.reason, 22);
-    if (reason) bits.push(reason);
-    const result = clipText(v.result, 18);
-    if (result) bits.push(result);
     if (v.cost != null) {
       const fee = formatVetCost(v.cost);
       if (fee) bits.push(fee);
@@ -4410,10 +4444,7 @@
       const when = formatIsoDay(v.followUp);
       if (when) bits.push(tf('vetFollowUpShort', { date: when }));
     }
-    const vetNotes = clipText(v.notes, 18);
-    if (vetNotes) bits.push(vetNotes);
-    text.textContent = bits.join(' · ');
-    line.hidden = false;
+    noteEl.textContent = bits.join(' · ');
   }
 
   function setVetToggle(on) {
@@ -4565,9 +4596,15 @@
     document.querySelector('[data-screen="log"]').classList.add('active');
     document.getElementById('screen-log').classList.add('active');
     loadLogIntoForm();
-    const target = focusField ? document.getElementById('field-' + focusField) : null;
+    let target = null;
+    if (focusField === 'vet') {
+      setVetToggle(true);
+      target = document.getElementById('btnVetToggle');
+    } else if (focusField) {
+      target = document.getElementById('field-' + focusField);
+    }
     setTimeout(() => {
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: focusField === 'vet' ? 'start' : 'center' });
       else window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 50);
   }
@@ -4775,8 +4812,8 @@
       if (isVet) titleParts.push(t('vetSummary'));
       const title = titleParts.length ? ' title="' + escapeHtml(titleParts.join(' · ')) + '"' : '';
       const marks = [];
-      if (isBday) marks.push('<span class="cal-bday-icon" aria-hidden="true">🐰</span>');
-      if (isVet) marks.push('<span class="cal-vet-icon" aria-hidden="true">🏥</span>');
+      if (isBday) marks.push('<span class="cal-bday-icon" aria-hidden="true">' + phIconHtml('rabbit-fill') + '</span>');
+      if (isVet) marks.push('<span class="cal-vet-icon" aria-hidden="true">' + phIconHtml('stethoscope-fill') + '</span>');
       const icon = marks.length ? '<span class="cal-marks">' + marks.join('') + '</span>' : '';
       html += '<div class="' + cls + '"' + title + '><span>' + day + '</span>' + icon + '</div>';
     }
