@@ -906,6 +906,13 @@
   }
   .vet-section .form-group { margin-bottom: 12px; }
   .vet-section .form-group label { font-size: 0.8125rem; }
+  .vet-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 10px;
+    align-items: end;
+  }
+  .vet-pair .form-group { min-width: 0; }
   .vet-cost-field { position: relative; }
   .vet-cost-prefix {
     position: absolute;
@@ -920,7 +927,7 @@
     line-height: 1;
   }
   .vet-cost-field input[type="number"] {
-    padding-left: calc(13px + 3.4em);
+    padding-left: calc(13px + 1.6em);
   }
   textarea, input[type="number"], input[type="text"], input[type="date"] {
     width: 100%;
@@ -931,6 +938,11 @@
     font-size: 0.9375rem;
     background: var(--surface);
     color: var(--text);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(0, 0, 0, 0.25);
+    opacity: 1;
   }
   input[type="date"] { color-scheme: light; }
 
@@ -2128,32 +2140,38 @@
       </button>
       <div class="vet-section" id="vetSection" hidden>
         <div class="vet-section-title" data-i18n="vetSectionTitle">睇醫生記錄</div>
+        <div class="vet-pair">
+          <div class="form-group">
+            <label for="vetClinic" data-i18n="vetClinic">診所名稱</label>
+            <input type="text" id="vetClinic" maxlength="60" placeholder="選填" data-i18n-ph="vetClinicPh" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="vetDoctor" data-i18n="vetDoctor">醫生稱呼</label>
+            <input type="text" id="vetDoctor" maxlength="60" placeholder="例如：陳醫生" data-i18n-ph="vetDoctorPh" autocomplete="off">
+          </div>
+        </div>
         <div class="form-group">
           <label for="vetReason" data-i18n="vetReason">睇醫生原因</label>
           <input type="text" id="vetReason" maxlength="120" placeholder="例如：食慾下降、流眼水" data-i18n-ph="vetReasonPh" autocomplete="off">
         </div>
         <div class="form-group">
-          <label for="vetDiagnosis" data-i18n="vetDiagnosis">醫生講法／診斷</label>
-          <input type="text" id="vetDiagnosis" maxlength="240" placeholder="醫生點講…" data-i18n-ph="vetDiagnosisPh" autocomplete="off">
-        </div>
-        <div class="form-group">
-          <label for="vetMeds" data-i18n="vetMeds">藥物或護理指示</label>
-          <input type="text" id="vetMeds" maxlength="240" placeholder="藥名、次數、護理…" data-i18n-ph="vetMedsPh" autocomplete="off">
+          <label for="vetResult" data-i18n="vetResult">診斷結果</label>
+          <textarea id="vetResult" rows="2" maxlength="400" placeholder="例如：腸胃滯留" data-i18n-ph="vetResultPh"></textarea>
         </div>
         <div class="form-group">
           <label for="vetFollowUp" data-i18n="vetFollowUp">下次覆診日期</label>
           <input type="date" id="vetFollowUp">
         </div>
         <div class="form-group">
-          <label for="vetClinic" data-i18n="vetClinic">診所（選填）</label>
-          <input type="text" id="vetClinic" maxlength="60" placeholder="診所名稱" data-i18n-ph="vetClinicPh" autocomplete="off">
-        </div>
-        <div class="form-group">
           <label for="vetCost" data-i18n="vetCost">費用</label>
           <div class="vet-cost-field">
-            <span class="vet-cost-prefix" aria-hidden="true">HK$</span>
+            <span class="vet-cost-prefix" id="vetCostPrefix" aria-hidden="true" data-i18n="vetCostMark">$</span>
             <input type="number" id="vetCost" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autocomplete="off">
           </div>
+        </div>
+        <div class="form-group">
+          <label for="vetNotes" data-i18n="vetNotes">備注</label>
+          <textarea id="vetNotes" rows="3" maxlength="500" placeholder="其他想記下的…" data-i18n-ph="vetNotesPh"></textarea>
         </div>
       </div>
       <button type="button" class="btn-primary" id="btnSaveLog" data-i18n="saveLog">儲存今日記錄</button>
@@ -2592,14 +2610,17 @@
       vetSectionTitle: '睇醫生記錄',
       vetReason: '睇醫生原因',
       vetReasonPh: '例如：食慾下降、流眼水',
-      vetDiagnosis: '醫生講法／診斷',
-      vetDiagnosisPh: '醫生點講…',
-      vetMeds: '藥物或護理指示',
-      vetMedsPh: '藥名、次數、護理…',
       vetFollowUp: '下次覆診日期',
-      vetClinic: '診所（選填）',
-      vetClinicPh: '診所名稱',
+      vetClinic: '診所名稱',
+      vetClinicPh: '選填',
+      vetDoctor: '醫生稱呼',
+      vetDoctorPh: '例如：陳醫生',
+      vetResult: '診斷結果',
+      vetResultPh: '例如：腸胃滯留',
       vetCost: '費用',
+      vetCostMark: '$',
+      vetNotes: '備注',
+      vetNotesPh: '其他想記下的…',
       vetDayBadge: '今日睇醫生',
       vetSummary: '睇醫生',
       vetFollowUpShort: '覆診 {date}',
@@ -2741,14 +2762,17 @@
       vetSectionTitle: 'Vet visit',
       vetReason: 'Reason',
       vetReasonPh: 'e.g. less appetite, watery eyes',
-      vetDiagnosis: 'What the vet said',
-      vetDiagnosisPh: 'Diagnosis or advice…',
-      vetMeds: 'Meds / care instructions',
-      vetMedsPh: 'Name, dose, care…',
       vetFollowUp: 'Follow-up date',
-      vetClinic: 'Clinic (optional)',
-      vetClinicPh: 'Clinic name',
+      vetClinic: 'Clinic name',
+      vetClinicPh: 'Optional',
+      vetDoctor: "Vet's name",
+      vetDoctorPh: 'e.g. Dr Chan',
+      vetResult: 'Diagnosis result',
+      vetResultPh: 'What was diagnosed…',
       vetCost: 'Fee',
+      vetCostMark: '$',
+      vetNotes: 'Notes',
+      vetNotesPh: 'Anything else about this visit…',
       vetDayBadge: 'Vet visit today',
       vetSummary: 'Vet visit',
       vetFollowUpShort: 'Follow-up {date}',
@@ -2890,14 +2914,17 @@
       vetSectionTitle: '受診メモ',
       vetReason: '受診の理由',
       vetReasonPh: '例：食欲低下、涙目',
-      vetDiagnosis: '先生の説明・診断',
-      vetDiagnosisPh: '先生の説明…',
-      vetMeds: '薬・ケアの指示',
-      vetMedsPh: '薬名・回数・ケア…',
       vetFollowUp: '次回の受診日',
-      vetClinic: '病院（任意）',
-      vetClinicPh: '病院名',
+      vetClinic: '病院名',
+      vetClinicPh: '任意',
+      vetDoctor: '先生の呼び名',
+      vetDoctorPh: '例：田中先生',
+      vetResult: '診断結果',
+      vetResultPh: '診断された内容…',
       vetCost: '費用',
+      vetCostMark: '¥',
+      vetNotes: '備考',
+      vetNotesPh: 'その他、残しておきたいこと…',
       vetDayBadge: '今日は受診',
       vetSummary: '受診',
       vetFollowUpShort: '次回 {date}',
@@ -3104,7 +3131,8 @@
     try {
       const rawLogs = localStorage.getItem(KEY_LOGS);
       logs = rawLogs ? JSON.parse(rawLogs) : {};
-      if (!logs || typeof logs !== 'object') logs = {};
+      if (!logs || typeof logs !== 'object' || Array.isArray(logs)) logs = {};
+      if (migrateLogsVet(logs)) saveLogs();
     } catch (e) {
       logs = {};
     }
@@ -3183,7 +3211,19 @@
   }
 
   function emptyVet() {
-    return { on: false, reason: '', diagnosis: '', meds: '', followUp: '', clinic: '', cost: null };
+    return { on: false, clinic: '', doctor: '', reason: '', result: '', followUp: '', cost: null, notes: '' };
+  }
+
+  // Old logs stored diagnosis (醫生講法／診斷) and meds (藥物或護理指示).
+  // Those labels are gone: diagnosis text becomes result, and meds text is appended to notes.
+  function mergeLegacyText(primary, legacy, maxLen) {
+    const kept = String(primary || '').trim();
+    const old = String(legacy || '').trim();
+    let merged = kept;
+    if (old && kept !== old && kept.split('\n').every(line => line.trim() !== old)) {
+      merged = kept ? (kept + '\n' + old) : old;
+    }
+    return merged.slice(0, maxLen);
   }
 
   function normalizeVetCost(raw) {
@@ -3197,16 +3237,53 @@
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const vet = {
       on: raw.on === true,
-      reason: String(raw.reason || '').trim().slice(0, 120),
-      diagnosis: String(raw.diagnosis || '').trim().slice(0, 240),
-      meds: String(raw.meds || '').trim().slice(0, 240),
-      followUp: normalizeDateInput(raw.followUp),
       clinic: String(raw.clinic || '').trim().slice(0, 60),
-      cost: normalizeVetCost(raw.cost)
+      doctor: String(raw.doctor || '').trim().slice(0, 60),
+      reason: String(raw.reason || '').trim().slice(0, 120),
+      result: mergeLegacyText(raw.result, raw.diagnosis, 400),
+      followUp: normalizeDateInput(raw.followUp),
+      cost: normalizeVetCost(raw.cost),
+      notes: mergeLegacyText(raw.notes, raw.meds, 500)
     };
-    const hasDetail = !!(vet.reason || vet.diagnosis || vet.meds || vet.followUp || vet.clinic || vet.cost != null);
+    const hasDetail = !!(vet.clinic || vet.doctor || vet.reason || vet.result || vet.followUp || vet.cost != null || vet.notes);
     if (!vet.on && !hasDetail) return null;
     return vet;
+  }
+
+  function migrateLogsVet(store) {
+    if (!store || typeof store !== 'object') return false;
+    let changed = false;
+    Object.keys(store).forEach(key => {
+      const log = store[key];
+      if (!log || typeof log !== 'object' || !log.vet || typeof log.vet !== 'object') return;
+      const next = normalizeVet(log.vet);
+      if (!next) {
+        delete log.vet;
+        changed = true;
+        return;
+      }
+      if (JSON.stringify(next) !== JSON.stringify(log.vet)) {
+        log.vet = next;
+        changed = true;
+      }
+    });
+    return changed;
+  }
+
+  function logsForExport() {
+    const out = {};
+    Object.keys(logs).forEach(key => {
+      const log = logs[key];
+      if (!log || typeof log !== 'object') return;
+      const copy = Object.assign({}, log);
+      if (copy.vet) {
+        const vet = normalizeVet(copy.vet);
+        if (vet) copy.vet = vet;
+        else delete copy.vet;
+      }
+      out[key] = copy;
+    });
+    return out;
   }
 
   function vetIsOn(log) {
@@ -3648,7 +3725,7 @@
     const v = Math.round(Number(n) * 100) / 100;
     if (!Number.isFinite(v)) return '';
     const text = v.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
-    return 'HK$\u00a0' + text;
+    return t('vetCostMark') + '\u00a0' + text;
   }
 
   function summarizeLog(log) {
@@ -3664,17 +3741,25 @@
     const notes = clipText(log.notes, 28);
     if (notes) parts.push(notes);
     if (vetIsOn(log)) {
-      const reason = clipText(log.vet.reason, 18);
+      const v = normalizeVet(log.vet) || log.vet;
+      const reason = clipText(v.reason, 18);
       const label = '🏥 ' + t('vetSummary');
-      parts.unshift(reason ? (label + ' ' + reason) : label);
-      if (log.vet.cost != null) {
-        const fee = formatVetCost(log.vet.cost);
+      const head = [reason ? (label + ' ' + reason) : label];
+      const doctor = clipText(v.doctor, 12);
+      if (doctor) head.push(doctor);
+      const result = clipText(v.result, 18);
+      if (result) head.push(result);
+      parts.unshift(head.join(' · '));
+      if (v.cost != null) {
+        const fee = formatVetCost(v.cost);
         if (fee) parts.push(fee);
       }
-      if (log.vet.followUp) {
-        const when = formatIsoDay(log.vet.followUp);
+      if (v.followUp) {
+        const when = formatIsoDay(v.followUp);
         if (when) parts.push(tf('vetFollowUpShort', { date: when }));
       }
+      const vetNotes = clipText(v.notes, 18);
+      if (vetNotes) parts.push(vetNotes);
     }
     return parts.join(' · ');
   }
@@ -4057,7 +4142,7 @@
       exportedAt: new Date().toISOString(),
       activeId: activeId || null,
       rabbits: rabbits,
-      logs: logs,
+      logs: logsForExport(),
       settings: {
         displayName: userSettings.displayName || '',
         bio: userSettings.bio || '',
@@ -4280,17 +4365,24 @@
       text.textContent = '';
       return;
     }
+    const v = normalizeVet(log.vet) || log.vet;
     const bits = [isSameDay(viewDate, todayDate()) ? t('vetDayBadge') : t('vetSummary')];
-    const reason = clipText(log.vet.reason, 22);
+    const doctor = clipText(v.doctor, 12);
+    if (doctor) bits.push(doctor);
+    const reason = clipText(v.reason, 22);
     if (reason) bits.push(reason);
-    if (log.vet.cost != null) {
-      const fee = formatVetCost(log.vet.cost);
+    const result = clipText(v.result, 18);
+    if (result) bits.push(result);
+    if (v.cost != null) {
+      const fee = formatVetCost(v.cost);
       if (fee) bits.push(fee);
     }
-    if (log.vet.followUp) {
-      const when = formatIsoDay(log.vet.followUp);
+    if (v.followUp) {
+      const when = formatIsoDay(v.followUp);
       if (when) bits.push(tf('vetFollowUpShort', { date: when }));
     }
+    const vetNotes = clipText(v.notes, 18);
+    if (vetNotes) bits.push(vetNotes);
     text.textContent = bits.join(' · ');
     line.hidden = false;
   }
@@ -4307,19 +4399,21 @@
   }
 
   function fillVetForm(vet) {
-    const v = vet || emptyVet();
-    const reason = document.getElementById('vetReason');
-    const diagnosis = document.getElementById('vetDiagnosis');
-    const meds = document.getElementById('vetMeds');
-    const follow = document.getElementById('vetFollowUp');
+    const v = normalizeVet(vet) || emptyVet();
     const clinic = document.getElementById('vetClinic');
+    const doctor = document.getElementById('vetDoctor');
+    const reason = document.getElementById('vetReason');
+    const result = document.getElementById('vetResult');
+    const follow = document.getElementById('vetFollowUp');
     const cost = document.getElementById('vetCost');
-    if (reason) reason.value = v.reason || '';
-    if (diagnosis) diagnosis.value = v.diagnosis || '';
-    if (meds) meds.value = v.meds || '';
-    if (follow) follow.value = v.followUp || '';
+    const notes = document.getElementById('vetNotes');
     if (clinic) clinic.value = v.clinic || '';
+    if (doctor) doctor.value = v.doctor || '';
+    if (reason) reason.value = v.reason || '';
+    if (result) result.value = v.result || '';
+    if (follow) follow.value = v.followUp || '';
     if (cost) cost.value = v.cost != null ? String(v.cost) : '';
+    if (notes) notes.value = v.notes || '';
     setVetToggle(!!v.on);
   }
 
@@ -4327,12 +4421,13 @@
     const btn = document.getElementById('btnVetToggle');
     return normalizeVet({
       on: !!(btn && btn.getAttribute('aria-pressed') === 'true'),
-      reason: (document.getElementById('vetReason') || {}).value,
-      diagnosis: (document.getElementById('vetDiagnosis') || {}).value,
-      meds: (document.getElementById('vetMeds') || {}).value,
-      followUp: (document.getElementById('vetFollowUp') || {}).value,
       clinic: (document.getElementById('vetClinic') || {}).value,
-      cost: (document.getElementById('vetCost') || {}).value
+      doctor: (document.getElementById('vetDoctor') || {}).value,
+      reason: (document.getElementById('vetReason') || {}).value,
+      result: (document.getElementById('vetResult') || {}).value,
+      followUp: (document.getElementById('vetFollowUp') || {}).value,
+      cost: (document.getElementById('vetCost') || {}).value,
+      notes: (document.getElementById('vetNotes') || {}).value
     });
   }
 
