@@ -927,7 +927,7 @@
     line-height: 1;
   }
   .vet-cost-field input[type="number"] {
-    padding-left: calc(13px + 3.4em);
+    padding-left: calc(13px + 1.6em);
   }
   textarea, input[type="number"], input[type="text"], input[type="date"] {
     width: 100%;
@@ -938,6 +938,11 @@
     font-size: 0.9375rem;
     background: var(--surface);
     color: var(--text);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(0, 0, 0, 0.25);
+    opacity: 1;
   }
   input[type="date"] { color-scheme: light; }
 
@@ -2160,7 +2165,7 @@
         <div class="form-group">
           <label for="vetCost" data-i18n="vetCost">費用</label>
           <div class="vet-cost-field">
-            <span class="vet-cost-prefix" aria-hidden="true">HK$</span>
+            <span class="vet-cost-prefix" id="vetCostPrefix" aria-hidden="true" data-i18n="vetCostMark">$</span>
             <input type="number" id="vetCost" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autocomplete="off">
           </div>
         </div>
@@ -2613,6 +2618,7 @@
       vetResult: '診斷結果',
       vetResultPh: '例如：腸胃滯留',
       vetCost: '費用',
+      vetCostMark: '$',
       vetNotes: '備注',
       vetNotesPh: '其他想記下的…',
       vetDayBadge: '今日睇醫生',
@@ -2764,6 +2770,7 @@
       vetResult: 'Diagnosis result',
       vetResultPh: 'What was diagnosed…',
       vetCost: 'Fee',
+      vetCostMark: '$',
       vetNotes: 'Notes',
       vetNotesPh: 'Anything else about this visit…',
       vetDayBadge: 'Vet visit today',
@@ -2915,6 +2922,7 @@
       vetResult: '診断結果',
       vetResultPh: '診断された内容…',
       vetCost: '費用',
+      vetCostMark: '¥',
       vetNotes: '備考',
       vetNotesPh: 'その他、残しておきたいこと…',
       vetDayBadge: '今日は受診',
@@ -3717,7 +3725,7 @@
     const v = Math.round(Number(n) * 100) / 100;
     if (!Number.isFinite(v)) return '';
     const text = v.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
-    return 'HK$\u00a0' + text;
+    return t('vetCostMark') + '\u00a0' + text;
   }
 
   function summarizeLog(log) {
