@@ -2990,7 +2990,7 @@
       teeth: '歯の状態', notes: 'メモ', notesPh: '今日気づいたこと…',
       saveLog: '今日の記録を保存',
       valGood: '良好', valFair: '普通', valLess: '少なめ', valRefuse: '拒否',
-      valNormal: '正常', valSoft: '柔らかめ', valAbnormal: '異常',
+      valNormal: '良好', valSoft: '柔らかめ', valAbnormal: '異常',
       valActive: '活発', valReduced: 'やや減', valMuchLess: '明らかに減',
       valNeedWatch: '要注意', valChecked: '確認済',
       valEyeWatery: '涙目（涙痕）', valEyeRed: '充血／赤筋',
@@ -3510,10 +3510,11 @@
 
   function statusLabelFor(field, value) {
     if (!value) return '—';
+    const healthyPoopEyes = (currentLang() === 'ja') ? t('valNormal') : t('statusOk');
     if (field === 'appetite') return (value === '良好' || value === '普通') ? t('statusOk') : t('statusWatch');
-    if (field === 'poop') return value === '正常' ? t('statusOk') : t('statusWatch');
+    if (field === 'poop') return value === '正常' ? healthyPoopEyes : t('statusWatch');
     if (field === 'activity') return (value === '活躍' || value === '普通') ? t('statusOk') : t('statusWatch');
-    if (field === 'eyes') return value === '正常' ? t('statusOk') : (value ? t('statusWatch') : '—');
+    if (field === 'eyes') return value === '正常' ? healthyPoopEyes : (value ? t('statusWatch') : '—');
     if (field === 'weight') return t('recorded');
     return localizeValue(value);
   }
