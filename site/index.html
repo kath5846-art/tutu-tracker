@@ -757,6 +757,11 @@
     margin: 2px 0 0;
     line-height: 1.25;
   }
+  /* Empty "not logged" placeholders stay readable, but quieter than a real reading. */
+  .metric-value.is-placeholder {
+    color: var(--text-soft);
+    font-weight: 400;
+  }
   .metric-note {
     font-size: 0.6875rem;
     color: var(--text-soft);
@@ -856,6 +861,28 @@
   button.week-item:active { background: rgba(61, 56, 50, 0.03); }
   .week-item.week-empty { justify-content: center; }
   .week-item.week-empty .week-summary { flex: none; text-align: center; }
+  .vet-history-item .vh-date {
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    line-height: 1.4;
+  }
+  .vet-history-item .vh-reason {
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .vet-history-item .vh-meta {
+    font-size: 0.8125rem;
+    color: var(--text-soft);
+    line-height: 1.45;
+  }
+  .vet-history-item .vh-notes {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-width: 0;
+  }
 
   .form-group { margin-bottom: 18px; }
   label { display: block; font-size: 0.875rem; margin-bottom: 7px; }
@@ -1297,6 +1324,63 @@
     font-size: 0.75rem;
     color: var(--text-soft);
     margin: 8px 0 20px;
+  }
+  button.more-link {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    font-family: inherit;
+  }
+  button.more-link:active { background: rgba(61, 56, 50, 0.03); }
+  .more-link-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 10px;
+    background: #F8F1EE;
+    color: #6A4550;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+  }
+  .more-link-label {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .more-link-chevron {
+    display: flex;
+    color: var(--text-soft);
+    font-size: 0.875rem;
+    flex-shrink: 0;
+  }
+  .vet-history-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .vet-history-bar h1 { min-width: 0; }
+  .vet-history-summary[hidden] { display: none !important; }
+  .vet-history-summary .vh-totals {
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.45;
+  }
+  .vet-history-summary .vh-next {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+    font-size: 1rem;
+    font-weight: 500;
+    color: #6A4550;
+    line-height: 1.4;
   }
   .nav-label { display: inline; }
 
@@ -2052,7 +2136,7 @@
             <div class="metric-title" data-i18n="metricAppetite">食慾</div>
             <div class="metric-status" id="metricAppetiteStatus">—</div>
           </div>
-          <div class="metric-value" id="metricAppetiteValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricAppetiteValue">未記錄</div>
           <div class="metric-note" id="metricAppetiteNote">點擊填寫</div>
         </div>
 
@@ -2061,7 +2145,7 @@
             <div class="metric-title" data-i18n="metricPoop">便便</div>
             <div class="metric-status" id="metricPoopStatus">—</div>
           </div>
-          <div class="metric-value" id="metricPoopValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricPoopValue">未記錄</div>
           <div class="metric-note" id="metricPoopNote">點擊填寫</div>
         </div>
 
@@ -2070,7 +2154,7 @@
             <div class="metric-title" data-i18n="metricActivity">活動</div>
             <div class="metric-status" id="metricActivityStatus">—</div>
           </div>
-          <div class="metric-value" id="metricActivityValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricActivityValue">未記錄</div>
           <div class="metric-note" id="metricActivityNote">點擊填寫</div>
           <div class="metric-hint" id="metricActivityHint" style="display:none;"></div>
         </div>
@@ -2080,7 +2164,7 @@
             <div class="metric-title" data-i18n="metricWeight">體重</div>
             <div class="metric-status" id="metricWeightStatus">—</div>
           </div>
-          <div class="metric-value" id="todayWeightValue">—</div>
+          <div class="metric-value is-placeholder" id="todayWeightValue">—</div>
           <div class="metric-note" id="metricWeightNote" data-i18n="tapUpdate">點擊可更新</div>
         </div>
 
@@ -2089,7 +2173,7 @@
             <div class="metric-title" data-i18n="metricEyes">眼睛狀況</div>
             <div class="metric-status" id="metricEyesStatus">—</div>
           </div>
-          <div class="metric-value" id="metricEyesValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricEyesValue">未記錄</div>
           <div class="metric-note" id="metricEyesNote">點擊填寫</div>
         </div>
 
@@ -2098,7 +2182,7 @@
             <div class="metric-title"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-stethoscope-fill"></use></svg><span data-i18n="vetSummary">睇醫生</span></div>
             <div class="metric-status" id="metricVetStatus">—</div>
           </div>
-          <div class="metric-value" id="metricVetValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricVetValue">未記錄</div>
           <div class="metric-note" id="metricVetNote">點擊填寫</div>
         </div>
       </div>
@@ -2252,6 +2336,12 @@
         <h1 id="moreTitle">更多</h1>
       </header>
 
+      <button type="button" class="settings-card more-link" id="btnVetHistory">
+        <span class="more-link-icon" aria-hidden="true"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-stethoscope-fill"></use></svg></span>
+        <span class="more-link-label" data-i18n="vetHistory">睇醫生記錄</span>
+        <span class="more-link-chevron" aria-hidden="true"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-caret-right-fill"></use></svg></span>
+      </button>
+
       <div class="settings-card" id="cardAccount">
         <div class="settings-card-title" id="labelAccountTitle">帳戶／基本資料</div>
         <div class="settings-meta-row">
@@ -2307,6 +2397,21 @@
       </div>
 
       <p class="about-line" id="aboutLine">兔兔 Tracker · Demo</p>
+    </div>
+
+    <!-- 睇醫生記錄 -->
+    <div id="screen-vet-history" class="screen">
+      <header class="screen-header">
+        <div class="vet-history-bar">
+          <button type="button" class="week-nav-btn" id="btnVetHistoryBack" aria-label="返回">
+            <svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-caret-left-fill"></use></svg>
+          </button>
+          <h1 id="vetHistoryTitle" data-i18n="vetHistory">睇醫生記錄</h1>
+        </div>
+        <div class="screen-header-sub" id="vetHistorySub"></div>
+      </header>
+      <div class="settings-card vet-history-summary" id="vetHistorySummary" hidden></div>
+      <div class="week-list" id="vetHistoryList"></div>
     </div>
     <!-- hidden avatar picker shared with 今日封面 -->
     <input type="file" id="avatarInput" accept="image/*" hidden>
@@ -2676,6 +2781,9 @@
       vetDayBadge: '今日睇醫生',
       vetSummary: '睇醫生',
       vetFollowUpShort: '覆診 {date}',
+      vetHistory: '睇醫生記錄',
+      vetHistoryEmpty: '未有睇醫生記錄',
+      vetHistoryCount: '共 {n} 次 · 合共 {fee}',
       weekEmpty: '本週尚未有記錄',
       recentEmpty: '尚未有記錄',
       weekObsRange: '{start} – {end}',
@@ -2828,6 +2936,10 @@
       vetDayBadge: 'Vet visit today',
       vetSummary: 'Vet visit',
       vetFollowUpShort: 'Follow-up {date}',
+      vetHistory: 'Vet visits',
+      vetHistoryEmpty: 'No vet visits yet',
+      vetHistoryCount: '{n} visits · {fee} total',
+      vetHistoryCountOne: '1 visit · {fee} total',
       weekEmpty: 'No logs this week',
       recentEmpty: 'No logs yet',
       weekObsRange: '{start} – {end}',
@@ -2980,6 +3092,9 @@
       vetDayBadge: '今日は受診',
       vetSummary: '受診',
       vetFollowUpShort: '次回 {date}',
+      vetHistory: '受診の記録',
+      vetHistoryEmpty: '受診の記録はまだありません',
+      vetHistoryCount: '全 {n} 回 · 合計 {fee}',
       weekEmpty: '今週の記録はまだありません',
       recentEmpty: '記録はまだありません',
       weekObsRange: '{start} – {end}',
@@ -3294,7 +3409,7 @@
       reason: String(raw.reason || '').trim().slice(0, 120),
       result: mergeLegacyText(raw.result, raw.diagnosis, 400),
       followUp: normalizeDateInput(raw.followUp),
-      cost: normalizeVetCost(raw.cost),
+      cost: normalizeVetCost((raw.cost != null && raw.cost !== '') ? raw.cost : raw.fee),
       notes: mergeLegacyText(raw.notes, raw.meds, 500)
     };
     const hasDetail = !!(vet.clinic || vet.doctor || vet.reason || vet.result || vet.followUp || vet.cost != null || vet.notes);
@@ -3780,6 +3895,16 @@
     return t('vetCostMark') + '\u00a0' + text;
   }
 
+  function formatVetFee(n) {
+    const v = Math.round(Number(n) * 100) / 100;
+    if (!Number.isFinite(v)) return '';
+    const text = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(v);
+    return t('vetCostMark') + '\u00a0' + text;
+  }
+
   function summarizeLog(log) {
     if (!logHasContent(log)) return '';
     const parts = [];
@@ -3898,6 +4023,135 @@
     const r = getActive();
     const rows = r ? logsForRabbit(r.id).slice(0, 5) : [];
     renderLogRows(list, rows, 'recentEmpty');
+  }
+
+  function vetVisitsForRabbit(rabbitId) {
+    if (!rabbitId) return [];
+    const prefix = rabbitId + '|';
+    const out = [];
+    Object.keys(logs).forEach(k => {
+      if (k.indexOf(prefix) !== 0) return;
+      const dateKey = k.slice(prefix.length);
+      const date = dateFromKey(dateKey);
+      if (!date) return;
+      const log = logs[k];
+      if (!vetIsOn(log)) return;
+      const vet = normalizeVet(log.vet);
+      if (!vet || vet.on !== true) return;
+      out.push({ dateKey: dateKey, date: date, vet: vet });
+    });
+    out.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+    return out;
+  }
+
+  function sumVetFees(visits) {
+    let cents = 0;
+    visits.forEach(row => {
+      if (row.vet.cost == null) return;
+      cents += Math.round(row.vet.cost * 100);
+    });
+    return cents / 100;
+  }
+
+  function nextVetFollowUp(visits) {
+    const todayKey = toDateKey(todayDate());
+    let best = '';
+    visits.forEach(row => {
+      const follow = row.vet.followUp;
+      if (!follow || follow < todayKey) return;
+      if (!best || follow < best) best = follow;
+    });
+    return best;
+  }
+
+  function vetHistoryCountLine(n, fee) {
+    const key = (currentLang() === 'en' && n === 1) ? 'vetHistoryCountOne' : 'vetHistoryCount';
+    return tf(key, { n: n, fee: fee });
+  }
+
+  function vetHistoryItemHtml(row) {
+    const v = row.vet;
+    const reason = flatText(v.reason) || t('vetSummary');
+    const lines = [];
+    lines.push('<div class="vh-date">' + escapeHtml(shortDateLabel(row.date)) + '</div>');
+    lines.push('<div class="vh-reason">' + escapeHtml(reason) + '</div>');
+    const result = flatText(v.result);
+    if (result) lines.push('<div class="vh-meta">' + escapeHtml(clipText(result, 80)) + '</div>');
+    const place = [flatText(v.clinic), flatText(v.doctor)].filter(Boolean).join(' · ');
+    if (place) lines.push('<div class="vh-meta">' + escapeHtml(place) + '</div>');
+    if (v.cost != null) {
+      const fee = formatVetFee(v.cost);
+      if (fee) lines.push('<div class="vh-meta">' + escapeHtml(fee) + '</div>');
+    }
+    if (v.followUp) {
+      const when = formatIsoDay(v.followUp);
+      if (when) lines.push('<div class="vh-meta">' + escapeHtml(tf('vetFollowUpShort', { date: when })) + '</div>');
+    }
+    const notes = flatText(v.notes);
+    if (notes) lines.push('<div class="vh-meta vh-notes">' + escapeHtml(notes) + '</div>');
+    return '<button type="button" class="week-item vet-history-item" data-date="' + escapeHtml(row.dateKey) + '">' +
+      lines.join('') + '</button>';
+  }
+
+  function renderVetHistory() {
+    const summary = document.getElementById('vetHistorySummary');
+    const list = document.getElementById('vetHistoryList');
+    const sub = document.getElementById('vetHistorySub');
+    const back = document.getElementById('btnVetHistoryBack');
+    if (back) back.setAttribute('aria-label', t('back'));
+    const r = getActive();
+    if (sub) sub.textContent = r ? r.name : '';
+    if (!list) return;
+    const visits = r ? vetVisitsForRabbit(r.id) : [];
+    if (!visits.length) {
+      if (summary) {
+        summary.hidden = true;
+        summary.innerHTML = '';
+      }
+      list.innerHTML = '<div class="week-item week-empty"><div class="week-summary">' + escapeHtml(t('vetHistoryEmpty')) + '</div></div>';
+      return;
+    }
+    const fee = formatVetFee(sumVetFees(visits));
+    const next = nextVetFollowUp(visits);
+    if (summary) {
+      summary.hidden = false;
+      let html = '<div class="vh-totals">' + escapeHtml(vetHistoryCountLine(visits.length, fee)) + '</div>';
+      if (next) {
+        const when = formatIsoDay(next);
+        if (when) html += '<div class="vh-next">' + escapeHtml(tf('vetFollowUpShort', { date: when })) + '</div>';
+      }
+      summary.innerHTML = html;
+    }
+    list.innerHTML = visits.map(vetHistoryItemHtml).join('');
+    list.querySelectorAll('button[data-date]').forEach(btn => {
+      btn.addEventListener('click', () => openVetVisit(btn.dataset.date));
+    });
+  }
+
+  function openVetHistory() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const screen = document.getElementById('screen-vet-history');
+    if (screen) screen.classList.add('active');
+    renderVetHistory();
+    window.scrollTo(0, 0);
+  }
+
+  function closeVetHistory() {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const moreNav = document.querySelector('.nav-item[data-screen="more"]');
+    if (moreNav) moreNav.classList.add('active');
+    const more = document.getElementById('screen-more');
+    if (more) more.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function openVetVisit(dateKey) {
+    const d = dateFromKey(dateKey);
+    if (!d) return;
+    viewDate = d;
+    renderTodayContext();
+    quickEdit('vet');
   }
 
   function openLoggedDay(dateKey) {
@@ -4294,8 +4548,8 @@
   }
 
   function renderHeroTags(log) {
-    // Quiet states (正常 / 已記) stay off the hero row. Pending and watch stay.
-    const tags = deriveTagsFromLog(log).filter(tag => tag.style !== 'good');
+    // Quiet and "not logged" tags stay off the hero. A watch tag only appears after something was logged.
+    const tags = deriveTagsFromLog(log).filter(tag => tag.style === 'watch');
     const el = document.getElementById('todayHeroTags');
     el.innerHTML = tags.map(tag =>
       '<span class="status-tag' + (tag.style ? ' ' + tag.style : '') + '">' + escapeHtml(tag.label) + '</span>'
@@ -4375,6 +4629,7 @@
       statusEl.textContent = statusLabelFor(field, value);
       statusEl.className = 'metric-status' + (sc ? ' ' + sc : '');
       valueEl.textContent = value ? localizeValue(value) : t('notRecorded');
+      valueEl.classList.toggle('is-placeholder', !value);
       if (noteEl) noteEl.textContent = value ? '' : (noteEmpty || t('tapFill'));
       if (card) {
         card.classList.toggle('watch', sc === 'watch');
@@ -4396,7 +4651,9 @@
     }
 
     const w = (log && log.weight != null) ? log.weight : (r && r.weight != null ? r.weight : null);
-    document.getElementById('todayWeightValue').textContent = w != null ? (w + ' kg') : '—';
+    const weightValueEl = document.getElementById('todayWeightValue');
+    weightValueEl.textContent = w != null ? (w + ' kg') : '—';
+    weightValueEl.classList.toggle('is-placeholder', w == null);
     const ws = document.getElementById('metricWeightStatus');
     if (log && log.weight != null) {
       ws.textContent = t('recorded');
@@ -4424,6 +4681,7 @@
       statusEl.textContent = '—';
       statusEl.className = 'metric-status';
       valueEl.textContent = t('notRecorded');
+      valueEl.classList.add('is-placeholder');
       noteEl.textContent = t('tapFill');
       return;
     }
@@ -4431,6 +4689,7 @@
     statusEl.textContent = t('recorded');
     statusEl.className = 'metric-status good';
     valueEl.textContent = flatText(v.reason) || flatText(v.result) || '—';
+    valueEl.classList.toggle('is-placeholder', !(flatText(v.reason) || flatText(v.result)));
     const bits = [];
     const clinic = flatText(v.clinic);
     if (clinic) bits.push(clinic);
@@ -4833,6 +5092,7 @@
     renderMore();
     renderTodayContext();
     renderCalendar();
+    renderVetHistory();
     if (document.getElementById('screen-log').classList.contains('active')) {
       loadLogIntoForm();
     }
@@ -5342,6 +5602,9 @@
     showToast(t('saved'));
     renderMore();
   });
+
+  document.getElementById('btnVetHistory').addEventListener('click', openVetHistory);
+  document.getElementById('btnVetHistoryBack').addEventListener('click', closeVetHistory);
 
   document.getElementById('langSegment').addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-lang]');
