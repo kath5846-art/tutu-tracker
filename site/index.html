@@ -2136,7 +2136,7 @@
             <div class="metric-title" data-i18n="metricAppetite">食慾</div>
             <div class="metric-status" id="metricAppetiteStatus">—</div>
           </div>
-          <div class="metric-value is-placeholder" id="metricAppetiteValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricAppetiteValue">--</div>
           <div class="metric-note" id="metricAppetiteNote">點擊填寫</div>
         </div>
 
@@ -2145,7 +2145,7 @@
             <div class="metric-title" data-i18n="metricPoop">便便</div>
             <div class="metric-status" id="metricPoopStatus">—</div>
           </div>
-          <div class="metric-value is-placeholder" id="metricPoopValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricPoopValue">--</div>
           <div class="metric-note" id="metricPoopNote">點擊填寫</div>
         </div>
 
@@ -2154,7 +2154,7 @@
             <div class="metric-title" data-i18n="metricActivity">活動</div>
             <div class="metric-status" id="metricActivityStatus">—</div>
           </div>
-          <div class="metric-value is-placeholder" id="metricActivityValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricActivityValue">--</div>
           <div class="metric-note" id="metricActivityNote">點擊填寫</div>
           <div class="metric-hint" id="metricActivityHint" style="display:none;"></div>
         </div>
@@ -2164,7 +2164,7 @@
             <div class="metric-title" data-i18n="metricWeight">體重</div>
             <div class="metric-status" id="metricWeightStatus">—</div>
           </div>
-          <div class="metric-value is-placeholder" id="todayWeightValue">—</div>
+          <div class="metric-value is-placeholder" id="todayWeightValue">--</div>
           <div class="metric-note" id="metricWeightNote" data-i18n="tapUpdate">點擊可更新</div>
         </div>
 
@@ -2173,7 +2173,7 @@
             <div class="metric-title" data-i18n="metricEyes">眼睛狀況</div>
             <div class="metric-status" id="metricEyesStatus">—</div>
           </div>
-          <div class="metric-value is-placeholder" id="metricEyesValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricEyesValue">--</div>
           <div class="metric-note" id="metricEyesNote">點擊填寫</div>
         </div>
 
@@ -2182,7 +2182,7 @@
             <div class="metric-title"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-stethoscope-fill"></use></svg><span data-i18n="vetSummary">睇醫生</span></div>
             <div class="metric-status" id="metricVetStatus">—</div>
           </div>
-          <div class="metric-value is-placeholder" id="metricVetValue">未記錄</div>
+          <div class="metric-value is-placeholder" id="metricVetValue">--</div>
           <div class="metric-note" id="metricVetNote">點擊填寫</div>
         </div>
       </div>
@@ -2670,7 +2670,7 @@
       saved: '已儲存設定', edit: '編輯', tempSent: '已傳送暫時密碼（示範）',
       addPhoto: '點擊加入兔兔照片', fillStatus: '填寫今日狀態',
       metricAppetite: '食慾', metricPoop: '便便', metricActivity: '活動', metricWeight: '體重', metricEyes: '眼睛狀況',
-      tapUpdate: '點擊可更新', tapFill: '點擊填寫', notRecorded: '未記錄', recorded: '已記',
+      tapUpdate: '點擊可更新', tapFill: '點擊填寫', notRecorded: '--', recorded: '已記',
       trendTitle: '體重趨勢（近 8 週）', trendNote: '整體穩定，輕微波動',
       weekObs: '本週觀察', recentLogs: '最近記錄', calMonthSample: '2026年10月',
       welcomeDate: '迎接日期', birthday: '生日', birthdayOf: '「{name}」的生日',
@@ -2825,7 +2825,7 @@
       saved: 'Settings saved', edit: 'Edit', tempSent: 'Temp password sent (demo)',
       addPhoto: 'Tap to add a photo', fillStatus: 'Log today’s status',
       metricAppetite: 'Appetite', metricPoop: 'Poop', metricActivity: 'Activity', metricWeight: 'Weight', metricEyes: 'Eyes',
-      tapUpdate: 'Tap to update', tapFill: 'Tap to fill', notRecorded: 'Not logged', recorded: 'Logged',
+      tapUpdate: 'Tap to update', tapFill: 'Tap to fill', notRecorded: '--', recorded: 'Logged',
       trendTitle: 'Weight trend (8 weeks)', trendNote: 'Mostly stable, slight swings',
       weekObs: 'This week', recentLogs: 'Recent logs', calMonthSample: 'October 2026',
       welcomeDate: 'Came home', birthday: 'Birthday', birthdayOf: '{name}’s birthday',
@@ -2981,7 +2981,7 @@
       saved: '設定を保存しました', edit: '編集', tempSent: '一時パスワードを送信（デモ）',
       addPhoto: 'タップして写真を追加', fillStatus: '今日の状態を記入',
       metricAppetite: '食欲', metricPoop: 'うんち', metricActivity: '活動', metricWeight: '体重', metricEyes: '目の状態',
-      tapUpdate: 'タップして更新', tapFill: 'タップして記入', notRecorded: '未記録', recorded: '記録済',
+      tapUpdate: 'タップして更新', tapFill: 'タップして記入', notRecorded: '--', recorded: '記録済',
       trendTitle: '体重トレンド（直近8週）', trendNote: '全体は安定、わずかな変動',
       weekObs: '今週の観察', recentLogs: '最近の記録', calMonthSample: '2026年10月',
       welcomeDate: 'お迎え日', birthday: '誕生日', birthdayOf: '「{name}」の誕生日',
@@ -4653,7 +4653,7 @@
 
     const w = (log && log.weight != null) ? log.weight : (r && r.weight != null ? r.weight : null);
     const weightValueEl = document.getElementById('todayWeightValue');
-    weightValueEl.textContent = w != null ? (w + ' kg') : '—';
+    weightValueEl.textContent = w != null ? (w + ' kg') : t('notRecorded');
     weightValueEl.classList.toggle('is-placeholder', w == null);
     const ws = document.getElementById('metricWeightStatus');
     if (log && log.weight != null) {
@@ -4689,7 +4689,7 @@
     const v = normalizeVet(log.vet) || log.vet || {};
     statusEl.textContent = t('recorded');
     statusEl.className = 'metric-status good';
-    valueEl.textContent = flatText(v.reason) || flatText(v.result) || '—';
+    valueEl.textContent = flatText(v.reason) || flatText(v.result) || t('notRecorded');
     valueEl.classList.toggle('is-placeholder', !(flatText(v.reason) || flatText(v.result)));
     const bits = [];
     const clinic = flatText(v.clinic);
